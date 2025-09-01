@@ -290,14 +290,9 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
         const songs = data[assignedCourse].songs || [];
         index = songs.indexOf(null);
         if (index === -1) {
-            // 指定课程满了，尝试自动分配
-            const available = findAvailableCourse(data);
-            if (!available) {
-                fs.unlinkSync(file.path);
-                return res.status(400).json({error: '指定课程已满且没有其他可用空位'});
-            }
-            assignedCourse = available.course;
-            index = available.slot;
+            // 指定课程满了，不自动分配，直接返回错误
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`});
         }
     }
 
@@ -409,18 +404,13 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
                 const songs = data[assignedCourse].songs || [];
                 assignedSlot = songs.indexOf(null);
                 if (assignedSlot === -1) {
-                    // 当前课程满了，尝试自动分配
-                    const available = findAvailableCourse(data);
-                    if (!available) {
-                        errors.push({
-                            file: file.originalname,
-                            error: '指定课程已满且没有其他可用空位'
-                        });
-                        fs.unlinkSync(file.path);
-                        continue;
-                    }
-                    assignedCourse = available.course;
-                    assignedSlot = available.slot;
+                    // 指定课程满了，不自动分配，直接报错
+                    errors.push({
+                        file: file.originalname,
+                        error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`
+                    });
+                    fs.unlinkSync(file.path);
+                    continue;
                 }
             }
 
@@ -1213,11 +1203,11 @@ function generateHTML() {
                                         💡 文件将自动重命名为"课程-A.mp3"格式，原文件名将保存为显示名称
                                     </p>
                                     <div style="display: flex; gap: 10px;">
-                                        <button class="btn btn-primary" onclick="uploadBatchFiles()" style="flex: 1;">
-                                            📤 开始批量上传
+                                        <button class="btn btn-primary" onclick="uploadBatchFiles()">
+                                            📤 批量上传
                                         </button>
                                         <button class="btn btn-secondary" onclick="clearFileList()">
-                                            🗑️ 清空列表
+                                            🗑️ 清空
                                         </button>
                                     </div>
                                 </div>
@@ -1763,7 +1753,7 @@ function generateHTML() {
             } else {
                 // 尝试从API获取封面图片，失败则显示智能默认图标
                 albumArtHtml = \`
-                    <img src="/api/album-art/\${fileName}" 
+                    <img src="/api/album-art/\${encodeURIComponent(fileName)}" 
                          style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" 
                          alt="封面" 
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -1795,9 +1785,8 @@ function generateHTML() {
                     您的浏览器不支持音频播放
                 </audio>
                 
-                <div style="font-size: 0.8rem; color: #adb5bd; text-align: center;">
-                    📁 \${src.split('/').pop()}
-                </div>
+                        <div style="font-size: 0.85rem; color: #6c757d;">🎤 \${artist} ｜ 💿 \${album}</div>
+                        <div style="font-size: 0.8rem; color: #adb5bd;">📅 \${year} | 📁 \${src.split('/').pop().replace('.mp3', '')}</div>
             \`;
             
             document.body.appendChild(player);
@@ -1893,7 +1882,10 @@ function generateHTML() {
                         <div class="song-title">\${s.friendly_name}</div>
                         <div class="song-meta">📁 \${s.playlist_name.replace('.mp3', '')} | 🎤 \${s.metadata.artist} | 📅 \${s.metadata.year} | 📚 \${s.course.replace('.mp3', '')}</div>
                     </div>
-                    <button class="btn btn-primary" onclick="playAudio('/songs/\${s.playlist_name}', \${JSON.stringify(s).replace(/"/g, '&quot;')})">▶️ 播放</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="playAudio('/songs/\${s.playlist_name}', \${JSON.stringify(s).replace(/"/g, '&quot;')})">▶️ 播放</button>
+                        <button class="btn btn-danger" onclick="deleteSongByFriendlyName('\${s.friendly_name}')">🗑️ 删除</button>
+                    </div>
                 </div>
             \`).join('');
         }
@@ -1912,6 +1904,18 @@ function generateHTML() {
                 if (res.ok) {
                     showAlert(result.message, 'success');
                     document.getElementById('delete-song-name').value = '';
+                    loadSongs(); loadCourses();
+                } else showAlert('删除失败: ' + result.error, 'error');
+            } catch (e) { showAlert('删除失败: ' + e.message, 'error'); }
+        }
+
+        async function deleteSongByFriendlyName(friendlyName) {
+            if (!confirm('确定删除 "' + friendlyName + '"？')) return;
+            try {
+                const res = await fetch('/api/remove-song-by-name', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({friendly_name: friendlyName})});
+                const result = await res.json();
+                if (res.ok) {
+                    showAlert(result.message, 'success');
                     loadSongs(); loadCourses();
                 } else showAlert('删除失败: ' + result.error, 'error');
             } catch (e) { showAlert('删除失败: ' + e.message, 'error'); }
@@ -1945,7 +1949,7 @@ function generateHTML() {
         }
         
         async function deleteAllSongs() {
-            if (!confirm('⚠️ 危险操作！\n\n确定要删除所有已上传的歌曲吗？\n这将永久删除所有歌曲文件和相关记录，无法恢复！')) return;
+            if (!confirm('⚠️ 危险操作！\\n\\n确定要删除所有已上传的歌曲吗？\\n这将永久删除所有歌曲文件和相关记录，无法恢复！')) return;
             
             try {
                 const response = await fetch('/api/delete-all-songs', {
@@ -1979,7 +1983,7 @@ function generateHTML() {
         }
 
         async function updateMusicMap() {
-            if (!confirm('确定要更新 Music-Map 吗？\n\n这将：\n1. 清理不存在文件的绑定\n2. 重新获取所有文件的元数据和图标')) return;
+            if (!confirm('确定要更新 Music-Map 吗？\\n\\n这将：\\n1. 清理不存在文件的绑定\\n2. 重新获取所有文件的元数据和图标')) return;
             
             try {
                 const response = await fetch('/api/update-music-map', {
