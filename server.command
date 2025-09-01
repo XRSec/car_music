@@ -24,7 +24,7 @@ app.use('/songs', express.static(SONG_DIR)); // 静态访问歌曲
 
 // 文件上传配置
 const upload = multer({dest: SONG_DIR});
-const uploadMultiple = multer({dest: SONG_DIR}).array('songs', 20); // 支持最多20个文件
+const uploadMultiple = multer({dest: SONG_DIR}).array('songs', 100); // 支持最多100个文件（分批处理）
 
 // ------------------- 数据操作 -------------------
 function initData() {
@@ -80,28 +80,39 @@ function saveData(data) {
 // 获取音乐元数据（包括封面图片）
 async function getMusicMetadata(filePath) {
     try {
-        const metadata = await mm.parseFile(filePath);
+        const metadata = await mm.parseFile(filePath, {
+            skipCovers: false,
+            skipPostHeaders: false,
+            includeChapters: false
+        });
         let albumArt = null;
 
         // 提取封面图片
-        if (metadata.common.picture && metadata.common.picture.length > 0) {
-            const picture = metadata.common.picture[0];
-            albumArt = {
-                format: picture.format,
-                data: picture.data.toString('base64')
-            };
+        if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
+            try {
+                const picture = metadata.common.picture[0];
+                if (picture.data && picture.format) {
+                    albumArt = {
+                        format: picture.format,
+                        data: picture.data.toString('base64')
+                    };
+                }
+            } catch (pictureError) {
+                console.warn(`封面提取失败 ${filePath}:`, pictureError.message);
+            }
         }
 
         return {
-            title: metadata.common.title || path.basename(filePath, '.mp3'),
-            artist: metadata.common.artist || '未知艺术家',
-            album: metadata.common.album || '未知专辑',
-            year: metadata.common.year || '未知年份',
-            genre: metadata.common.genre ? metadata.common.genre.join(', ') : '未知流派',
-            duration: metadata.format.duration ? Math.round(metadata.format.duration) : 0,
+            title: metadata.common?.title || path.basename(filePath, '.mp3'),
+            artist: metadata.common?.artist || '未知艺术家',
+            album: metadata.common?.album || '未知专辑',
+            year: metadata.common?.year || '未知年份',
+            genre: metadata.common?.genre ? metadata.common.genre.join(', ') : '未知流派',
+            duration: metadata.format?.duration ? Math.round(metadata.format.duration) : 0,
             albumArt: albumArt
         };
     } catch (error) {
+        console.warn(`元数据提取失败 ${filePath}:`, error.message);
         return {
             title: path.basename(filePath, '.mp3'),
             artist: '未知艺术家',
@@ -127,6 +138,40 @@ function generatePlaylistName(courseFile, songIndex) {
     // 歌曲文件：课程名-A.mp3, 课程名-B.mp3
     const songSuffix = songIndex === 0 ? 'A' : 'B';
     return `${baseName}-${songSuffix}.mp3`;
+}
+
+// 检查友好名称是否重复，如果重复则添加数字后缀
+function ensureUniqueFriendlyName(data, friendlyName, excludeCourse = null, excludeSlot = null) {
+    let uniqueName = friendlyName;
+    let counter = 1;
+    
+    while (true) {
+        let isDuplicate = false;
+        
+        // 检查所有课程的所有歌曲
+        for (const [course, info] of Object.entries(data)) {
+            if (excludeCourse && course === excludeCourse) continue;
+            
+            const renamedFiles = info.renamed_files || [];
+            for (const file of renamedFiles) {
+                if (excludeCourse === course && excludeSlot === file.slot) continue;
+                
+                if (file.friendly_name === uniqueName) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate) break;
+        }
+        
+        if (!isDuplicate) {
+            return uniqueName;
+        }
+        
+        // 如果重复，添加数字后缀
+        uniqueName = `${friendlyName}(${counter})`;
+        counter++;
+    }
 }
 
 // 自动分配课程（找到有空位的课程）
@@ -282,12 +327,15 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
     const newPath = path.join(SONG_DIR, newName);
     fs.renameSync(file.path, newPath);
 
+    // 确保友好名称唯一
+    const uniqueFriendlyName = ensureUniqueFriendlyName(data, friendly_name || metadata.title);
+
     // 保存映射
     data[assignedCourse].songs[index] = newName;
     data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
     data[assignedCourse].renamed_files.push({
         original_name: file.originalname,
-        friendly_name: friendly_name || metadata.title,
+        friendly_name: uniqueFriendlyName,
         playlist_name: newName,
         slot: index,
         metadata: metadata,
@@ -299,7 +347,7 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
         message: `歌曲已添加到课程 ${assignedCourse}`,
         file: newName,
         metadata,
-        friendly_name: friendly_name || metadata.title,
+        friendly_name: uniqueFriendlyName,
         auto_assigned: targetCourse !== assignedCourse
     });
 });
@@ -379,12 +427,15 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
             const newPath = path.join(SONG_DIR, newName);
             fs.renameSync(file.path, newPath);
 
+            // 确保友好名称唯一
+            const uniqueFriendlyName = ensureUniqueFriendlyName(data, friendlyName || metadata.title);
+
             // 保存映射
             data[assignedCourse].songs[assignedSlot] = newName;
             data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
             data[assignedCourse].renamed_files.push({
                 original_name: file.originalname,
-                friendly_name: friendlyName || metadata.title,
+                friendly_name: uniqueFriendlyName,
                 playlist_name: newName,
                 slot: assignedSlot,
                 metadata: metadata,
@@ -393,7 +444,7 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
 
             results.push({
                 original: file.originalname,
-                friendly_name: friendlyName || metadata.title,
+                friendly_name: uniqueFriendlyName,
                 course: assignedCourse,
                 slot: assignedSlot,
                 playlist_name: newName,
@@ -459,12 +510,15 @@ app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
         const newPath = path.join(SONG_DIR, newName);
         fs.renameSync(file.path, newPath);
 
+        // 确保友好名称唯一
+        const uniqueFriendlyName = ensureUniqueFriendlyName(data, friendly_name || metadata.title);
+
         // 保存映射
         data[course].songs[slotIndex] = newName;
         data[course].renamed_files = data[course].renamed_files || [];
         data[course].renamed_files.push({
             original_name: file.originalname,
-            friendly_name: friendly_name || metadata.title,
+            friendly_name: uniqueFriendlyName,
             playlist_name: newName,
             slot: slotIndex,
             metadata: metadata,
@@ -495,8 +549,14 @@ app.post('/api/remove-song-by-name', (req, res) => {
         if (fileInfo) {
             // 删除物理文件
             const filePath = path.join(SONG_DIR, fileInfo.playlist_name);
+            let fileDeleted = false;
             if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
+                try {
+                    fs.unlinkSync(filePath);
+                    fileDeleted = true;
+                } catch (error) {
+                    console.error(`删除文件失败: ${filePath}`, error);
+                }
             }
 
             // 清空歌曲位置
@@ -510,7 +570,8 @@ app.post('/api/remove-song-by-name', (req, res) => {
             );
 
             saveData(data);
-            return res.json({message: `已删除歌曲: ${friendly_name}`});
+            const message = fileDeleted ? `已删除歌曲: ${friendly_name}` : `已从数据库删除歌曲: ${friendly_name}（物理文件可能不存在）`;
+            return res.json({message: message});
         }
     }
 
@@ -528,13 +589,23 @@ app.post('/api/remove-song', (req, res) => {
     if (!songName) return res.status(400).json({error: '该位置为空'});
 
     const filePath = path.join(SONG_DIR, songName);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    let fileDeleted = false;
+    if (fs.existsSync(filePath)) {
+        try {
+            fs.unlinkSync(filePath);
+            fileDeleted = true;
+        } catch (error) {
+            console.error(`删除文件失败: ${filePath}`, error);
+        }
+    }
 
     // 清空位置并删除重命名记录
     data[course].songs[slot] = null;
     data[course].renamed_files = (data[course].renamed_files || []).filter(f => f.slot !== slot);
     saveData(data);
-    res.json({message: `已删除 ${songName}`});
+    
+    const message = fileDeleted ? `已删除 ${songName}` : `已从数据库删除 ${songName}（物理文件可能不存在）`;
+    res.json({message: message});
 });
 
 // 查询歌曲是否存在
@@ -637,17 +708,26 @@ app.get('/api/album-art/:filename', async (req, res) => {
     }
 
     try {
-        const metadata = await mm.parseFile(filePath);
+        const metadata = await mm.parseFile(filePath, {
+            skipCovers: false,
+            skipPostHeaders: true,
+            includeChapters: false
+        });
 
-        if (metadata.common.picture && metadata.common.picture.length > 0) {
+        if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             const picture = metadata.common.picture[0];
-            res.set('Content-Type', picture.format);
-            res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
-            res.send(picture.data);
+            if (picture.data && picture.format) {
+                res.set('Content-Type', picture.format);
+                res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
+                res.send(picture.data);
+            } else {
+                res.status(404).json({error: '封面数据损坏'});
+            }
         } else {
             res.status(404).json({error: '没有封面图片'});
         }
     } catch (error) {
+        console.warn(`读取封面失败 ${filePath}:`, error.message);
         res.status(500).json({error: '读取封面失败: ' + error.message});
     }
 });
@@ -1018,12 +1098,20 @@ function generateHTML() {
                             <!-- 文件列表 -->
                             <div id="file-list" style="margin-top: 15px; display: none;">
                                 <h4>准备上传的文件：</h4>
-                                <div id="files-preview"></div>
-                                <div style="margin-top: 15px;">
+                                <!-- 上传控制区域 -->
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e9ecef;">
                                     <input type="text" class="form-control" id="batch-friendly-names" placeholder="友好名称（用逗号分隔，可选）" style="margin-bottom: 10px;">
-                                    <button class="btn btn-primary" onclick="uploadBatchFiles()">批量上传</button>
-                                    <button class="btn btn-secondary" onclick="clearFileList()">清空列表</button>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button class="btn btn-primary" onclick="uploadBatchFiles()" style="flex: 1;">
+                                            📤 开始批量上传
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="clearFileList()">
+                                            🗑️ 清空列表
+                                        </button>
+                                    </div>
                                 </div>
+                                <!-- 文件预览列表 -->
+                                <div id="files-preview"></div>
                             </div>
                             
                             <!-- 上传进度 -->
@@ -1221,14 +1309,6 @@ function generateHTML() {
             const course = document.getElementById('course-select').value;
             const friendlyNames = document.getElementById('batch-friendly-names').value;
             
-            const formData = new FormData();
-            if (course) formData.append('course', course);
-            if (friendlyNames) formData.append('friendly_names', friendlyNames);
-            
-            selectedFiles.forEach(file => {
-                formData.append('songs', file);
-            });
-            
             // 显示进度条
             const progressDiv = document.getElementById('upload-progress');
             const progressFill = document.getElementById('progress-fill');
@@ -1236,36 +1316,85 @@ function generateHTML() {
             
             progressDiv.style.display = 'block';
             progressFill.style.width = '0%';
-            progressText.textContent = '上传中...';
+            progressText.textContent = '准备上传...';
+            
+            const BATCH_SIZE = 20; // 每批20个文件
+            const totalFiles = selectedFiles.length;
+            const batches = [];
+            
+            // 分批处理文件
+            for (let i = 0; i < totalFiles; i += BATCH_SIZE) {
+                batches.push(selectedFiles.slice(i, i + BATCH_SIZE));
+            }
+            
+            const allResults = [];
+            const allErrors = [];
             
             try {
-                const response = await fetch('/api/add-songs-batch', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                progressFill.style.width = '100%';
-                const result = await response.json();
-                
-                if (response.ok) {
-                    progressText.textContent = result.message;
-                    showAlert(result.message, 'success');
+                for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+                    const batch = batches[batchIndex];
+                    const startIndex = batchIndex * BATCH_SIZE;
                     
-                    // 显示详细结果
-                    if (result.errors.length > 0) {
-                        console.log('上传错误:', result.errors);
-                        result.errors.forEach(err => {
-                            showAlert(\`\${err.file}: \${err.error}\`, 'error');
+                    progressText.textContent = `上传第 ${batchIndex + 1}/${batches.length} 批...`;
+                    
+                    const formData = new FormData();
+                    if (course) formData.append('course', course);
+                    
+                    // 处理友好名称（如果提供）
+                    if (friendlyNames) {
+                        const namesList = friendlyNames.split(',').map(n => n.trim());
+                        const batchNames = namesList.slice(startIndex, startIndex + BATCH_SIZE);
+                        if (batchNames.length > 0) {
+                            formData.append('friendly_names', batchNames.join(','));
+                        }
+                    }
+                    
+                    batch.forEach(file => {
+                        formData.append('songs', file);
+                    });
+                    
+                    const response = await fetch('/api/add-songs-batch', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        allResults.push(...(result.success || []));
+                        allErrors.push(...(result.errors || []));
+                    } else {
+                        // 如果整个批次失败，将所有文件标记为失败
+                        batch.forEach(file => {
+                            allErrors.push({
+                                file: file.name,
+                                error: result.error || '上传失败'
+                            });
                         });
                     }
                     
-                    clearFileList();
-                    loadSongs();
-                    loadCourses();
-                } else {
-                    progressText.textContent = '上传失败';
-                    showAlert('批量上传失败: ' + result.error, 'error');
+                    // 更新进度
+                    const progress = ((batchIndex + 1) / batches.length) * 100;
+                    progressFill.style.width = progress + '%';
                 }
+                
+                // 显示最终结果
+                progressText.textContent = `上传完成：成功 ${allResults.length} 个，失败 ${allErrors.length} 个`;
+                
+                const successMessage = `批量上传完成：成功 ${allResults.length} 个，失败 ${allErrors.length} 个`;
+                showAlert(successMessage, allErrors.length === 0 ? 'success' : 'warning');
+                
+                // 显示错误详情
+                if (allErrors.length > 0) {
+                    allErrors.forEach(err => {
+                        showAlert(`${err.file}: ${err.error}`, 'error');
+                    });
+                }
+                
+                clearFileList();
+                loadSongs();
+                loadCourses();
+                
             } catch (error) {
                 progressText.textContent = '上传失败';
                 showAlert('批量上传失败: ' + error.message, 'error');
@@ -1273,7 +1402,7 @@ function generateHTML() {
             
             setTimeout(() => {
                 progressDiv.style.display = 'none';
-            }, 3000);
+            }, 5000); // 延长显示时间
         }
         async function loadOverview() {
             try {
@@ -1594,7 +1723,8 @@ function generateHTML() {
         }
         
         async function uploadFileToSlot(file, course, slot) {
-            const friendlyName = prompt('请输入歌曲的友好名称（可选）:', file.name.replace('.mp3', ''));
+            // 直接使用文件名作为友好名称，不再弹出提示框
+            const friendlyName = file.name.replace('.mp3', '');
             
             const formData = new FormData();
             formData.append('course', course);
