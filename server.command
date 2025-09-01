@@ -741,13 +741,39 @@ app.post('/api/batch-rename', (req, res) => {
     res.json({message: '批量重命名完成', renamed: renamedFiles});
 });
 
+// 生成默认音乐图标SVG
+function generateDefaultMusicIcon(type = 'song') {
+    const icons = {
+        song: { icon: '🎵', bg: '#667eea' },
+        course: { icon: '📚', bg: '#2196f3' },
+        artist: { icon: '🎓', bg: '#ff6b6b' }
+    };
+    
+    const config = icons[type] || icons.song;
+    
+    return `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${config.bg};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${config.bg}dd;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <rect width="60" height="60" rx="8" fill="url(#bg)"/>
+        <text x="30" y="40" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="white">${config.icon}</text>
+    </svg>`;
+}
+
 // 获取歌曲封面图片
 app.get('/api/album-art/:filename', async (req, res) => {
     const filename = req.params.filename;
     const filePath = path.join(SONG_DIR, filename);
 
     if (!fs.existsSync(filePath)) {
-        return res.status(404).json({error: '文件不存在'});
+        // 文件不存在，返回默认图标
+        const defaultSvg = generateDefaultMusicIcon('song');
+        res.set('Content-Type', 'image/svg+xml');
+        res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
+        return res.send(defaultSvg);
     }
 
     try {
@@ -765,21 +791,42 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 if (Array.isArray(dataBuffer)) {
                     dataBuffer = Buffer.from(dataBuffer);
                 } else if (!(dataBuffer instanceof Buffer)) {
-                    return res.status(404).json({error: '封面数据格式错误'});
+                    // 数据格式错误，返回默认图标
+                    const defaultSvg = generateDefaultMusicIcon('song');
+                    res.set('Content-Type', 'image/svg+xml');
+                    res.set('Cache-Control', 'public, max-age=3600');
+                    return res.send(defaultSvg);
                 }
                 
                 res.set('Content-Type', picture.format);
                 res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
                 res.send(dataBuffer);
             } else {
-                res.status(404).json({error: '封面数据损坏'});
+                // 封面数据损坏，返回默认图标
+                const defaultSvg = generateDefaultMusicIcon('song');
+                res.set('Content-Type', 'image/svg+xml');
+                res.set('Cache-Control', 'public, max-age=3600');
+                res.send(defaultSvg);
             }
         } else {
-            res.status(404).json({error: '没有封面图片'});
+            // 没有封面图片，根据文件类型返回不同的默认图标
+            let iconType = 'song';
+            if (filename.match(/^\d{8}(-\d+)?\.mp3$/)) {
+                iconType = 'course';
+            }
+            
+            const defaultSvg = generateDefaultMusicIcon(iconType);
+            res.set('Content-Type', 'image/svg+xml');
+            res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
+            res.send(defaultSvg);
         }
     } catch (error) {
         console.warn(`读取封面失败 ${filePath}:`, error.message);
-        res.status(500).json({error: '读取封面失败: ' + error.message});
+        // 读取失败，返回默认图标而不是错误
+        const defaultSvg = generateDefaultMusicIcon('song');
+        res.set('Content-Type', 'image/svg+xml');
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.send(defaultSvg);
     }
 });
 
@@ -2039,15 +2086,11 @@ function generateHTML() {
                     \`;
                 }
             } else {
-                // 尝试从API获取封面图片，失败则显示智能默认图标
+                // 从API获取封面图片（API现在总是返回有效图像，包括默认图标）
                 albumArtHtml = \`
                     <img src="/api/album-art/\${encodeURIComponent(fileName)}" 
                          style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" 
-                         alt="封面" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div style="width: 60px; height: 60px; background: \${defaultBg}; border-radius: 8px; display: none; align-items: center; justify-content: center; border: 2px solid #e9ecef;">
-                        <span style="font-size: 1.5rem; color: white;">\${defaultIcon}</span>
-                    </div>
+                         alt="封面">
                 \`;
             }
             
