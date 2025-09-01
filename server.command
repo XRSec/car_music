@@ -91,12 +91,26 @@ function saveData(data) {
     try {
         // 创建一个深拷贝，避免修改原始数据
         const dataToSave = JSON.parse(JSON.stringify(data, (key, value) => {
-            // 过滤掉可能导致JSON损坏的二进制数据
+            // 处理封面数据，确保格式正确
             if (key === 'albumArt' && value && typeof value === 'object' && value.data) {
-                return {
-                    format: value.format,
-                    data: typeof value.data === 'string' ? value.data : '[Binary Data]'
-                };
+                if (typeof value.data === 'string') {
+                    // 已经是字符串，直接使用
+                    return value;
+                } else if (Array.isArray(value.data)) {
+                    // 是数组，转换为 base64 字符串
+                    try {
+                        const buffer = Buffer.from(value.data);
+                        return {
+                            format: value.format,
+                            data: buffer.toString('base64')
+                        };
+                    } catch (e) {
+                        return null; // 转换失败，不保存封面
+                    }
+                } else {
+                    // 其他格式，不保存
+                    return null;
+                }
             }
             return value;
         }));
@@ -125,9 +139,19 @@ async function getMusicMetadata(filePath) {
             try {
                 const picture = metadata.common.picture[0];
                 if (picture.data && picture.format) {
+                    // 确保 data 是 Buffer，然后转换为 base64 字符串
+                    let dataBuffer = picture.data;
+                    if (Array.isArray(dataBuffer)) {
+                        // 如果是数组，转换为 Buffer
+                        dataBuffer = Buffer.from(dataBuffer);
+                    } else if (!(dataBuffer instanceof Buffer)) {
+                        // 如果不是 Buffer 也不是数组，跳过
+                        throw new Error('Invalid picture data format');
+                    }
+                    
                     albumArt = {
                         format: picture.format,
-                        data: picture.data.toString('base64')
+                        data: dataBuffer.toString('base64')
                     };
                 }
             } catch (pictureError) {
@@ -732,9 +756,17 @@ app.get('/api/album-art/:filename', async (req, res) => {
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             const picture = metadata.common.picture[0];
             if (picture.data && picture.format) {
+                // 确保 data 是 Buffer
+                let dataBuffer = picture.data;
+                if (Array.isArray(dataBuffer)) {
+                    dataBuffer = Buffer.from(dataBuffer);
+                } else if (!(dataBuffer instanceof Buffer)) {
+                    return res.status(404).json({error: '封面数据格式错误'});
+                }
+                
                 res.set('Content-Type', picture.format);
                 res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
-                res.send(picture.data);
+                res.send(dataBuffer);
             } else {
                 res.status(404).json({error: '封面数据损坏'});
             }
@@ -792,6 +824,7 @@ app.post('/api/update-music-map', async (req, res) => {
     const data = loadData();
     let cleanedCount = 0;
     let refreshedCount = 0;
+    let fixedCoverCount = 0;
     const cleanedFiles = [];
 
     for (const [course, info] of Object.entries(data)) {
@@ -805,6 +838,14 @@ app.post('/api/update-music-map', async (req, res) => {
                 // 文件存在，重新获取元数据和图标
                 try {
                     const metadata = await getMusicMetadata(filePath);
+                    
+                    // 修复现有的数字数组格式封面数据
+                    if (fileInfo.metadata && fileInfo.metadata.albumArt && 
+                        Array.isArray(fileInfo.metadata.albumArt.data)) {
+                        console.log(`修复封面数据格式: ${fileInfo.original_name}`);
+                        fixedCoverCount++;
+                    }
+                    
                     fileInfo.metadata = metadata; // 更新元数据
                     validFiles.push(fileInfo);
                     refreshedCount++;
@@ -840,9 +881,10 @@ app.post('/api/update-music-map', async (req, res) => {
     saveData(data);
 
     res.json({
-        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据`,
+        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，修复了 ${fixedCoverCount} 个封面格式`,
         cleaned_count: cleanedCount,
         refreshed_count: refreshedCount,
+        fixed_cover_count: fixedCoverCount,
         cleaned_files: cleanedFiles
     });
 });
@@ -1765,7 +1807,29 @@ function generateHTML() {
             }
             
             if (albumArt && albumArt.data) {
-                albumArtHtml = \`<img src="data:\${albumArt.format};base64,\${albumArt.data}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" alt="封面">\`;
+                // 处理不同格式的封面数据
+                let base64Data = albumArt.data;
+                if (Array.isArray(albumArt.data)) {
+                    // 如果是数字数组，转换为 base64
+                    try {
+                        const buffer = new Uint8Array(albumArt.data);
+                        base64Data = btoa(String.fromCharCode(...buffer));
+                    } catch (e) {
+                        console.warn('封面数据转换失败:', e);
+                        base64Data = null;
+                    }
+                }
+                
+                if (base64Data) {
+                    albumArtHtml = \`<img src="data:\${albumArt.format};base64,\${base64Data}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" alt="封面">\`;
+                } else {
+                    // 封面数据无效，使用默认图标
+                    albumArtHtml = \`
+                        <div style="width: 60px; height: 60px; background: \${defaultBg}; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e9ecef;">
+                            <span style="font-size: 1.5rem; color: white;">\${defaultIcon}</span>
+                        </div>
+                    \`;
+                }
             } else {
                 // 尝试从API获取封面图片，失败则显示智能默认图标
                 albumArtHtml = \`
@@ -2015,7 +2079,8 @@ function generateHTML() {
                         '<div class="alert alert-success">' +
                         '<strong>' + result.message + '</strong><br>' +
                         '清理的无效绑定: ' + result.cleaned_count + ' 个<br>' +
-                        '刷新的文件: ' + result.refreshed_count + ' 个' +
+                        '刷新的文件: ' + result.refreshed_count + ' 个<br>' +
+                        '修复的封面: ' + (result.fixed_cover_count || 0) + ' 个' +
                         '</div>';
                     
                     if (result.cleaned_files.length > 0) {
