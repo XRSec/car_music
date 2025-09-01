@@ -1804,7 +1804,7 @@ function generateHTML() {
                         <div class="stat-label">空闲位置</div>
                     </div>\`;
                 const recent = songs.sort((a,b) => new Date(b.added_time) - new Date(a.added_time)).slice(0,5);
-                document.getElementById('recent-songs').innerHTML = recent.length ? recent.map(s => \`<div class="song-item"><div class="song-title">\${s.display_name}</div><div class="song-meta">🎤 \${s.metadata.artist} | 📅 \${s.metadata.year} | 📚 \${s.course}</div></div>\`).join('') : '<div class="empty-slot">暂无歌曲</div>';
+                document.getElementById('recent-songs').innerHTML = recent.length ? recent.map(s => \`<div class="song-item"><div class="song-title">\${s.display_name}</div><div class="song-meta">🎤 \${s.metadata?.artist || '未知艺术家'} | 📅 \${s.metadata?.year || '未知年份'} | 📚 \${s.course}</div></div>\`).join('') : '<div class="empty-slot">暂无歌曲</div>';
             } catch (e) { console.error('加载失败:', e); }
         }
         async function loadCourses() {
@@ -1942,10 +1942,11 @@ function generateHTML() {
                                   (courseMeta.artist && courseMeta.artist.toLowerCase().includes(query));
                 
                 const matchSongs = info.renamed_files && info.renamed_files.some(f => 
-                    f.friendly_name.toLowerCase().includes(query) ||
-                    f.metadata.title.toLowerCase().includes(query) ||
-                    f.metadata.artist.toLowerCase().includes(query) ||
-                    f.metadata.year.toString().includes(query)
+                    (f.friendly_name && f.friendly_name.toLowerCase().includes(query)) ||
+                    (f.original_name && f.original_name.toLowerCase().includes(query)) ||
+                    (f.metadata?.title && f.metadata.title.toLowerCase().includes(query)) ||
+                    (f.metadata?.artist && f.metadata.artist.toLowerCase().includes(query)) ||
+                    (f.metadata?.year && f.metadata.year.toString().includes(query))
                 );
                 
                 if (matchCourse || matchSongs) {
@@ -2170,7 +2171,7 @@ function generateHTML() {
                 <div class="song-item" style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="flex: 1;">
                         <div class="song-title">\${s.display_name}</div>
-                        <div class="song-meta">📁 \${s.playlist_name.replace('.mp3', '')} | 🎤 \${s.metadata.artist} | 📅 \${s.metadata.year} | 📚 \${s.course.replace('.mp3', '')}</div>
+                        <div class="song-meta">📁 \${s.playlist_name.replace('.mp3', '')} | 🎤 \${s.metadata?.artist || '未知艺术家'} | 📅 \${s.metadata?.year || '未知年份'} | 📚 \${s.course.replace('.mp3', '')}</div>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn btn-primary" onclick="playAudio('/songs/\${s.playlist_name}', \${JSON.stringify(s).replace(/"/g, '&quot;')})">▶️ 播放</button>
@@ -2181,7 +2182,7 @@ function generateHTML() {
         }
         function searchSongs() {
             const q = document.getElementById('song-search').value.toLowerCase();
-            displaySongs(allSongs.filter(s => s.display_name.toLowerCase().includes(q) || s.metadata.artist.toLowerCase().includes(q) || s.course.toLowerCase().includes(q)));
+            displaySongs(allSongs.filter(s => s.display_name.toLowerCase().includes(q) || (s.metadata?.artist && s.metadata.artist.toLowerCase().includes(q)) || s.course.toLowerCase().includes(q)));
         }
 
         async function deleteSongByName() {
@@ -2237,8 +2238,12 @@ function generateHTML() {
             try {
                 const res = await fetch('/api/song-exists?name=' + encodeURIComponent(name));
                 const result = await res.json();
-                const displayName = result.info.friendly_name || result.info.original_name.replace('.mp3', '');
-                document.getElementById('query-result').innerHTML = result.exists ? \`<div class="alert alert-success"><strong>找到歌曲！</strong><br>原文件名: \${result.info.original_name}<br>显示名称: \${displayName}<br>所属课程: \${result.course}<br>艺术家: \${result.info.metadata.artist}<br>年份: \${result.info.metadata.year}<br>新文件名: \${result.info.playlist_name}</div>\` : '<div class="alert alert-error">未找到匹配的歌曲</div>';
+                if (result.exists && result.info) {
+                    const displayName = result.info.friendly_name || result.info.original_name.replace('.mp3', '');
+                    document.getElementById('query-result').innerHTML = \`<div class="alert alert-success"><strong>找到歌曲！</strong><br>原文件名: \${result.info.original_name}<br>显示名称: \${displayName}<br>所属课程: \${result.course}<br>艺术家: \${result.info.metadata?.artist || '未知艺术家'}<br>年份: \${result.info.metadata?.year || '未知年份'}<br>新文件名: \${result.info.playlist_name}</div>\`;
+                } else {
+                    document.getElementById('query-result').innerHTML = '<div class="alert alert-error">未找到匹配的歌曲</div>';
+                }
             } catch (e) { document.getElementById('query-result').innerHTML = '<div class="alert alert-error">查询失败</div>'; }
         }
         
