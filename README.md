@@ -170,6 +170,16 @@ GET /api/song-exists?name=歌曲名称
 POST /api/batch-rename
 ```
 
+### 获取封面图片
+```
+GET /api/album-art/:filename
+```
+
+### 一键还原
+```
+POST /api/restore-music
+```
+
 ## 📁 文件结构
 
 ```

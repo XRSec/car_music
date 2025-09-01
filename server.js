@@ -77,17 +77,29 @@ function saveData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// 获取音乐元数据
+// 获取音乐元数据（包括封面图片）
 async function getMusicMetadata(filePath) {
     try {
         const metadata = await mm.parseFile(filePath);
+        let albumArt = null;
+        
+        // 提取封面图片
+        if (metadata.common.picture && metadata.common.picture.length > 0) {
+            const picture = metadata.common.picture[0];
+            albumArt = {
+                format: picture.format,
+                data: picture.data.toString('base64')
+            };
+        }
+        
         return {
             title: metadata.common.title || path.basename(filePath, '.mp3'),
             artist: metadata.common.artist || '未知艺术家',
             album: metadata.common.album || '未知专辑',
             year: metadata.common.year || '未知年份',
             genre: metadata.common.genre ? metadata.common.genre.join(', ') : '未知流派',
-            duration: metadata.format.duration ? Math.round(metadata.format.duration) : 0
+            duration: metadata.format.duration ? Math.round(metadata.format.duration) : 0,
+            albumArt: albumArt
         };
     } catch (error) {
         return {
@@ -96,7 +108,8 @@ async function getMusicMetadata(filePath) {
             album: '未知专辑', 
             year: '未知年份',
             genre: '未知流派',
-            duration: 0
+            duration: 0,
+            albumArt: null
         };
     }
 }
@@ -612,6 +625,31 @@ app.post('/api/batch-rename', (req, res) => {
     
     saveData(data);
     res.json({message: '批量重命名完成', renamed: renamedFiles});
+});
+
+// 获取歌曲封面图片
+app.get('/api/album-art/:filename', async (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(SONG_DIR, filename);
+    
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({error: '文件不存在'});
+    }
+    
+    try {
+        const metadata = await mm.parseFile(filePath);
+        
+        if (metadata.common.picture && metadata.common.picture.length > 0) {
+            const picture = metadata.common.picture[0];
+            res.set('Content-Type', picture.format);
+            res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
+            res.send(picture.data);
+        } else {
+            res.status(404).json({error: '没有封面图片'});
+        }
+    } catch (error) {
+        res.status(500).json({error: '读取封面失败: ' + error.message});
+    }
 });
 
 // 一键还原功能 - 复制所有音乐到music文件夹并还原原始名称
@@ -1449,6 +1487,41 @@ function generateHTML() {
             const artist = songData?.metadata?.artist || '未知艺术家';
             const album = songData?.metadata?.album || '未知专辑';
             const year = songData?.metadata?.year || '未知年份';
+            const albumArt = songData?.metadata?.albumArt;
+            
+            // 生成封面图片HTML
+            const fileName = src.split('/').pop();
+            let albumArtHtml;
+            
+            // 根据文件类型和艺术家生成不同的默认封面
+            const isCourseFie = fileName.match(/^\d{8}(-\d+)?\.mp3$/);
+            let defaultIcon, defaultBg;
+            
+            if (isCourseFie) {
+                defaultIcon = '📚';
+                defaultBg = 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)';
+            } else if (artist.includes('薛兆丰')) {
+                defaultIcon = '🎓';
+                defaultBg = 'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)';
+            } else {
+                defaultIcon = '🎵';
+                defaultBg = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+            
+            if (albumArt && albumArt.data) {
+                albumArtHtml = \`<img src="data:\${albumArt.format};base64,\${albumArt.data}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" alt="封面">\`;
+            } else {
+                // 尝试从API获取封面图片，失败则显示智能默认图标
+                albumArtHtml = \`
+                    <img src="/api/album-art/\${fileName}" 
+                         style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" 
+                         alt="封面" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="width: 60px; height: 60px; background: \${defaultBg}; border-radius: 8px; display: none; align-items: center; justify-content: center; border: 2px solid #e9ecef;">
+                        <span style="font-size: 1.5rem; color: white;">\${defaultIcon}</span>
+                    </div>
+                \`;
+            }
             
             player.innerHTML = \`
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
@@ -1457,8 +1530,8 @@ function generateHTML() {
                 </div>
                 
                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                        <span style="font-size: 1.5rem; color: white;">🎵</span>
+                    <div style="margin-right: 15px;">
+                        \${albumArtHtml}
                     </div>
                     <div style="flex: 1;">
                         <div style="font-weight: 600; color: #495057; margin-bottom: 3px; font-size: 1rem;">\${songTitle}</div>
