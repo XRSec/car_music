@@ -983,9 +983,14 @@ function generateHTML() {
         }
         
         // 拖拽上传功能
+        let dragDropInitialized = false;
         function initDragDrop() {
+            if (dragDropInitialized) return;
+            
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('song-files');
+            
+            if (!dropZone || !fileInput) return;
             
             // 拖拽事件
             dropZone.addEventListener('dragover', (e) => {
@@ -1006,18 +1011,40 @@ function generateHTML() {
             });
             
             // 点击选择文件
-            dropZone.addEventListener('click', () => {
+            dropZone.addEventListener('click', (e) => {
+                // 防止按钮点击事件冒泡
+                if (e.target.tagName === 'BUTTON') return;
                 fileInput.click();
             });
             
             fileInput.addEventListener('change', (e) => {
                 const files = Array.from(e.target.files);
                 addFilesToList(files);
+                // 立即清空输入框，防止重复触发
+                setTimeout(() => {
+                    e.target.value = '';
+                }, 100);
             });
+            
+            dragDropInitialized = true;
         }
         
         function addFilesToList(files) {
-            selectedFiles = [...selectedFiles, ...files];
+            console.log('添加文件到列表:', files.map(f => f.name));
+            console.log('当前已选文件:', selectedFiles.map(f => f.name));
+            
+            // 避免重复添加相同的文件
+            const newFiles = files.filter(newFile => 
+                !selectedFiles.some(existingFile => 
+                    existingFile.name === newFile.name && 
+                    existingFile.size === newFile.size &&
+                    existingFile.lastModified === newFile.lastModified
+                )
+            );
+            
+            console.log('过滤后的新文件:', newFiles.map(f => f.name));
+            
+            selectedFiles = [...selectedFiles, ...newFiles];
             updateFileList();
         }
         
@@ -1050,8 +1077,10 @@ function generateHTML() {
         function clearFileList() {
             selectedFiles = [];
             updateFileList();
-            document.getElementById('song-files').value = '';
-            document.getElementById('batch-friendly-names').value = '';
+            const fileInput = document.getElementById('song-files');
+            const friendlyInput = document.getElementById('batch-friendly-names');
+            if (fileInput) fileInput.value = '';
+            if (friendlyInput) friendlyInput.value = '';
         }
         
         async function uploadBatchFiles() {
