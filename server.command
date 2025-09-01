@@ -88,7 +88,26 @@ function loadData() {
 }
 
 function saveData(data) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    try {
+        // 创建一个深拷贝，避免修改原始数据
+        const dataToSave = JSON.parse(JSON.stringify(data, (key, value) => {
+            // 过滤掉可能导致JSON损坏的二进制数据
+            if (key === 'albumArt' && value && typeof value === 'object' && value.data) {
+                return {
+                    format: value.format,
+                    data: typeof value.data === 'string' ? value.data : '[Binary Data]'
+                };
+            }
+            return value;
+        }));
+        
+        fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
+    } catch (error) {
+        console.error('保存数据失败:', error);
+        // 如果保存失败，尝试保存一个最小的有效JSON
+        fs.writeFileSync(DATA_FILE + '.error', JSON.stringify(data, null, 2));
+        throw error;
+    }
 }
 
 // 获取音乐元数据（包括封面图片）
@@ -668,26 +687,23 @@ app.post('/api/batch-rename', (req, res) => {
             }
         }
 
-        // 重命名歌曲文件
-        const songs = info.songs || [];
-        songs.forEach((song, index) => {
-            if (song) {
-                const newSongName = generatePlaylistName(course, index);
-                if (newSongName && newSongName !== song) {
-                    const oldPath = path.join(SONG_DIR, song);
-                    const newPath = path.join(SONG_DIR, newSongName);
-                    if (fs.existsSync(oldPath)) {
-                        fs.renameSync(oldPath, newPath);
-                        data[course].songs[index] = newSongName;
-                        renamedFiles.push({from: song, to: newSongName});
-
-                        // 更新重命名记录
-                        const renamedFilesList = data[course].renamed_files || [];
-                        const fileRecord = renamedFilesList.find(f => f.slot === index);
-                        if (fileRecord) {
-                            fileRecord.playlist_name = newSongName;
-                        }
-                    }
+        // 重命名歌曲文件 - 只重命名格式不正确的文件，不改变已有的绑定关系
+        const renamedFilesList = info.renamed_files || [];
+        renamedFilesList.forEach(fileRecord => {
+            const currentName = fileRecord.playlist_name;
+            const expectedName = generatePlaylistName(course, fileRecord.slot);
+            
+            // 只有当当前文件名格式不正确时才重命名
+            if (expectedName && expectedName !== currentName) {
+                const oldPath = path.join(SONG_DIR, currentName);
+                const newPath = path.join(SONG_DIR, expectedName);
+                if (fs.existsSync(oldPath)) {
+                    fs.renameSync(oldPath, newPath);
+                    
+                    // 更新记录
+                    fileRecord.playlist_name = expectedName;
+                    data[course].songs[fileRecord.slot] = expectedName;
+                    renamedFiles.push({from: currentName, to: expectedName});
                 }
             }
         });
