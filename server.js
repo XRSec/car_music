@@ -614,6 +614,78 @@ app.post('/api/batch-rename', (req, res) => {
     res.json({message: '批量重命名完成', renamed: renamedFiles});
 });
 
+// 一键还原功能 - 复制所有音乐到music文件夹并还原原始名称
+app.post('/api/restore-music', (req, res) => {
+    const data = loadData();
+    const musicDir = path.join(SONG_DIR, 'music');
+    
+    // 创建music文件夹
+    if (!fs.existsSync(musicDir)) {
+        fs.mkdirSync(musicDir);
+    }
+    
+    const restoredFiles = [];
+    const errors = [];
+    
+    for (const [course, info] of Object.entries(data)) {
+        const renamedFiles = info.renamed_files || [];
+        
+        // 还原歌曲文件
+        renamedFiles.forEach(fileRecord => {
+            try {
+                const currentPath = path.join(SONG_DIR, fileRecord.playlist_name);
+                const restoredPath = path.join(musicDir, fileRecord.original_name);
+                
+                if (fs.existsSync(currentPath)) {
+                    fs.copyFileSync(currentPath, restoredPath);
+                    restoredFiles.push({
+                        friendly_name: fileRecord.friendly_name,
+                        original_name: fileRecord.original_name,
+                        playlist_name: fileRecord.playlist_name
+                    });
+                } else {
+                    errors.push({
+                        file: fileRecord.playlist_name,
+                        error: '源文件不存在'
+                    });
+                }
+            } catch (error) {
+                errors.push({
+                    file: fileRecord.playlist_name,
+                    error: error.message
+                });
+            }
+        });
+        
+        // 还原课程文件
+        try {
+            const coursePath = path.join(SONG_DIR, course);
+            const restoredCoursePath = path.join(musicDir, course);
+            
+            if (fs.existsSync(coursePath)) {
+                fs.copyFileSync(coursePath, restoredCoursePath);
+                restoredFiles.push({
+                    friendly_name: course,
+                    original_name: course,
+                    playlist_name: course
+                });
+            }
+        } catch (error) {
+            errors.push({
+                file: course,
+                error: error.message
+            });
+        }
+    }
+    
+    res.json({
+        message: `还原完成：成功 ${restoredFiles.length} 个文件，失败 ${errors.length} 个`,
+        restored: restoredFiles,
+        errors: errors,
+        music_folder: musicDir
+    });
+});
+
 // ------------------- HTML 页面 -------------------
 app.get('/', (req, res) => {
     res.send(generateHTML());
@@ -714,7 +786,7 @@ function generateHTML() {
         }
         .course-title-info { font-weight: 600; color: #1976d2; flex: 1; }
         .course-meta-info { font-size: 0.9rem; color: #666; margin-left: 15px; }
-        .course-play-btn { margin-left: 10px; }
+        .course-play-btn { margin-left: 20px; }
         .collapsible-section {
             border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 20px;
             overflow: hidden;
@@ -952,18 +1024,37 @@ function generateHTML() {
             </div>
 
             <div id="tools" class="tab-content">
-                <div class="form-group">
-                    <label class="form-label">🔄 批量重命名</label>
-                    <p style="color: #6c757d; margin-bottom: 15px;">将所有文件重命名为播放器友好的格式（001-xxx.mp3, 002-xxx.mp3...）</p>
-                    <button class="btn btn-secondary" onclick="batchRename()">执行批量重命名</button>
-                </div>
-                <hr style="margin: 30px 0;">
-                <div class="form-group">
-                    <label class="form-label">🔍 查询歌曲</label>
-                    <input type="text" class="form-control" id="query-song" placeholder="输入歌曲名称..." style="margin-bottom: 10px;">
-                    <button class="btn btn-primary" onclick="querySong()">查询</button>
-                    <div id="query-result" style="margin-top: 15px;"></div>
-                </div>
+                <details class="collapsible-section">
+                    <summary>🔄 批量重命名</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <p style="color: #6c757d; margin-bottom: 15px;">将所有文件重命名为播放器友好的格式（课程名-A.mp3, 课程名-B.mp3...）</p>
+                            <button class="btn btn-secondary" onclick="batchRename()">执行批量重命名</button>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section">
+                    <summary>📁 一键还原</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <p style="color: #6c757d; margin-bottom: 15px;">将所有音乐文件复制到 music 文件夹，并还原为原始文件名</p>
+                            <button class="btn btn-primary" onclick="restoreMusic()">一键还原到 music 文件夹</button>
+                            <div id="restore-result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section" open>
+                    <summary>🔍 查询歌曲</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="query-song" placeholder="输入歌曲名称..." style="margin-bottom: 10px;">
+                            <button class="btn btn-primary" onclick="querySong()">查询</button>
+                            <div id="query-result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -1219,15 +1310,16 @@ function generateHTML() {
                 
                 // 课程信息 - 一行显示
                 const courseMeta = info.course_metadata;
+                const fileName = course.replace('.mp3', '');
                 const courseInfoHtml = courseMeta ? \`
                     <div class="course-info">
                         <div class="course-title-info">📚 \${courseMeta.title}</div>
-                        <div class="course-meta-info">🎤 \${courseMeta.artist} | ⏱️ \${courseMeta.duration ? Math.floor(courseMeta.duration / 60) + ':' + (courseMeta.duration % 60).toString().padStart(2, '0') : '未知'}</div>
+                        <div class="course-meta-info">📁 \${fileName} | 🎤 \${courseMeta.artist} | ⏱️ \${courseMeta.duration ? Math.floor(courseMeta.duration / 60) + ':' + (courseMeta.duration % 60).toString().padStart(2, '0') : '未知'}</div>
                         <button class="btn btn-primary course-play-btn" onclick="playAudio('/songs/\${course}')">▶️ 播放</button>
                     </div>
                 \` : \`
                     <div class="course-info">
-                        <div class="course-title-info">📁 \${course}</div>
+                        <div class="course-title-info">📁 \${fileName}</div>
                         <div class="course-meta-info">📅 \${dateStr}</div>
                         <button class="btn btn-primary course-play-btn" onclick="playAudio('/songs/\${course}')">▶️ 播放</button>
                     </div>
@@ -1238,13 +1330,14 @@ function generateHTML() {
                     if (song) {
                         const fileInfo = info.renamed_files.find(f => f.slot === i);
                         const meta = info.songs_metadata[i];
+                        const songFileName = song.replace('.mp3', '');
+                        const friendlyName = fileInfo ? fileInfo.friendly_name : songFileName;
                         return \`
                             <div class="song-slot">
                                 <div class="song-info">
-                                    <div class="song-title">\${fileInfo ? fileInfo.friendly_name : song}</div>
-                                    <div class="song-meta">🎤 \${meta?.artist || '未知'} | 📅 \${meta?.year || '未知'}</div>
+                                    <div class="song-title">🎵 \${friendlyName} | 📁 \${songFileName} | 🎤 \${meta?.artist || '未知'} | 📅 \${meta?.year || '未知'}</div>
                                 </div>
-                                <div>
+                                <div style="margin-left: 15px;">
                                     <button class="btn btn-primary" onclick="playAudio('/songs/\${song}')">▶️ 播放</button>
                                     <button class="btn btn-danger" onclick="removeSong('\${course}',\${i})">删除</button>
                                 </div>
@@ -1318,29 +1411,69 @@ function generateHTML() {
         }
         
         // 内嵌播放器功能
-        function playAudio(src) {
+        async function playAudio(src, songInfo = null) {
             // 移除现有的播放器
             const existingPlayer = document.getElementById('audio-player');
             if (existingPlayer) {
                 existingPlayer.remove();
             }
             
+            // 获取歌曲信息
+            let songData = songInfo;
+            if (!songData) {
+                // 从已加载的数据中查找歌曲信息
+                const fileName = src.split('/').pop();
+                for (const [course, info] of Object.entries(allData)) {
+                    const fileRecord = info.renamed_files?.find(f => f.playlist_name === fileName);
+                    if (fileRecord) {
+                        songData = fileRecord;
+                        break;
+                    }
+                    // 检查是否是课程文件
+                    if (course === fileName) {
+                        songData = {
+                            friendly_name: info.course_metadata?.title || fileName.replace('.mp3', ''),
+                            metadata: info.course_metadata || {}
+                        };
+                        break;
+                    }
+                }
+            }
+            
             // 创建新的播放器
             const player = document.createElement('div');
             player.id = 'audio-player';
-            player.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 10000; min-width: 300px;';
+            player.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); z-index: 10000; min-width: 350px; max-width: 400px;';
+            
+            const songTitle = songData?.friendly_name || src.split('/').pop().replace('.mp3', '');
+            const artist = songData?.metadata?.artist || '未知艺术家';
+            const album = songData?.metadata?.album || '未知专辑';
+            const year = songData?.metadata?.year || '未知年份';
             
             player.innerHTML = \`
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
                     <strong style="color: #495057;">🎵 正在播放</strong>
-                    <button onclick="document.getElementById('audio-player').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+                    <button onclick="document.getElementById('audio-player').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6c757d;">✕</button>
                 </div>
-                <audio controls autoplay style="width: 100%;">
+                
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <span style="font-size: 1.5rem; color: white;">🎵</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #495057; margin-bottom: 3px; font-size: 1rem;">\${songTitle}</div>
+                        <div style="font-size: 0.85rem; color: #6c757d;">🎤 \${artist}</div>
+                        <div style="font-size: 0.8rem; color: #adb5bd;">💿 \${album} | 📅 \${year}</div>
+                    </div>
+                </div>
+                
+                <audio controls autoplay style="width: 100%; margin-bottom: 10px;">
                     <source src="\${src}" type="audio/mpeg">
                     您的浏览器不支持音频播放
                 </audio>
-                <div style="font-size: 0.85rem; color: #6c757d; margin-top: 5px;">
-                    \${src.split('/').pop()}
+                
+                <div style="font-size: 0.8rem; color: #adb5bd; text-align: center;">
+                    📁 \${src.split('/').pop()}
                 </div>
             \`;
             
@@ -1424,7 +1557,21 @@ function generateHTML() {
             } catch (e) { console.error('加载失败:', e); }
         }
         function displaySongs(songs) {
-            document.getElementById('songs-list').innerHTML = songs.length ? songs.map(s => \`<div class="song-item"><div class="song-title">\${s.friendly_name}</div><div class="song-meta">🎤 \${s.metadata.artist} | 📅 \${s.metadata.year} | 📚 \${s.course} | 📁 \${s.playlist_name}</div></div>\`).join('') : '<div class="empty-slot">暂无歌曲</div>';
+            const songsList = document.getElementById('songs-list');
+            if (songs.length === 0) {
+                songsList.innerHTML = '<div class="empty-slot">暂无歌曲</div>';
+                return;
+            }
+            
+            songsList.innerHTML = songs.map(s => \`
+                <div class="song-item" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1;">
+                        <div class="song-title">\${s.friendly_name}</div>
+                        <div class="song-meta">📁 \${s.playlist_name.replace('.mp3', '')} | 🎤 \${s.metadata.artist} | 📅 \${s.metadata.year} | 📚 \${s.course.replace('.mp3', '')}</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="playAudio('/songs/\${s.playlist_name}', \${JSON.stringify(s).replace(/"/g, '&quot;')})">▶️ 播放</button>
+                </div>
+            \`).join('');
         }
         function searchSongs() {
             const q = document.getElementById('song-search').value.toLowerCase();
@@ -1471,6 +1618,42 @@ function generateHTML() {
                 const result = await res.json();
                 document.getElementById('query-result').innerHTML = result.exists ? \`<div class="alert alert-success"><strong>找到歌曲！</strong><br>友好名称: \${result.info.friendly_name}<br>所属课程: \${result.course}<br>艺术家: \${result.info.metadata.artist}<br>年份: \${result.info.metadata.year}<br>文件名: \${result.info.playlist_name}</div>\` : '<div class="alert alert-error">未找到匹配的歌曲</div>';
             } catch (e) { document.getElementById('query-result').innerHTML = '<div class="alert alert-error">查询失败</div>'; }
+        }
+        
+        async function restoreMusic() {
+            if (!confirm('确定要将所有音乐文件还原到 music 文件夹吗？这会复制所有文件并还原原始名称。')) return;
+            
+            try {
+                const response = await fetch('/api/restore-music', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('restore-result');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = \`
+                        <div class="alert alert-success">
+                            <strong>\${result.message}</strong><br>
+                            还原文件夹: \${result.music_folder}<br>
+                            成功文件: \${result.restored.length} 个<br>
+                            失败文件: \${result.errors.length} 个
+                        </div>
+                    \`;
+                    
+                    if (result.errors.length > 0) {
+                        console.log('还原错误:', result.errors);
+                        result.errors.forEach(err => {
+                            showAlert(\`\${err.file}: \${err.error}\`, 'error');
+                        });
+                    }
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-error">还原失败: ' + result.error + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('restore-result').innerHTML = '<div class="alert alert-error">还原失败: ' + error.message + '</div>';
+            }
         }
         function showAlert(msg, type) {
             const alert = document.createElement('div');
