@@ -2431,9 +2431,13 @@ function generateHTML() {
                 const recent = songs.sort((a,b) => new Date(b.added_time) - new Date(a.added_time)).slice(0,5);
                 document.getElementById('recent-songs').innerHTML = recent.length ? 
                     recent.map(s => 
-                        '<div class="song-item">' +
-                            '<div class="song-title">' + s.display_name + '</div>' +
-                            '<div class="song-meta">🎤 ' + (s.metadata?.artist || '未知艺术家') + ' | 📅 ' + (s.metadata?.year || '未知年份') + ' | 📚 ' + s.course + '</div>' +
+                        '<div class="song-item" style="display: flex; align-items: center; justify-content: space-between;">' +
+                            '<div style="flex: 1;">' +
+                                '<div class="song-title">🎵 ' + s.display_name + ' | 🎤 ' + (s.metadata?.artist || '未知艺术家') + ' | 📅 ' + (s.metadata?.year || '未知年份') + ' | 📚 ' + s.course.replace('.mp3', '') + ' | 📁 ' + s.playlist_name.replace('.mp3', '') + '</div>' +
+                            '</div>' +
+                            '<div style="display: flex; gap: 10px;">' +
+                                '<button class="btn btn-primary" onclick="playAudio(\\'/songs/' + s.playlist_name + '\\', ' + JSON.stringify(s).replace(/"/g, '&quot;') + ')">▶️ 播放</button>' +
+                            '</div>' +
                         '</div>'
                     ).join('') : '<div class="empty-slot">暂无歌曲</div>';
             } catch (e) { console.error('加载失败:', e); }
