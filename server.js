@@ -24,6 +24,7 @@ app.use('/songs', express.static(SONG_DIR)); // 静态访问歌曲
 
 // 文件上传配置
 const upload = multer({dest: SONG_DIR});
+const uploadMultiple = multer({dest: SONG_DIR}).array('songs', 20); // 支持最多20个文件
 
 // ------------------- 数据操作 -------------------
 function initData() {
@@ -124,6 +125,19 @@ function generatePlaylistName(courseFile, songIndex, totalCourses) {
     return null;
 }
 
+// 自动分配课程（找到有空位的课程）
+function findAvailableCourse(data) {
+    const courses = Object.keys(data).sort();
+    for (const course of courses) {
+        const songs = data[course].songs || [];
+        const emptyIndex = songs.indexOf(null);
+        if (emptyIndex !== -1) {
+            return { course, slot: emptyIndex };
+        }
+    }
+    return null;
+}
+
 initData();
 
 // ------------------- API -------------------
@@ -216,29 +230,58 @@ app.post('/api/add-course', (req, res) => {
 
 // 上传歌曲并分配到课程空位
 app.post('/api/add-song', upload.single('song'), async (req, res) => {
-    const {course, friendly_name} = req.body;
+    const {course: targetCourse, friendly_name} = req.body;
     const file = req.file;
     if (!file) return res.status(400).json({error: '没有上传文件'});
 
     const data = loadData();
-    if (!data[course]) return res.status(400).json({error: '课程不存在'});
+    
+    // 确定目标课程和位置
+    let assignedCourse = targetCourse;
+    let index;
 
-    // 找到第一个空位
-    const songs = data[course].songs || [];
-    const index = songs.indexOf(null);
-    if (index === -1) return res.status(400).json({error: '该课程歌曲位置已满'});
+    if (!assignedCourse) {
+        // 自动分配到有空位的课程
+        const available = findAvailableCourse(data);
+        if (!available) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: '没有可用的空位'});
+        }
+        assignedCourse = available.course;
+        index = available.slot;
+    } else {
+        // 检查指定课程
+        if (!data[assignedCourse]) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: '课程不存在'});
+        }
+        
+        const songs = data[assignedCourse].songs || [];
+        index = songs.indexOf(null);
+        if (index === -1) {
+            // 指定课程满了，尝试自动分配
+            const available = findAvailableCourse(data);
+            if (!available) {
+                fs.unlinkSync(file.path);
+                return res.status(400).json({error: '指定课程已满且没有其他可用空位'});
+            }
+            assignedCourse = available.course;
+            index = available.slot;
+        }
+    }
 
     // 解析歌曲信息
     const metadata = await getMusicMetadata(file.path);
 
     // 生成播放器友好的文件名
-    const newName = generatePlaylistName(course, index);
+    const newName = generatePlaylistName(assignedCourse, index);
     const newPath = path.join(SONG_DIR, newName);
     fs.renameSync(file.path, newPath);
 
     // 保存映射
-    data[course].songs[index] = newName;
-    data[course].renamed_files.push({
+    data[assignedCourse].songs[index] = newName;
+    data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
+    data[assignedCourse].renamed_files.push({
         original_name: file.originalname,
         friendly_name: friendly_name || metadata.title,
         playlist_name: newName,
@@ -249,10 +292,128 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
     saveData(data);
 
     res.json({
-        message: `歌曲已添加到课程 ${course}`, 
+        message: `歌曲已添加到课程 ${assignedCourse}`, 
         file: newName, 
         metadata,
-        friendly_name: friendly_name || metadata.title
+        friendly_name: friendly_name || metadata.title,
+        auto_assigned: targetCourse !== assignedCourse
+    });
+});
+
+// 批量上传歌曲
+app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
+    const { course: targetCourse, friendly_names } = req.body;
+    const files = req.files;
+    
+    if (!files || files.length === 0) {
+        return res.status(400).json({error: '没有上传文件'});
+    }
+
+    const data = loadData();
+    const results = [];
+    const errors = [];
+    
+    // 解析友好名称（如果提供的话）
+    const namesList = friendly_names ? friendly_names.split(',').map(n => n.trim()) : [];
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const friendlyName = namesList[i] || '';
+        
+        try {
+            // 确定目标课程
+            let assignedCourse = targetCourse;
+            let assignedSlot;
+
+            if (!assignedCourse) {
+                // 自动分配到有空位的课程
+                const available = findAvailableCourse(data);
+                if (!available) {
+                    errors.push({
+                        file: file.originalname,
+                        error: '没有可用的空位'
+                    });
+                    fs.unlinkSync(file.path); // 删除临时文件
+                    continue;
+                }
+                assignedCourse = available.course;
+                assignedSlot = available.slot;
+            } else {
+                // 检查指定课程是否有空位
+                if (!data[assignedCourse]) {
+                    errors.push({
+                        file: file.originalname,
+                        error: '指定课程不存在'
+                    });
+                    fs.unlinkSync(file.path);
+                    continue;
+                }
+                
+                const songs = data[assignedCourse].songs || [];
+                assignedSlot = songs.indexOf(null);
+                if (assignedSlot === -1) {
+                    // 当前课程满了，尝试自动分配
+                    const available = findAvailableCourse(data);
+                    if (!available) {
+                        errors.push({
+                            file: file.originalname,
+                            error: '指定课程已满且没有其他可用空位'
+                        });
+                        fs.unlinkSync(file.path);
+                        continue;
+                    }
+                    assignedCourse = available.course;
+                    assignedSlot = available.slot;
+                }
+            }
+
+            // 解析歌曲信息
+            const metadata = await getMusicMetadata(file.path);
+
+            // 生成播放器友好的文件名
+            const newName = generatePlaylistName(assignedCourse, assignedSlot);
+            const newPath = path.join(SONG_DIR, newName);
+            fs.renameSync(file.path, newPath);
+
+            // 保存映射
+            data[assignedCourse].songs[assignedSlot] = newName;
+            data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
+            data[assignedCourse].renamed_files.push({
+                original_name: file.originalname,
+                friendly_name: friendlyName || metadata.title,
+                playlist_name: newName,
+                slot: assignedSlot,
+                metadata: metadata,
+                added_time: new Date().toISOString()
+            });
+
+            results.push({
+                original: file.originalname,
+                friendly_name: friendlyName || metadata.title,
+                course: assignedCourse,
+                slot: assignedSlot,
+                playlist_name: newName,
+                metadata: metadata
+            });
+
+        } catch (error) {
+            errors.push({
+                file: file.originalname,
+                error: error.message
+            });
+            if (fs.existsSync(file.path)) {
+                fs.unlinkSync(file.path);
+            }
+        }
+    }
+
+    saveData(data);
+    
+    res.json({
+        message: `批量上传完成：成功 ${results.length} 个，失败 ${errors.length} 个`,
+        success: results,
+        errors: errors,
+        total: files.length
     });
 });
 
@@ -522,10 +683,38 @@ function generateHTML() {
         .alert-error {
             background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
         }
+        .drop-zone {
+            border: 2px dashed #ced4da; border-radius: 10px; padding: 40px;
+            text-align: center; transition: all 0.3s ease; cursor: pointer;
+            background: #f8f9fa; margin-bottom: 15px;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #667eea; background: #e7f3ff;
+        }
+        .drop-content { pointer-events: none; }
+        .drop-icon { font-size: 3rem; margin-bottom: 15px; }
+        .drop-text { font-size: 1.1rem; color: #495057; margin-bottom: 20px; }
+        .file-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; background: #f8f9fa; border-radius: 5px; margin-bottom: 10px;
+        }
+        .file-info { flex: 1; }
+        .file-name { font-weight: 500; }
+        .file-size { font-size: 0.85rem; color: #6c757d; }
+        .progress-bar {
+            width: 100%; height: 20px; background: #e9ecef; border-radius: 10px;
+            overflow: hidden; margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%; transition: width 0.3s ease;
+        }
         @media (max-width: 768px) {
             .tabs { flex-direction: column; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
             .content { padding: 20px; }
+            .drop-zone { padding: 20px; }
+            .drop-icon { font-size: 2rem; }
         }
     </style>
 </head>
@@ -566,13 +755,42 @@ function generateHTML() {
 
             <div id="songs" class="tab-content">
                 <div class="form-group">
-                    <label class="form-label">🎵 添加新歌曲</label>
+                    <label class="form-label">🎵 添加歌曲</label>
                     <select class="form-control" id="course-select" style="margin-bottom: 10px;">
-                        <option value="">选择课程...</option>
+                        <option value="">自动分配到有空位的课程</option>
                     </select>
-                    <input type="file" class="form-control" id="song-file" accept=".mp3" style="margin-bottom: 10px;">
-                    <input type="text" class="form-control" id="friendly-name" placeholder="友好名称（可选）" style="margin-bottom: 10px;">
-                    <button class="btn btn-primary" onclick="addSong()">添加歌曲</button>
+                    
+                    <!-- 拖拽上传区域 -->
+                    <div id="drop-zone" class="drop-zone">
+                        <div class="drop-content">
+                            <div class="drop-icon">📁</div>
+                            <div class="drop-text">
+                                <strong>拖拽 MP3 文件到这里</strong><br>
+                                或点击选择文件
+                            </div>
+                            <input type="file" id="song-files" multiple accept=".mp3" style="display: none;">
+                            <button class="btn btn-primary" onclick="document.getElementById('song-files').click()">选择文件</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 文件列表 -->
+                    <div id="file-list" style="margin-top: 15px; display: none;">
+                        <h4>准备上传的文件：</h4>
+                        <div id="files-preview"></div>
+                        <div style="margin-top: 15px;">
+                            <input type="text" class="form-control" id="batch-friendly-names" placeholder="友好名称（用逗号分隔，可选）" style="margin-bottom: 10px;">
+                            <button class="btn btn-primary" onclick="uploadBatchFiles()">批量上传</button>
+                            <button class="btn btn-secondary" onclick="clearFileList()">清空列表</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 上传进度 -->
+                    <div id="upload-progress" style="margin-top: 15px; display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <div id="progress-text">上传中...</div>
+                    </div>
                 </div>
                 <hr style="margin: 30px 0;">
                 <div class="form-group">
@@ -606,9 +824,11 @@ function generateHTML() {
             </div>
         </div>
     </div>
-    <script src="data:text/javascript;base64,${Buffer.from(`
+    <script>
         let allData = {};
         let allSongs = [];
+        let selectedFiles = [];
+        
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -617,6 +837,142 @@ function generateHTML() {
             if (tabName === 'overview') loadOverview();
             if (tabName === 'courses') loadCourses();
             if (tabName === 'songs') loadSongs();
+        }
+        
+        // 拖拽上传功能
+        function initDragDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('song-files');
+            
+            // 拖拽事件
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.mp3'));
+                addFilesToList(files);
+            });
+            
+            // 点击选择文件
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                addFilesToList(files);
+            });
+        }
+        
+        function addFilesToList(files) {
+            selectedFiles = [...selectedFiles, ...files];
+            updateFileList();
+        }
+        
+        function updateFileList() {
+            const fileList = document.getElementById('file-list');
+            const preview = document.getElementById('files-preview');
+            
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                return;
+            }
+            
+            fileList.style.display = 'block';
+            preview.innerHTML = selectedFiles.map((file, index) => \`
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-name">\${file.name}</div>
+                        <div class="file-size">\${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeFile(\${index})">删除</button>
+                </div>
+            \`).join('');
+        }
+        
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+        
+        function clearFileList() {
+            selectedFiles = [];
+            updateFileList();
+            document.getElementById('song-files').value = '';
+            document.getElementById('batch-friendly-names').value = '';
+        }
+        
+        async function uploadBatchFiles() {
+            if (selectedFiles.length === 0) {
+                alert('请先选择文件');
+                return;
+            }
+            
+            const course = document.getElementById('course-select').value;
+            const friendlyNames = document.getElementById('batch-friendly-names').value;
+            
+            const formData = new FormData();
+            if (course) formData.append('course', course);
+            if (friendlyNames) formData.append('friendly_names', friendlyNames);
+            
+            selectedFiles.forEach(file => {
+                formData.append('songs', file);
+            });
+            
+            // 显示进度条
+            const progressDiv = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            progressDiv.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '上传中...';
+            
+            try {
+                const response = await fetch('/api/add-songs-batch', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                progressFill.style.width = '100%';
+                const result = await response.json();
+                
+                if (response.ok) {
+                    progressText.textContent = result.message;
+                    showAlert(result.message, 'success');
+                    
+                    // 显示详细结果
+                    if (result.errors.length > 0) {
+                        console.log('上传错误:', result.errors);
+                        result.errors.forEach(err => {
+                            showAlert(\`\${err.file}: \${err.error}\`, 'error');
+                        });
+                    }
+                    
+                    clearFileList();
+                    loadSongs();
+                    loadCourses();
+                } else {
+                    progressText.textContent = '上传失败';
+                    showAlert('批量上传失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                progressText.textContent = '上传失败';
+                showAlert('批量上传失败: ' + error.message, 'error');
+            }
+            
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+            }, 3000);
         }
         async function loadOverview() {
             try {
@@ -660,8 +1016,9 @@ function generateHTML() {
                 const [songsRes, dataRes] = await Promise.all([fetch('/api/songs'), fetch('/api/list')]);
                 const [songs, data] = await Promise.all([songsRes.json(), dataRes.json()]);
                 allSongs = songs;
-                document.getElementById('course-select').innerHTML = '<option value="">选择课程...</option>' + Object.keys(data).sort().map(c => \`<option value="\${c}">\${c}</option>\`).join('');
+                document.getElementById('course-select').innerHTML = '<option value="">自动分配到有空位的课程</option>' + Object.keys(data).sort().map(c => \`<option value="\${c}">\${c}</option>\`).join('');
                 displaySongs(allSongs);
+                initDragDrop(); // 初始化拖拽功能
             } catch (e) { console.error('加载失败:', e); }
         }
         function displaySongs(songs) {
@@ -671,26 +1028,7 @@ function generateHTML() {
             const q = document.getElementById('song-search').value.toLowerCase();
             displaySongs(allSongs.filter(s => s.friendly_name.toLowerCase().includes(q) || s.metadata.artist.toLowerCase().includes(q) || s.course.toLowerCase().includes(q)));
         }
-        async function addSong() {
-            const course = document.getElementById('course-select').value;
-            const file = document.getElementById('song-file').files[0];
-            const name = document.getElementById('friendly-name').value;
-            if (!course || !file) return alert('请选择课程和文件');
-            const form = new FormData();
-            form.append('course', course);
-            form.append('song', file);
-            if (name) form.append('friendly_name', name);
-            try {
-                const res = await fetch('/api/add-song', {method: 'POST', body: form});
-                const result = await res.json();
-                if (res.ok) {
-                    showAlert('歌曲添加成功: ' + result.friendly_name, 'success');
-                    document.getElementById('song-file').value = '';
-                    document.getElementById('friendly-name').value = '';
-                    loadSongs();
-                } else showAlert('添加失败: ' + result.error, 'error');
-            } catch (e) { showAlert('添加失败: ' + e.message, 'error'); }
-        }
+
         async function deleteSongByName() {
             const name = document.getElementById('delete-song-name').value;
             if (!name) return alert('请输入歌曲名称');
@@ -741,7 +1079,7 @@ function generateHTML() {
             setTimeout(() => alert.remove(), 5000);
         }
         document.addEventListener('DOMContentLoaded', loadOverview);
-    `).toString('base64')}"></script>
+    </script>
 </body>
 </html>`;
 }
