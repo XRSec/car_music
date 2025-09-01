@@ -741,6 +741,106 @@ app.get('/api/album-art/:filename', async (req, res) => {
     }
 });
 
+// 删除所有歌曲
+app.post('/api/delete-all-songs', (req, res) => {
+    const data = loadData();
+    let deletedCount = 0;
+    let errorCount = 0;
+    const deletedFiles = [];
+
+    for (const [course, info] of Object.entries(data)) {
+        const renamedFiles = info.renamed_files || [];
+        
+        // 删除所有歌曲文件
+        renamedFiles.forEach(fileInfo => {
+            const filePath = path.join(SONG_DIR, fileInfo.playlist_name);
+            if (fs.existsSync(filePath)) {
+                try {
+                    fs.unlinkSync(filePath);
+                    deletedFiles.push(fileInfo.playlist_name);
+                    deletedCount++;
+                } catch (error) {
+                    console.error(`删除文件失败: ${filePath}`, error);
+                    errorCount++;
+                }
+            }
+        });
+
+        // 清空歌曲记录
+        data[course].songs = [null, null];
+        data[course].renamed_files = [];
+    }
+
+    saveData(data);
+
+    res.json({
+        message: `删除完成：成功删除 ${deletedCount} 个文件，失败 ${errorCount} 个`,
+        deleted_count: deletedCount,
+        error_count: errorCount,
+        deleted_files: deletedFiles
+    });
+});
+
+// 更新 music-map：清理不存在的文件绑定
+app.post('/api/update-music-map', async (req, res) => {
+    const data = loadData();
+    let cleanedCount = 0;
+    let refreshedCount = 0;
+    const cleanedFiles = [];
+
+    for (const [course, info] of Object.entries(data)) {
+        const renamedFiles = info.renamed_files || [];
+        const validFiles = [];
+
+        // 检查每个文件是否存在
+        for (const fileInfo of renamedFiles) {
+            const filePath = path.join(SONG_DIR, fileInfo.playlist_name);
+            if (fs.existsSync(filePath)) {
+                // 文件存在，重新获取元数据和图标
+                try {
+                    const metadata = await getMusicMetadata(filePath);
+                    fileInfo.metadata = metadata; // 更新元数据
+                    validFiles.push(fileInfo);
+                    refreshedCount++;
+                } catch (error) {
+                    console.error(`重新获取元数据失败: ${filePath}`, error);
+                    validFiles.push(fileInfo); // 保留原有数据
+                }
+            } else {
+                // 文件不存在，清理绑定
+                cleanedFiles.push({
+                    course: course,
+                    slot: fileInfo.slot,
+                    original_name: fileInfo.original_name,
+                    playlist_name: fileInfo.playlist_name
+                });
+                cleanedCount++;
+            }
+        }
+
+        // 更新文件列表和歌曲位置
+        data[course].renamed_files = validFiles;
+        
+        // 重新设置歌曲位置
+        const newSongs = [null, null];
+        validFiles.forEach(fileInfo => {
+            if (fileInfo.slot >= 0 && fileInfo.slot < 2) {
+                newSongs[fileInfo.slot] = fileInfo.playlist_name;
+            }
+        });
+        data[course].songs = newSongs;
+    }
+
+    saveData(data);
+
+    res.json({
+        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据`,
+        cleaned_count: cleanedCount,
+        refreshed_count: refreshedCount,
+        cleaned_files: cleanedFiles
+    });
+});
+
 // 一键还原功能 - 复制所有音乐到music文件夹并还原原始名称
 app.post('/api/restore-music', (req, res) => {
     const data = loadData();
@@ -1167,6 +1267,28 @@ function generateHTML() {
                         <div class="form-group">
                             <p style="color: #6c757d; margin-bottom: 15px;">将所有文件重命名为播放器友好的格式（课程名-A.mp3, 课程名-B.mp3...）</p>
                             <button class="btn btn-secondary" onclick="batchRename()">执行批量重命名</button>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section">
+                    <summary>🗑️ 删除所有歌曲</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <p style="color: #dc3545; margin-bottom: 15px;">⚠️ 危险操作：将删除所有已上传的歌曲文件和相关记录</p>
+                            <button class="btn btn-danger" onclick="deleteAllSongs()">删除所有歌曲</button>
+                            <div id="delete-all-result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section">
+                    <summary>🔄 更新 Music-Map</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <p style="color: #6c757d; margin-bottom: 15px;">检查并清理不存在的文件绑定，重新获取图标</p>
+                            <button class="btn btn-warning" onclick="updateMusicMap()">更新 Music-Map</button>
+                            <div id="update-map-result" style="margin-top: 15px;"></div>
                         </div>
                     </div>
                 </details>
@@ -1822,6 +1944,82 @@ function generateHTML() {
             } catch (e) { document.getElementById('query-result').innerHTML = '<div class="alert alert-error">查询失败</div>'; }
         }
         
+        async function deleteAllSongs() {
+            if (!confirm('⚠️ 危险操作！\n\n确定要删除所有已上传的歌曲吗？\n这将永久删除所有歌曲文件和相关记录，无法恢复！')) return;
+            
+            try {
+                const response = await fetch('/api/delete-all-songs', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('delete-all-result');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = 
+                        '<div class="alert alert-success">' +
+                        '<strong>' + result.message + '</strong><br>' +
+                        '删除文件数: ' + result.deleted_count + ' 个<br>' +
+                        '失败文件数: ' + result.error_count + ' 个' +
+                        '</div>';
+                    
+                    showAlert(result.message, 'success');
+                    loadSongs();
+                    loadCourses();
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-error">删除失败: ' + result.error + '</div>';
+                    showAlert('删除失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('delete-all-result');
+                resultDiv.innerHTML = '<div class="alert alert-error">删除失败: ' + error.message + '</div>';
+                showAlert('删除失败: ' + error.message, 'error');
+            }
+        }
+
+        async function updateMusicMap() {
+            if (!confirm('确定要更新 Music-Map 吗？\n\n这将：\n1. 清理不存在文件的绑定\n2. 重新获取所有文件的元数据和图标')) return;
+            
+            try {
+                const response = await fetch('/api/update-music-map', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('update-map-result');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = 
+                        '<div class="alert alert-success">' +
+                        '<strong>' + result.message + '</strong><br>' +
+                        '清理的无效绑定: ' + result.cleaned_count + ' 个<br>' +
+                        '刷新的文件: ' + result.refreshed_count + ' 个' +
+                        '</div>';
+                    
+                    if (result.cleaned_files.length > 0) {
+                        resultDiv.innerHTML += '<div class="alert alert-warning"><strong>清理的文件:</strong><br>';
+                        result.cleaned_files.forEach(file => {
+                            resultDiv.innerHTML += '课程: ' + file.course + ', 原名: ' + file.original_name + '<br>';
+                        });
+                        resultDiv.innerHTML += '</div>';
+                    }
+                    
+                    showAlert(result.message, 'success');
+                    loadSongs();
+                    loadCourses();
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-error">更新失败: ' + result.error + '</div>';
+                    showAlert('更新失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('update-map-result');
+                resultDiv.innerHTML = '<div class="alert alert-error">更新失败: ' + error.message + '</div>';
+                showAlert('更新失败: ' + error.message, 'error');
+            }
+        }
+
         async function restoreMusic() {
             if (!confirm('确定要将所有音乐文件还原到 music 文件夹吗？这会复制所有文件并还原原始名称。')) return;
             
