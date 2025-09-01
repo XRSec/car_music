@@ -140,39 +140,7 @@ function generatePlaylistName(courseFile, songIndex) {
     return `${baseName}-${songSuffix}.mp3`;
 }
 
-// 检查友好名称是否重复，如果重复则添加数字后缀
-function ensureUniqueFriendlyName(data, friendlyName, excludeCourse = null, excludeSlot = null) {
-    let uniqueName = friendlyName;
-    let counter = 1;
-    
-    while (true) {
-        let isDuplicate = false;
-        
-        // 检查所有课程的所有歌曲
-        for (const [course, info] of Object.entries(data)) {
-            if (excludeCourse && course === excludeCourse) continue;
-            
-            const renamedFiles = info.renamed_files || [];
-            for (const file of renamedFiles) {
-                if (excludeCourse === course && excludeSlot === file.slot) continue;
-                
-                if (file.friendly_name === uniqueName) {
-                    isDuplicate = true;
-                    break;
-                }
-            }
-            if (isDuplicate) break;
-        }
-        
-        if (!isDuplicate) {
-            return uniqueName;
-        }
-        
-        // 如果重复，添加数字后缀
-        uniqueName = `${friendlyName}(${counter})`;
-        counter++;
-    }
-}
+
 
 // 自动分配课程（找到有空位的课程）
 function findAvailableCourse(data) {
@@ -319,6 +287,16 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
         }
     }
 
+    // 检查文件名是否重复
+    const originalName = file.originalname;
+    for (const [course, info] of Object.entries(data)) {
+        const renamedFiles = info.renamed_files || [];
+        if (renamedFiles.find(f => f.original_name === originalName)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: `文件名重复: ${originalName} 已存在，请重命名后再上传`});
+        }
+    }
+
     // 解析歌曲信息
     const metadata = await getMusicMetadata(file.path);
 
@@ -327,15 +305,12 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
     const newPath = path.join(SONG_DIR, newName);
     fs.renameSync(file.path, newPath);
 
-    // 确保友好名称唯一
-    const uniqueFriendlyName = ensureUniqueFriendlyName(data, friendly_name || metadata.title);
-
     // 保存映射
     data[assignedCourse].songs[index] = newName;
     data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
     data[assignedCourse].renamed_files.push({
-        original_name: file.originalname,
-        friendly_name: uniqueFriendlyName,
+        original_name: originalName,
+        friendly_name: originalName.replace('.mp3', ''), // 使用原文件名作为友好名称
         playlist_name: newName,
         slot: index,
         metadata: metadata,
@@ -347,7 +322,7 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
         message: `歌曲已添加到课程 ${assignedCourse}`,
         file: newName,
         metadata,
-        friendly_name: uniqueFriendlyName,
+        friendly_name: originalName.replace('.mp3', ''),
         auto_assigned: targetCourse !== assignedCourse
     });
 });
@@ -365,14 +340,30 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
     const results = [];
     const errors = [];
 
-    // 解析友好名称（如果提供的话）
-    const namesList = friendly_names ? friendly_names.split(',').map(n => n.trim()) : [];
-
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const friendlyName = namesList[i] || '';
 
         try {
+            // 检查文件名是否重复
+            const originalName = file.originalname;
+            let isDuplicate = false;
+            for (const [course, info] of Object.entries(data)) {
+                const renamedFiles = info.renamed_files || [];
+                if (renamedFiles.find(f => f.original_name === originalName)) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            
+            if (isDuplicate) {
+                errors.push({
+                    file: originalName,
+                    error: `文件名重复: ${originalName} 已存在，请重命名后再上传`
+                });
+                fs.unlinkSync(file.path);
+                continue;
+            }
+
             // 确定目标课程
             let assignedCourse = targetCourse;
             let assignedSlot;
@@ -427,15 +418,12 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
             const newPath = path.join(SONG_DIR, newName);
             fs.renameSync(file.path, newPath);
 
-            // 确保友好名称唯一
-            const uniqueFriendlyName = ensureUniqueFriendlyName(data, friendlyName || metadata.title);
-
             // 保存映射
             data[assignedCourse].songs[assignedSlot] = newName;
             data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
             data[assignedCourse].renamed_files.push({
-                original_name: file.originalname,
-                friendly_name: uniqueFriendlyName,
+                original_name: originalName,
+                friendly_name: originalName.replace('.mp3', ''), // 使用原文件名作为友好名称
                 playlist_name: newName,
                 slot: assignedSlot,
                 metadata: metadata,
@@ -444,7 +432,7 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
 
             results.push({
                 original: file.originalname,
-                friendly_name: uniqueFriendlyName,
+                friendly_name: originalName.replace('.mp3', ''),
                 course: assignedCourse,
                 slot: assignedSlot,
                 playlist_name: newName,
@@ -501,6 +489,16 @@ app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
         return res.status(400).json({error: '该位置已有歌曲'});
     }
 
+    // 检查文件名是否重复
+    const originalName = file.originalname;
+    for (const [courseName, info] of Object.entries(data)) {
+        const renamedFiles = info.renamed_files || [];
+        if (renamedFiles.find(f => f.original_name === originalName)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: `文件名重复: ${originalName} 已存在，请重命名后再上传`});
+        }
+    }
+
     try {
         // 解析歌曲信息
         const metadata = await getMusicMetadata(file.path);
@@ -510,15 +508,12 @@ app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
         const newPath = path.join(SONG_DIR, newName);
         fs.renameSync(file.path, newPath);
 
-        // 确保友好名称唯一
-        const uniqueFriendlyName = ensureUniqueFriendlyName(data, friendly_name || metadata.title);
-
         // 保存映射
         data[course].songs[slotIndex] = newName;
         data[course].renamed_files = data[course].renamed_files || [];
         data[course].renamed_files.push({
-            original_name: file.originalname,
-            friendly_name: uniqueFriendlyName,
+            original_name: originalName,
+            friendly_name: originalName.replace('.mp3', ''), // 使用原文件名作为友好名称
             playlist_name: newName,
             slot: slotIndex,
             metadata: metadata,
@@ -530,7 +525,7 @@ app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
             message: `歌曲已添加到课程 ${course} 的位置 ${slotIndex + 1}`,
             file: newName,
             metadata,
-            friendly_name: friendly_name || metadata.title
+            friendly_name: originalName.replace('.mp3', '')
         });
     } catch (error) {
         if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
@@ -1100,7 +1095,9 @@ function generateHTML() {
                                 <h4>准备上传的文件：</h4>
                                 <!-- 上传控制区域 -->
                                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e9ecef;">
-                                    <input type="text" class="form-control" id="batch-friendly-names" placeholder="友好名称（用逗号分隔，可选）" style="margin-bottom: 10px;">
+                                    <p style="margin: 0 0 10px 0; color: #6c757d; font-size: 0.9em;">
+                                        💡 文件将自动重命名为"课程-A.mp3"格式，原文件名将保存为显示名称
+                                    </p>
                                     <div style="display: flex; gap: 10px;">
                                         <button class="btn btn-primary" onclick="uploadBatchFiles()" style="flex: 1;">
                                             📤 开始批量上传
@@ -1295,9 +1292,7 @@ function generateHTML() {
             selectedFiles = [];
             updateFileList();
             const fileInput = document.getElementById('song-files');
-            const friendlyInput = document.getElementById('batch-friendly-names');
             if (fileInput) fileInput.value = '';
-            if (friendlyInput) friendlyInput.value = '';
         }
         
         async function uploadBatchFiles() {
@@ -1307,7 +1302,6 @@ function generateHTML() {
             }
             
             const course = document.getElementById('course-select').value;
-            const friendlyNames = document.getElementById('batch-friendly-names').value;
             
             // 显示进度条
             const progressDiv = document.getElementById('upload-progress');
@@ -1339,15 +1333,6 @@ function generateHTML() {
                     
                     const formData = new FormData();
                     if (course) formData.append('course', course);
-                    
-                    // 处理友好名称（如果提供）
-                    if (friendlyNames) {
-                        const namesList = friendlyNames.split(',').map(n => n.trim());
-                        const batchNames = namesList.slice(startIndex, startIndex + BATCH_SIZE);
-                        if (batchNames.length > 0) {
-                            formData.append('friendly_names', batchNames.join(','));
-                        }
-                    }
                     
                     batch.forEach(file => {
                         formData.append('songs', file);
