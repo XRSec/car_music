@@ -1107,16 +1107,28 @@
     null,
     null
   ],
-  "20180423.mp3": [
-    null,
-    null
-  ],
-  "20180602-2.mp3": [
-    null,
-    null
-  ],
-  "20180624.mp3": [
-    null,
-    null
-  ]
+  "20180423.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180602-2.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180624.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  }
 }
