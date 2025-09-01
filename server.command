@@ -1070,15 +1070,6 @@ app.get('/api/album-art/:filename', async (req, res) => {
     try {
         // 检查是否要求无缓存
         const noCache = req.query.nocache === 'true';
-        
-        // 获取文件修改时间作为ETag
-        const stats = fs.statSync(filePath);
-        const etag = `"${stats.mtime.getTime()}-${stats.size}"`;
-        
-        // 检查If-None-Match头（除非强制无缓存）
-        if (!noCache && req.headers['if-none-match'] === etag) {
-            return res.status(304).end();
-        }
 
         const metadata = await mm.parseFile(filePath, {
             skipCovers: false,
@@ -1127,9 +1118,8 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 
                 console.debug('封面API - 返回实际封面图片');
                 res.set('Content-Type', picture.format);
-                res.set('ETag', etag);
                 
-                // 根据是否要求无缓存设置不同的缓存策略
+                // 简化缓存策略：直接使用nocache参数控制
                 if (noCache) {
                     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
                     res.set('Pragma', 'no-cache');
@@ -1961,7 +1951,6 @@ function generateHTML() {
             cache: {
                 jsonData: null,        // JSON文件数据（课程绑定关系）
                 stats: null,           // 统计数据
-                covers: new Map(),     // 封面图片缓存
                 lastJsonUpdate: null,
                 lastStatsUpdate: null
             },
@@ -2071,11 +2060,9 @@ function generateHTML() {
             getCoverUrl(fileName, options = {}) {
                 let url = '/api/album-art/' + encodeURIComponent(fileName);
                 
-                // 添加缓存破坏参数
+                // 使用nocache参数直接清理缓存
                 if (options.noCache) {
                     url += '?nocache=true&t=' + Date.now();
-                } else if (options.bustCache) {
-                    url += '?t=' + Date.now();
                 }
                 
                 return url;
@@ -2601,7 +2588,7 @@ function generateHTML() {
         }
         
         
-        // 万能刷新功能：包括JSON数据、浏览器缓存、封面图片
+        // 万能刷新功能：使用nocache参数直接清理缓存
         async function universalRefresh() {
             const indicator = document.getElementById('cache-indicator');
             if (indicator) {
@@ -2612,7 +2599,7 @@ function generateHTML() {
                 // 1. 刷新JSON数据
                 await DataManager.refreshJsonData();
                 
-                // 2. 刷新所有封面图片
+                // 2. 使用nocache参数刷新所有封面图片
                 const images = document.querySelectorAll('img[id^="cover-image-"]');
                 let refreshedCoverCount = 0;
                 
@@ -2621,13 +2608,13 @@ function generateHTML() {
                     const urlMatch = currentSrc.match(/\/api\/album-art\/([^?]+)/);
                     if (urlMatch) {
                         const fileName = decodeURIComponent(urlMatch[1]);
-                        const newUrl = DataManager.getCoverUrl(fileName, { noCache: true });
-                        img.src = newUrl;
+                        // 直接使用nocache参数，简单有效
+                        img.src = DataManager.getCoverUrl(fileName, { noCache: true });
                         refreshedCoverCount++;
                     }
                 });
                 
-                // 3. 强制重新加载当前页面内容
+                // 3. 重新加载当前页面内容
                 const currentTab = document.querySelector('.tab.active');
                 if (currentTab) {
                     const tabName = currentTab.textContent.includes('概览') ? 'overview' : 
@@ -2635,18 +2622,7 @@ function generateHTML() {
                     showTab(tabName);
                 }
                 
-                // 4. 清理浏览器缓存（通过重新加载关键资源）
-                if ('caches' in window) {
-                    caches.keys().then(names => {
-                        names.forEach(name => {
-                            if (name.includes('album-art')) {
-                                caches.delete(name);
-                            }
-                        });
-                    });
-                }
-                
-                showAlert('刷新完成：JSON数据已更新，' + refreshedCoverCount + ' 个封面已刷新，浏览器缓存已清理', 'success');
+                showAlert('刷新完成：JSON数据和 ' + refreshedCoverCount + ' 个封面已更新', 'success');
                 
             } catch (error) {
                 showAlert('刷新失败: ' + error.message, 'error');
