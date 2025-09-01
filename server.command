@@ -23,8 +23,22 @@ app.use(express.urlencoded({extended: true}));
 app.use('/songs', express.static(SONG_DIR)); // 静态访问歌曲
 
 // 文件上传配置
-const upload = multer({dest: SONG_DIR});
-const uploadMultiple = multer({dest: SONG_DIR}).array('songs', 100); // 支持最多100个文件（分批处理）
+const upload = multer({
+    dest: SONG_DIR,
+    fileFilter: (req, file, cb) => {
+        // 修复中文文件名编码问题
+        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        cb(null, true);
+    }
+});
+const uploadMultiple = multer({
+    dest: SONG_DIR,
+    fileFilter: (req, file, cb) => {
+        // 修复中文文件名编码问题
+        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        cb(null, true);
+    }
+}).array('songs', 100); // 支持最多100个文件（分批处理）
 
 // ------------------- 数据操作 -------------------
 function initData() {
@@ -1329,7 +1343,7 @@ function generateHTML() {
                     const batch = batches[batchIndex];
                     const startIndex = batchIndex * BATCH_SIZE;
                     
-                    progressText.textContent = `上传第 ${batchIndex + 1}/${batches.length} 批...`;
+                    progressText.textContent = '上传第 ' + (batchIndex + 1) + '/' + batches.length + ' 批...';
                     
                     const formData = new FormData();
                     if (course) formData.append('course', course);
@@ -1364,15 +1378,15 @@ function generateHTML() {
                 }
                 
                 // 显示最终结果
-                progressText.textContent = `上传完成：成功 ${allResults.length} 个，失败 ${allErrors.length} 个`;
+                progressText.textContent = '上传完成：成功 ' + allResults.length + ' 个，失败 ' + allErrors.length + ' 个';
                 
-                const successMessage = `批量上传完成：成功 ${allResults.length} 个，失败 ${allErrors.length} 个`;
+                const successMessage = '批量上传完成：成功 ' + allResults.length + ' 个，失败 ' + allErrors.length + ' 个';
                 showAlert(successMessage, allErrors.length === 0 ? 'success' : 'warning');
                 
                 // 显示错误详情
                 if (allErrors.length > 0) {
                     allErrors.forEach(err => {
-                        showAlert(`${err.file}: ${err.error}`, 'error');
+                        showAlert(err.file + ': ' + err.error, 'error');
                     });
                 }
                 
