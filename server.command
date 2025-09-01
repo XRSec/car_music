@@ -189,9 +189,22 @@ async function getMusicMetadata(filePath) {
                         // 如果是数组，转换为 Buffer
                         dataBuffer = Buffer.from(dataBuffer);
                         if (DEBUG) console.log('封面数据从数组转换为Buffer');
-                    } else if (!(dataBuffer instanceof Buffer)) {
-                        // 如果不是 Buffer 也不是数组，尝试其他处理方式
-                        if (DEBUG) console.log(`封面数据格式未知 ${filePath}, 类型:`, typeof dataBuffer);
+                    } else if (dataBuffer instanceof Buffer) {
+                        // 已经是 Buffer，直接使用
+                        if (DEBUG) console.log('封面数据已经是Buffer格式');
+                    } else if (typeof dataBuffer === 'object' && dataBuffer.type === 'Buffer' && Array.isArray(dataBuffer.data)) {
+                        // Node.js Buffer 对象被序列化后的格式：{type: 'Buffer', data: [数字数组]}
+                        dataBuffer = Buffer.from(dataBuffer.data);
+                        if (DEBUG) console.log('从序列化Buffer对象转换为Buffer');
+                    } else {
+                        // 其他未知格式
+                        if (DEBUG) {
+                            console.log(`封面数据格式未知 ${filePath}:`);
+                            console.log('  - 类型:', typeof dataBuffer);
+                            console.log('  - 构造函数:', dataBuffer.constructor.name);
+                            console.log('  - 是否有data属性:', 'data' in dataBuffer);
+                            console.log('  - 是否有type属性:', 'type' in dataBuffer);
+                        }
                         return; // 跳过封面，不抛出错误
                     }
                     
@@ -756,10 +769,29 @@ app.get('/api/songs', (req, res) => {
     for (const [course, info] of Object.entries(data)) {
         const renamedFiles = info.renamed_files || [];
         renamedFiles.forEach(file => {
+            // 如果文件缺少metadata，尝试重新获取
+            let metadata = file.metadata;
+            if (!metadata) {
+                const filePath = path.join(SONG_DIR, file.playlist_name);
+                if (fs.existsSync(filePath)) {
+                    // 异步获取元数据会比较复杂，这里提供一个默认结构
+                    metadata = {
+                        title: file.original_name.replace('.mp3', ''),
+                        artist: '未知艺术家',
+                        album: '未知专辑',
+                        year: '未知年份',
+                        genre: '未知流派',
+                        duration: 0,
+                        albumArt: null
+                    };
+                }
+            }
+            
             songs.push({
                 ...file,
                 // 向后兼容：如果没有 friendly_name，从 original_name 生成显示名称
                 display_name: file.friendly_name || file.original_name.replace('.mp3', ''),
+                metadata: metadata,
                 course: course
             });
         });
@@ -878,9 +910,16 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 if (Array.isArray(dataBuffer)) {
                     dataBuffer = Buffer.from(dataBuffer);
                     if (DEBUG) console.log('封面API - 数组转Buffer成功');
-                } else if (!(dataBuffer instanceof Buffer)) {
+                } else if (dataBuffer instanceof Buffer) {
+                    // 已经是 Buffer，直接使用
+                    if (DEBUG) console.log('封面API - 数据已经是Buffer');
+                } else if (typeof dataBuffer === 'object' && dataBuffer.type === 'Buffer' && Array.isArray(dataBuffer.data)) {
+                    // Node.js Buffer 对象被序列化后的格式
+                    dataBuffer = Buffer.from(dataBuffer.data);
+                    if (DEBUG) console.log('封面API - 从序列化Buffer对象转换成功');
+                } else {
                     // 数据格式错误，返回默认图标
-                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标');
+                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer);
                     const defaultSvg = generateDefaultMusicIcon('song');
                     res.set('Content-Type', 'image/svg+xml');
                     res.set('Cache-Control', 'public, max-age=3600');
@@ -1050,6 +1089,7 @@ app.post('/api/update-music-map', async (req, res) => {
     let cleanedCount = 0;
     let refreshedCount = 0;
     let fixedCoverCount = 0;
+    let addedMetadataCount = 0;
     const cleanedFiles = [];
 
     for (const [course, info] of Object.entries(data)) {
@@ -1064,6 +1104,12 @@ app.post('/api/update-music-map', async (req, res) => {
                 try {
                     const metadata = await getMusicMetadata(filePath);
                     
+                    // 检查是否需要添加metadata字段
+                    if (!fileInfo.metadata) {
+                        console.log(`添加缺失的metadata: ${fileInfo.original_name}`);
+                        addedMetadataCount++;
+                    }
+                    
                     // 修复现有的数字数组格式封面数据
                     if (fileInfo.metadata && fileInfo.metadata.albumArt && 
                         Array.isArray(fileInfo.metadata.albumArt.data)) {
@@ -1076,6 +1122,19 @@ app.post('/api/update-music-map', async (req, res) => {
                     refreshedCount++;
                 } catch (error) {
                     console.error(`重新获取元数据失败: ${filePath}`, error);
+                    // 即使获取失败，也要确保有基本的metadata结构
+                    if (!fileInfo.metadata) {
+                        fileInfo.metadata = {
+                            title: fileInfo.original_name.replace('.mp3', ''),
+                            artist: '未知艺术家',
+                            album: '未知专辑',
+                            year: '未知年份',
+                            genre: '未知流派',
+                            duration: 0,
+                            albumArt: null
+                        };
+                        addedMetadataCount++;
+                    }
                     validFiles.push(fileInfo); // 保留原有数据
                 }
             } else {
@@ -1106,10 +1165,11 @@ app.post('/api/update-music-map', async (req, res) => {
     saveData(data);
 
     res.json({
-        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，修复了 ${fixedCoverCount} 个封面格式`,
+        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，修复了 ${fixedCoverCount} 个封面格式，添加了 ${addedMetadataCount} 个缺失的metadata`,
         cleaned_count: cleanedCount,
         refreshed_count: refreshedCount,
         fixed_cover_count: fixedCoverCount,
+        added_metadata_count: addedMetadataCount,
         cleaned_files: cleanedFiles
     });
 });
@@ -2758,7 +2818,8 @@ function generateHTML() {
                         '<strong>' + result.message + '</strong><br>' +
                         '清理的无效绑定: ' + result.cleaned_count + ' 个<br>' +
                         '刷新的文件: ' + result.refreshed_count + ' 个<br>' +
-                        '修复的封面: ' + (result.fixed_cover_count || 0) + ' 个' +
+                        '修复的封面: ' + (result.fixed_cover_count || 0) + ' 个<br>' +
+                        '添加的metadata: ' + (result.added_metadata_count || 0) + ' 个' +
                         '</div>';
                     
                     if (result.cleaned_files.length > 0) {
