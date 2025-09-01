@@ -101,28 +101,19 @@ async function getMusicMetadata(filePath) {
     }
 }
 
-// 生成播放器友好的文件名（数字序号）
-function generatePlaylistName(courseFile, songIndex, totalCourses) {
+// 生成播放器友好的文件名（课程名-A/B格式）
+function generatePlaylistName(courseFile, songIndex) {
     const courseMatch = courseFile.match(/(\d{8})(-\d+)?/);
     if (!courseMatch) return null;
     
-    const dateStr = courseMatch[1];
-    const courseNum = courseMatch[2] ? courseMatch[2].substring(1) : '1';
+    const baseName = courseFile.replace('.mp3', '');
     
-    // 计算在所有课程中的位置
-    const coursePosition = Object.keys(loadData()).sort().indexOf(courseFile) + 1;
+    // 课程文件保持原名
+    if (songIndex === -1) return courseFile;
     
-    // 课程文件：001, 004, 007...
-    // 歌曲文件：002, 003, 005, 006, 008, 009...
-    const courseSeq = String(coursePosition * 3 - 2).padStart(3, '0');
-    const song1Seq = String(coursePosition * 3 - 1).padStart(3, '0');
-    const song2Seq = String(coursePosition * 3).padStart(3, '0');
-    
-    if (songIndex === -1) return `${courseSeq}-${dateStr}${courseMatch[2] || ''}.mp3`;
-    if (songIndex === 0) return `${song1Seq}-${dateStr}-歌曲1.mp3`;
-    if (songIndex === 1) return `${song2Seq}-${dateStr}-歌曲2.mp3`;
-    
-    return null;
+    // 歌曲文件：课程名-A.mp3, 课程名-B.mp3
+    const songSuffix = songIndex === 0 ? 'A' : 'B';
+    return `${baseName}-${songSuffix}.mp3`;
 }
 
 // 自动分配课程（找到有空位的课程）
@@ -611,6 +602,10 @@ function generateHTML() {
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; padding: 20px; border-radius: 10px; text-align: center;
+            cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.2);
         }
         .stat-number { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
         .stat-label { font-size: 0.9rem; opacity: 0.9; }
@@ -979,10 +974,22 @@ function generateHTML() {
                 const [statsRes, songsRes] = await Promise.all([fetch('/api/stats'), fetch('/api/songs')]);
                 const [stats, songs] = await Promise.all([statsRes.json(), songsRes.json()]);
                 document.getElementById('stats-grid').innerHTML = \`
-                    <div class="stat-card"><div class="stat-number">\${stats.total_courses}</div><div class="stat-label">总课程数</div></div>
-                    <div class="stat-card"><div class="stat-number">\${stats.total_songs}</div><div class="stat-label">总歌曲数</div></div>
-                    <div class="stat-card"><div class="stat-number">\${stats.courses_with_songs}</div><div class="stat-label">有歌曲的课程</div></div>
-                    <div class="stat-card"><div class="stat-number">\${stats.empty_slots}</div><div class="stat-label">空闲位置</div></div>\`;
+                    <div class="stat-card" onclick="showTab('courses'); document.querySelector('button[onclick*=courses]').click();">
+                        <div class="stat-number">\${stats.total_courses}</div>
+                        <div class="stat-label">总课程数</div>
+                    </div>
+                    <div class="stat-card" onclick="showTab('songs'); document.querySelector('button[onclick*=songs]').click();">
+                        <div class="stat-number">\${stats.total_songs}</div>
+                        <div class="stat-label">总歌曲数</div>
+                    </div>
+                    <div class="stat-card" onclick="showTab('courses'); document.querySelector('button[onclick*=courses]').click();">
+                        <div class="stat-number">\${stats.courses_with_songs}</div>
+                        <div class="stat-label">有歌曲的课程</div>
+                    </div>
+                    <div class="stat-card" onclick="showTab('songs'); document.querySelector('button[onclick*=songs]').click();">
+                        <div class="stat-number">\${stats.empty_slots}</div>
+                        <div class="stat-label">空闲位置</div>
+                    </div>\`;
                 const recent = songs.sort((a,b) => new Date(b.added_time) - new Date(a.added_time)).slice(0,5);
                 document.getElementById('recent-songs').innerHTML = recent.length ? recent.map(s => \`<div class="song-item"><div class="song-title">\${s.friendly_name}</div><div class="song-meta">🎤 \${s.metadata.artist} | 📅 \${s.metadata.year} | 📚 \${s.course}</div></div>\`).join('') : '<div class="empty-slot">暂无歌曲</div>';
             } catch (e) { console.error('加载失败:', e); }
