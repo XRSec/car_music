@@ -408,6 +408,69 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
     });
 });
 
+// 直接上传到指定课程的指定位置
+app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
+    const {course, slot, friendly_name} = req.body;
+    const file = req.file;
+    
+    if (!file) return res.status(400).json({error: '没有上传文件'});
+    if (!course || slot === undefined) {
+        fs.unlinkSync(file.path);
+        return res.status(400).json({error: '缺少课程或位置参数'});
+    }
+
+    const data = loadData();
+    if (!data[course]) {
+        fs.unlinkSync(file.path);
+        return res.status(400).json({error: '课程不存在'});
+    }
+
+    const slotIndex = parseInt(slot);
+    if (slotIndex < 0 || slotIndex >= 2) {
+        fs.unlinkSync(file.path);
+        return res.status(400).json({error: '位置参数无效'});
+    }
+
+    const songs = data[course].songs || [];
+    if (songs[slotIndex] !== null) {
+        fs.unlinkSync(file.path);
+        return res.status(400).json({error: '该位置已有歌曲'});
+    }
+
+    try {
+        // 解析歌曲信息
+        const metadata = await getMusicMetadata(file.path);
+
+        // 生成播放器友好的文件名
+        const newName = generatePlaylistName(course, slotIndex);
+        const newPath = path.join(SONG_DIR, newName);
+        fs.renameSync(file.path, newPath);
+
+        // 保存映射
+        data[course].songs[slotIndex] = newName;
+        data[course].renamed_files = data[course].renamed_files || [];
+        data[course].renamed_files.push({
+            original_name: file.originalname,
+            friendly_name: friendly_name || metadata.title,
+            playlist_name: newName,
+            slot: slotIndex,
+            metadata: metadata,
+            added_time: new Date().toISOString()
+        });
+        saveData(data);
+
+        res.json({
+            message: `歌曲已添加到课程 ${course} 的位置 ${slotIndex + 1}`, 
+            file: newName, 
+            metadata,
+            friendly_name: friendly_name || metadata.title
+        });
+    } catch (error) {
+        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        res.status(500).json({error: '处理文件失败: ' + error.message});
+    }
+});
+
 // 按友好名称删除歌曲
 app.post('/api/remove-song-by-name', (req, res) => {
     const {friendly_name} = req.body;
@@ -634,6 +697,22 @@ function generateHTML() {
         .song-title { font-weight: 500; color: #495057; margin-bottom: 3px; }
         .song-meta { font-size: 0.85rem; color: #6c757d; }
         .empty-slot { color: #adb5bd; font-style: italic; }
+        .empty-slot-upload {
+            border: 2px dashed #ced4da; border-radius: 8px; padding: 20px;
+            text-align: center; cursor: pointer; transition: all 0.3s ease;
+            background: #f8f9fa; margin: 5px 0;
+        }
+        .empty-slot-upload:hover, .empty-slot-upload.dragover {
+            border-color: #667eea; background: #e7f3ff; color: #667eea;
+        }
+        .empty-slot-upload .upload-icon { font-size: 1.5rem; margin-bottom: 8px; }
+        .empty-slot-upload .upload-text { font-size: 0.9rem; }
+        .course-info { 
+            background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
+        .course-title-info { font-weight: 600; color: #1976d2; margin-bottom: 5px; }
+        .course-meta-info { font-size: 0.9rem; color: #666; }
         .btn {
             padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer;
             font-size: 0.85rem; transition: all 0.2s ease; text-decoration: none;
@@ -741,7 +820,7 @@ function generateHTML() {
             <div id="courses" class="tab-content">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
-                    <input type="text" class="form-control" id="course-search" placeholder="搜索课程...">
+                    <input type="text" class="form-control" id="course-search" placeholder="搜索课程标题、文件名、年份..." oninput="searchCourses()">
                 </div>
                 <div id="courses-grid" class="course-grid">
                     <div class="loading">正在加载课程...</div>
@@ -1006,17 +1085,133 @@ function generateHTML() {
             grid.innerHTML = courses.length ? courses.map(([course, info]) => {
                 const dateMatch = course.match(/(\\d{4})(\\d{2})(\\d{2})/);
                 const dateStr = dateMatch ? \`\${dateMatch[1]}-\${dateMatch[2]}-\${dateMatch[3]}\` : course;
+                
+                // 课程信息
+                const courseMeta = info.course_metadata;
+                const courseInfoHtml = courseMeta ? \`
+                    <div class="course-info">
+                        <div class="course-title-info">📚 \${courseMeta.title}</div>
+                        <div class="course-meta-info">📅 \${courseMeta.year} | 🎤 \${courseMeta.artist} | ⏱️ \${courseMeta.duration ? Math.floor(courseMeta.duration / 60) + ':' + (courseMeta.duration % 60).toString().padStart(2, '0') : '未知'}</div>
+                    </div>
+                \` : '';
+                
                 const songsHtml = info.songs.map((song, i) => {
                     if (song) {
                         const fileInfo = info.renamed_files.find(f => f.slot === i);
                         const meta = info.songs_metadata[i];
                         return \`<div class="song-slot"><div class="song-info"><div class="song-title">\${fileInfo ? fileInfo.friendly_name : song}</div><div class="song-meta">🎤 \${meta?.artist || '未知'} | 📅 \${meta?.year || '未知'}</div></div><div><a href="/songs/\${song}" target="_blank" class="btn btn-primary">播放</a><button class="btn btn-danger" onclick="removeSong('\${course}',\${i})">删除</button></div></div>\`;
                     } else {
-                        return \`<div class="song-slot"><div class="song-info empty-slot">空位 \${i + 1}</div></div>\`;
+                        return \`
+                            <div class="song-slot">
+                                <div class="empty-slot-upload" ondrop="dropToSlot(event, '\${course}', \${i})" ondragover="allowDrop(event)" ondragleave="removeDragover(event)" onclick="uploadToSlot('\${course}', \${i})">
+                                    <div class="upload-icon">📁</div>
+                                    <div class="upload-text">
+                                        <strong>空位 \${i + 1}</strong><br>
+                                        点击或拖拽上传歌曲
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
                     }
                 }).join('');
-                return \`<div class="course-card"><div class="course-header"><div class="course-title">\${course}</div><div class="course-date">📅 \${dateStr}</div></div><div class="course-body">\${songsHtml}</div></div>\`;
+                return \`<div class="course-card"><div class="course-header"><div class="course-title">\${course}</div><div class="course-date">📅 \${dateStr}</div></div><div class="course-body">\${courseInfoHtml}\${songsHtml}</div></div>\`;
             }).join('') : '<div class="empty-slot">暂无课程</div>';
+        }
+        
+        function searchCourses() {
+            const query = document.getElementById('course-search').value.toLowerCase();
+            if (!query) {
+                displayCourses(allData);
+                return;
+            }
+            
+            const filtered = {};
+            for (const [course, info] of Object.entries(allData)) {
+                const courseMeta = info.course_metadata || {};
+                const matchCourse = course.toLowerCase().includes(query) ||
+                                  (courseMeta.title && courseMeta.title.toLowerCase().includes(query)) ||
+                                  (courseMeta.year && courseMeta.year.toString().includes(query)) ||
+                                  (courseMeta.artist && courseMeta.artist.toLowerCase().includes(query));
+                
+                const matchSongs = info.renamed_files && info.renamed_files.some(f => 
+                    f.friendly_name.toLowerCase().includes(query) ||
+                    f.metadata.title.toLowerCase().includes(query) ||
+                    f.metadata.artist.toLowerCase().includes(query) ||
+                    f.metadata.year.toString().includes(query)
+                );
+                
+                if (matchCourse || matchSongs) {
+                    filtered[course] = info;
+                }
+            }
+            displayCourses(filtered);
+        }
+        
+        // 拖拽到空位的处理函数
+        function allowDrop(event) {
+            event.preventDefault();
+            event.target.closest('.empty-slot-upload').classList.add('dragover');
+        }
+        
+        function removeDragover(event) {
+            event.target.closest('.empty-slot-upload').classList.remove('dragover');
+        }
+        
+        function dropToSlot(event, course, slot) {
+            event.preventDefault();
+            event.target.closest('.empty-slot-upload').classList.remove('dragover');
+            
+            const files = Array.from(event.dataTransfer.files).filter(f => f.name.endsWith('.mp3'));
+            if (files.length === 0) {
+                alert('请拖拽 MP3 文件');
+                return;
+            }
+            
+            if (files.length > 1) {
+                alert('每次只能上传一个文件到指定位置');
+                return;
+            }
+            
+            uploadFileToSlot(files[0], course, slot);
+        }
+        
+        function uploadToSlot(course, slot) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.mp3';
+            input.onchange = (e) => {
+                if (e.target.files[0]) {
+                    uploadFileToSlot(e.target.files[0], course, slot);
+                }
+            };
+            input.click();
+        }
+        
+        async function uploadFileToSlot(file, course, slot) {
+            const friendlyName = prompt('请输入歌曲的友好名称（可选）:', file.name.replace('.mp3', ''));
+            
+            const formData = new FormData();
+            formData.append('course', course);
+            formData.append('slot', slot);
+            formData.append('song', file);
+            if (friendlyName) formData.append('friendly_name', friendlyName);
+            
+            try {
+                const response = await fetch('/api/add-song-to-slot', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    showAlert(\`歌曲已添加到 \${course} 位置 \${parseInt(slot) + 1}: \${result.friendly_name}\`, 'success');
+                    loadCourses();
+                } else {
+                    showAlert('上传失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('上传失败: ' + error.message, 'error');
+            }
         }
         async function loadSongs() {
             try {

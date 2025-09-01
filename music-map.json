@@ -1109,26 +1109,11 @@
   ],
   "20180423.mp3": {
     "songs": [
-      "833-20180423-歌曲1.mp3",
+      "20180423-A.mp3",
       "20180423-B.mp3"
     ],
     "metadata": null,
     "renamed_files": [
-      {
-        "original_name": "20180624.mp3",
-        "friendly_name": "测试歌曲1",
-        "playlist_name": "833-20180423-歌曲1.mp3",
-        "slot": 0,
-        "metadata": {
-          "title": "xzf0624新课预售  少年为什么应该学习经济学？",
-          "artist": "薛兆丰",
-          "album": "北大经济学课",
-          "year": 2018,
-          "genre": "未知流派",
-          "duration": 523
-        },
-        "added_time": "2025-09-01T11:50:26.637Z"
-      },
       {
         "original_name": "20180602-2.mp3",
         "friendly_name": "测试歌曲A",
@@ -1143,6 +1128,21 @@
           "duration": 631
         },
         "added_time": "2025-09-01T11:55:46.763Z"
+      },
+      {
+        "original_name": "20180624.mp3",
+        "friendly_name": "A位置测试歌曲",
+        "playlist_name": "20180423-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "xzf0624新课预售  少年为什么应该学习经济学？",
+          "artist": "薛兆丰",
+          "album": "北大经济学课",
+          "year": 2018,
+          "genre": "未知流派",
+          "duration": 523
+        },
+        "added_time": "2025-09-01T12:03:13.486Z"
       }
     ]
   },
