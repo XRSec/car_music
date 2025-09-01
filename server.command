@@ -1496,7 +1496,7 @@ function generateHTML() {
                 <div></div>
                 <div>
                     📦 数据缓存: <span id="cache-indicator">未加载</span>
-                    <button onclick="DataManager.refreshAll()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新</button>
+                    <button onclick="DataManager.refreshJsonData()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新JSON</button>
                 </div>
             </div>
         </div>
@@ -1657,8 +1657,13 @@ function generateHTML() {
                     <summary>🔄 更新 Music-Map</summary>
                     <div class="collapsible-content">
                         <div class="form-group">
-                            <p style="color: #6c757d; margin-bottom: 15px;">检查并清理不存在的文件绑定，重新获取图标</p>
-                            <button class="btn btn-warning" onclick="updateMusicMap()">更新 Music-Map</button>
+                            <p style="color: #6c757d; margin-bottom: 15px;">
+                                <strong>重新获取所有MP3文件的元数据</strong><br>
+                                • 重新读取艺术家、专辑、年份、封面等信息<br>
+                                • 清理不存在文件的绑定<br>
+                                • 修复缺失的metadata字段
+                            </p>
+                            <button class="btn btn-warning" onclick="updateMusicMap()">🔄 重新获取元数据</button>
                             <div id="update-map-result" style="margin-top: 15px;"></div>
                         </div>
                     </div>
@@ -1720,57 +1725,37 @@ function generateHTML() {
         // 前端数据管理系统
         const DataManager = {
             cache: {
-                courses: null,
-                songs: null,
-                stats: null,
-                lastUpdate: null
+                jsonData: null,        // JSON文件数据（课程绑定关系）
+                stats: null,           // 统计数据
+                covers: new Map(),     // 封面图片缓存
+                lastJsonUpdate: null,
+                lastStatsUpdate: null
             },
             
-            // 获取课程数据
-            async getCourses(forceRefresh = false) {
-                if (!forceRefresh && this.cache.courses && this.isDataFresh()) {
+            // 获取JSON数据（课程绑定关系）- 这是主要的数据源
+            async getJsonData(forceRefresh = false) {
+                if (!forceRefresh && this.cache.jsonData && this.isJsonDataFresh()) {
                     this.updateCacheIndicator();
-                    return this.cache.courses;
+                    return this.cache.jsonData;
                 }
                 
                 try {
                     const response = await fetch('/api/list');
                     const data = await response.json();
-                    this.cache.courses = data;
-                    this.cache.lastUpdate = Date.now();
+                    this.cache.jsonData = data;
+                    this.cache.lastJsonUpdate = Date.now();
                     allData = data; // 保持向后兼容
                     this.updateCacheIndicator();
                     return data;
                 } catch (error) {
-                    console.error('获取课程数据失败:', error);
-                    return this.cache.courses || {};
-                }
-            },
-            
-            // 获取歌曲数据
-            async getSongs(forceRefresh = false) {
-                if (!forceRefresh && this.cache.songs && this.isDataFresh()) {
-                    this.updateCacheIndicator();
-                    return this.cache.songs;
-                }
-                
-                try {
-                    const response = await fetch('/api/songs');
-                    const data = await response.json();
-                    this.cache.songs = data;
-                    this.cache.lastUpdate = Date.now();
-                    allSongs = data; // 保持向后兼容
-                    this.updateCacheIndicator();
-                    return data;
-                } catch (error) {
-                    console.error('获取歌曲数据失败:', error);
-                    return this.cache.songs || [];
+                    console.error('获取JSON数据失败:', error);
+                    return this.cache.jsonData || {};
                 }
             },
             
             // 获取统计数据
             async getStats(forceRefresh = false) {
-                if (!forceRefresh && this.cache.stats && this.isDataFresh()) {
+                if (!forceRefresh && this.cache.stats && this.isStatsDataFresh()) {
                     return this.cache.stats;
                 }
                 
@@ -1778,7 +1763,7 @@ function generateHTML() {
                     const response = await fetch('/api/stats');
                     const data = await response.json();
                     this.cache.stats = data;
-                    this.cache.lastUpdate = Date.now();
+                    this.cache.lastStatsUpdate = Date.now();
                     return data;
                 } catch (error) {
                     console.error('获取统计数据失败:', error);
@@ -1786,48 +1771,72 @@ function generateHTML() {
                 }
             },
             
-            // 检查数据是否新鲜（5分钟内）
-            isDataFresh() {
-                return this.cache.lastUpdate && (Date.now() - this.cache.lastUpdate) < 300000;
-            },
-            
-            // 使缓存失效
-            invalidateCache() {
-                this.cache.courses = null;
-                this.cache.songs = null;
-                this.cache.stats = null;
-                this.cache.lastUpdate = null;
-            },
-            
-            // 部分更新缓存
-            updateCacheAfterOperation(operation, data) {
-                switch (operation) {
-                    case 'upload':
-                    case 'delete':
-                    case 'batch_upload':
-                        // 上传或删除后，使所有缓存失效
-                        this.invalidateCache();
-                        break;
-                    case 'rename':
-                        // 重命名后，只更新相关数据
-                        if (this.cache.courses && data.course) {
-                            // 可以在这里做精确更新，暂时使用失效策略
-                            this.invalidateCache();
-                        }
-                        break;
+            // 生成歌曲列表（从JSON数据）
+            async getSongs() {
+                const jsonData = await this.getJsonData();
+                const songs = [];
+                
+                for (const [course, info] of Object.entries(jsonData)) {
+                    const renamedFiles = info.renamed_files || [];
+                    renamedFiles.forEach(file => {
+                        songs.push({
+                            ...file,
+                            display_name: file.friendly_name || file.original_name.replace('.mp3', ''),
+                            course: course
+                        });
+                    });
                 }
+                
+                allSongs = songs; // 保持向后兼容
+                return songs;
             },
             
-            // 获取特定歌曲信息
+            // 检查JSON数据是否新鲜（1分钟内）
+            isJsonDataFresh() {
+                return this.cache.lastJsonUpdate && (Date.now() - this.cache.lastJsonUpdate) < 60000;
+            },
+            
+            // 检查统计数据是否新鲜（5分钟内）
+            isStatsDataFresh() {
+                return this.cache.lastStatsUpdate && (Date.now() - this.cache.lastStatsUpdate) < 300000;
+            },
+            
+            // 使JSON缓存失效（操作后调用）
+            invalidateJsonCache() {
+                this.cache.jsonData = null;
+                this.cache.lastJsonUpdate = null;
+                this.updateCacheIndicator();
+            },
+            
+            // 使统计缓存失效
+            invalidateStatsCache() {
+                this.cache.stats = null;
+                this.cache.lastStatsUpdate = null;
+            },
+            
+            // 操作后的缓存管理
+            afterOperation(operation) {
+                // 所有操作都会影响JSON数据和统计数据
+                this.invalidateJsonCache();
+                this.invalidateStatsCache();
+            },
+            
+            // 获取特定歌曲信息（从JSON数据）
             async getSongInfo(fileName) {
                 const songs = await this.getSongs();
                 return songs.find(s => s.playlist_name === fileName || s.original_name === fileName);
             },
             
-            // 获取特定课程信息
+            // 获取特定课程信息（从JSON数据）
             async getCourseInfo(courseName) {
-                const courses = await this.getCourses();
-                return courses[courseName];
+                const jsonData = await this.getJsonData();
+                return jsonData[courseName];
+            },
+            
+            // 封面图片缓存管理
+            getCoverUrl(fileName) {
+                // 总是实时获取，但浏览器会缓存
+                return '/api/album-art/' + encodeURIComponent(fileName);
             },
             
             // 更新缓存状态指示器
@@ -1835,33 +1844,29 @@ function generateHTML() {
                 const indicator = document.getElementById('cache-indicator');
                 if (!indicator) return;
                 
-                const hasData = this.cache.courses || this.cache.songs || this.cache.stats;
-                const isFresh = this.isDataFresh();
+                const hasJsonData = !!this.cache.jsonData;
+                const isJsonFresh = this.isJsonDataFresh();
                 
-                if (hasData && isFresh) {
-                    const age = Math.floor((Date.now() - this.cache.lastUpdate) / 1000);
-                    indicator.innerHTML = \`<span style="color: #28a745;">已缓存 (\${age}s前)</span>\`;
-                } else if (hasData) {
-                    indicator.innerHTML = '<span style="color: #ffc107;">缓存过期</span>';
+                if (hasJsonData && isJsonFresh) {
+                    const age = Math.floor((Date.now() - this.cache.lastJsonUpdate) / 1000);
+                    indicator.innerHTML = '<span style="color: #28a745;">JSON已缓存 (' + age + 's前)</span>';
+                } else if (hasJsonData) {
+                    indicator.innerHTML = '<span style="color: #ffc107;">JSON缓存过期</span>';
                 } else {
                     indicator.innerHTML = '<span style="color: #6c757d;">未加载</span>';
                 }
             },
             
-            // 手动刷新所有数据
-            async refreshAll() {
+            // 手动刷新JSON数据
+            async refreshJsonData() {
                 const indicator = document.getElementById('cache-indicator');
                 if (indicator) {
-                    indicator.innerHTML = '<span style="color: #007bff;">刷新中...</span>';
+                    indicator.innerHTML = '<span style="color: #007bff;">刷新JSON...</span>';
                 }
                 
                 try {
-                    await Promise.all([
-                        this.getCourses(true),
-                        this.getSongs(true),
-                        this.getStats(true)
-                    ]);
-                    showAlert('数据已刷新', 'success');
+                    await this.getJsonData(true);
+                    showAlert('JSON数据已刷新', 'success');
                 } catch (error) {
                     showAlert('刷新失败: ' + error.message, 'error');
                 }
@@ -2058,7 +2063,7 @@ function generateHTML() {
                     });
                 }
                 
-                DataManager.updateCacheAfterOperation('batch_upload');
+                DataManager.afterOperation('batch_upload');
                 clearFileList();
                 loadSongs();
                 loadCourses();
@@ -2079,30 +2084,37 @@ function generateHTML() {
                     DataManager.getSongs()
                 ]);
                 
-                document.getElementById('stats-grid').innerHTML = \`
-                    <div class="stat-card" onclick="showTab('courses'); document.querySelector('button[onclick*=courses]').click();">
-                        <div class="stat-number">\${stats.total_courses}</div>
-                        <div class="stat-label">总课程数</div>
-                    </div>
-                    <div class="stat-card" onclick="showTab('songs'); document.querySelector('button[onclick*=songs]').click();">
-                        <div class="stat-number">\${stats.total_songs}</div>
-                        <div class="stat-label">总歌曲数</div>
-                    </div>
-                    <div class="stat-card" onclick="showTab('courses'); document.querySelector('button[onclick*=courses]').click();">
-                        <div class="stat-number">\${stats.courses_with_songs}</div>
-                        <div class="stat-label">有歌曲的课程</div>
-                    </div>
-                    <div class="stat-card" onclick="showTab('songs'); document.querySelector('button[onclick*=songs]').click();">
-                        <div class="stat-number">\${stats.empty_slots}</div>
-                        <div class="stat-label">空闲位置</div>
-                    </div>\`;
+                document.getElementById('stats-grid').innerHTML = 
+                    '<div class="stat-card" onclick="showTab(\\'courses\\'); document.querySelector(\\'button[onclick*=courses]\\').click();">' +
+                        '<div class="stat-number">' + stats.total_courses + '</div>' +
+                        '<div class="stat-label">总课程数</div>' +
+                    '</div>' +
+                    '<div class="stat-card" onclick="showTab(\\'songs\\'); document.querySelector(\\'button[onclick*=songs]\\').click();">' +
+                        '<div class="stat-number">' + stats.total_songs + '</div>' +
+                        '<div class="stat-label">总歌曲数</div>' +
+                    '</div>' +
+                    '<div class="stat-card" onclick="showTab(\\'courses\\'); document.querySelector(\\'button[onclick*=courses]\\').click();">' +
+                        '<div class="stat-number">' + stats.courses_with_songs + '</div>' +
+                        '<div class="stat-label">有歌曲的课程</div>' +
+                    '</div>' +
+                    '<div class="stat-card" onclick="showTab(\\'songs\\'); document.querySelector(\\'button[onclick*=songs]\\').click();">' +
+                        '<div class="stat-number">' + stats.empty_slots + '</div>' +
+                        '<div class="stat-label">空闲位置</div>' +
+                    '</div>';
+                    
                 const recent = songs.sort((a,b) => new Date(b.added_time) - new Date(a.added_time)).slice(0,5);
-                document.getElementById('recent-songs').innerHTML = recent.length ? recent.map(s => \`<div class="song-item"><div class="song-title">\${s.display_name}</div><div class="song-meta">🎤 \${s.metadata?.artist || '未知艺术家'} | 📅 \${s.metadata?.year || '未知年份'} | 📚 \${s.course}</div></div>\`).join('') : '<div class="empty-slot">暂无歌曲</div>';
+                document.getElementById('recent-songs').innerHTML = recent.length ? 
+                    recent.map(s => 
+                        '<div class="song-item">' +
+                            '<div class="song-title">' + s.display_name + '</div>' +
+                            '<div class="song-meta">🎤 ' + (s.metadata?.artist || '未知艺术家') + ' | 📅 ' + (s.metadata?.year || '未知年份') + ' | 📚 ' + s.course + '</div>' +
+                        '</div>'
+                    ).join('') : '<div class="empty-slot">暂无歌曲</div>';
             } catch (e) { console.error('加载失败:', e); }
         }
         async function loadCourses() {
             try {
-                const data = await DataManager.getCourses();
+                const data = await DataManager.getJsonData();
                 displayCourses(data);
             } catch (e) { console.error('加载失败:', e); }
         }
@@ -2260,13 +2272,13 @@ function generateHTML() {
             // 获取歌曲信息
             let songData = songInfo;
             if (!songData) {
-                // 从缓存中查找歌曲信息
+                // 从JSON数据中查找歌曲信息
                 const fileName = src.split('/').pop();
                 songData = await DataManager.getSongInfo(fileName);
                 
                 // 如果不是歌曲，可能是课程文件
                 if (!songData) {
-                    const courses = await DataManager.getCourses();
+                    const courses = await DataManager.getJsonData();
                     const courseInfo = courses[fileName];
                     if (courseInfo) {
                         songData = {
@@ -2307,64 +2319,35 @@ function generateHTML() {
                 defaultBg = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             }
             
-            if (albumArt && albumArt.data) {
-                // 处理不同格式的封面数据
-                let base64Data = albumArt.data;
-                if (Array.isArray(albumArt.data)) {
-                    // 如果是数字数组，转换为 base64
-                    try {
-                        const buffer = new Uint8Array(albumArt.data);
-                        base64Data = btoa(String.fromCharCode(...buffer));
-                    } catch (e) {
-                        console.warn('封面数据转换失败:', e);
-                        base64Data = null;
-                    }
-                }
-                
-                if (base64Data) {
-                    albumArtHtml = \`<img src="data:\${albumArt.format};base64,\${base64Data}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" alt="封面">\`;
-                } else {
-                    // 封面数据无效，使用默认图标
-                    albumArtHtml = \`
-                        <div style="width: 60px; height: 60px; background: \${defaultBg}; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e9ecef;">
-                            <span style="font-size: 1.5rem; color: white;">\${defaultIcon}</span>
-                        </div>
-                    \`;
-                }
-            } else {
-                // 从API获取封面图片（API现在总是返回有效图像，包括默认图标）
-                albumArtHtml = \`
-                    <img src="/api/album-art/\${encodeURIComponent(fileName)}" 
-                         style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" 
-                         alt="封面">
-                \`;
-            }
+            // 总是使用实时API获取封面，浏览器会自动缓存
+            albumArtHtml = '<img src="' + DataManager.getCoverUrl(fileName) + '" ' +
+                         'style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" ' +
+                         'alt="封面">';
             
-            player.innerHTML = \`
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                    <strong style="color: #495057;">🎵 正在播放</strong>
-                    <button onclick="document.getElementById('audio-player').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6c757d;">✕</button>
-                </div>
+            player.innerHTML = 
+                '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">' +
+                    '<strong style="color: #495057;">🎵 正在播放</strong>' +
+                    '<button onclick="document.getElementById(\\'audio-player\\').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6c757d;">✕</button>' +
+                '</div>' +
                 
-                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <div style="margin-right: 15px;">
-                        \${albumArtHtml}
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #495057; margin-bottom: 3px; font-size: 1rem;">\${songTitle}</div>
-                        <div style="font-size: 0.85rem; color: #6c757d;">🎤 \${artist}</div>
-                        <div style="font-size: 0.8rem; color: #adb5bd;">💿 \${album} | 📅 \${year}</div>
-                    </div>
-                </div>
+                '<div style="display: flex; align-items: center; margin-bottom: 15px;">' +
+                    '<div style="margin-right: 15px;">' +
+                        albumArtHtml +
+                    '</div>' +
+                    '<div style="flex: 1;">' +
+                        '<div style="font-weight: 600; color: #495057; margin-bottom: 3px; font-size: 1rem;">' + songTitle + '</div>' +
+                        '<div style="font-size: 0.85rem; color: #6c757d;">🎤 ' + artist + '</div>' +
+                        '<div style="font-size: 0.8rem; color: #adb5bd;">💿 ' + album + ' | 📅 ' + year + '</div>' +
+                    '</div>' +
+                '</div>' +
                 
-                <audio controls autoplay style="width: 100%; margin-bottom: 10px;">
-                    <source src="\${src}" type="audio/mpeg">
-                    您的浏览器不支持音频播放
-                </audio>
+                '<audio controls autoplay style="width: 100%; margin-bottom: 10px;">' +
+                    '<source src="' + src + '" type="audio/mpeg">' +
+                    '您的浏览器不支持音频播放' +
+                '</audio>' +
                 
-                        <div style="font-size: 0.85rem; color: #6c757d;">🎤 \${artist} ｜ 💿 \${album}</div>
-                        <div style="font-size: 0.8rem; color: #adb5bd;">📅 \${year} | 📁 \${src.split('/').pop().replace('.mp3', '')}</div>
-            \`;
+                '<div style="font-size: 0.85rem; color: #6c757d;">🎤 ' + artist + ' ｜ 💿 ' + album + '</div>' +
+                '<div style="font-size: 0.8rem; color: #adb5bd;">📅 ' + year + ' | 📁 ' + src.split('/').pop().replace('.mp3', '') + '</div>';
             
             document.body.appendChild(player);
         }
@@ -2428,7 +2411,7 @@ function generateHTML() {
                 const result = await response.json();
                 if (response.ok) {
                     showAlert(\`歌曲已添加到 \${course} 位置 \${parseInt(slot) + 1}: \${result.display_name}\`, 'success');
-                    DataManager.updateCacheAfterOperation('upload');
+                    DataManager.afterOperation('upload');
                     loadCourses();
                 } else {
                     showAlert('上传失败: ' + result.error, 'error');
@@ -2441,10 +2424,11 @@ function generateHTML() {
             try {
                 const [songs, data] = await Promise.all([
                     DataManager.getSongs(),
-                    DataManager.getCourses()
+                    DataManager.getJsonData()
                 ]);
                 
-                document.getElementById('course-select').innerHTML = '<option value="">自动分配到有空位的课程</option>' + Object.keys(data).sort().map(c => \`<option value="\${c}">\${c}</option>\`).join('');
+                document.getElementById('course-select').innerHTML = '<option value="">自动分配到有空位的课程</option>' + 
+                    Object.keys(data).sort().map(c => '<option value="' + c + '">' + c + '</option>').join('');
                 displaySongs(songs);
                 initDragDrop(); // 初始化拖拽功能
             } catch (e) { console.error('加载失败:', e); }
@@ -2456,18 +2440,18 @@ function generateHTML() {
                 return;
             }
             
-            songsList.innerHTML = songs.map(s => \`
-                <div class="song-item" style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="flex: 1;">
-                        <div class="song-title">\${s.display_name}</div>
-                        <div class="song-meta">📁 \${s.playlist_name.replace('.mp3', '')} | 🎤 \${s.metadata?.artist || '未知艺术家'} | 📅 \${s.metadata?.year || '未知年份'} | 📚 \${s.course.replace('.mp3', '')}</div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-primary" onclick="playAudio('/songs/\${s.playlist_name}', \${JSON.stringify(s).replace(/"/g, '&quot;')})">▶️ 播放</button>
-                        <button class="btn btn-danger" onclick="deleteSongByOriginalName('\${s.original_name}')">🗑️ 删除</button>
-                    </div>
-                </div>
-            \`).join('');
+            songsList.innerHTML = songs.map(s => 
+                '<div class="song-item" style="display: flex; align-items: center; justify-content: space-between;">' +
+                    '<div style="flex: 1;">' +
+                        '<div class="song-title">' + s.display_name + '</div>' +
+                        '<div class="song-meta">📁 ' + s.playlist_name.replace('.mp3', '') + ' | 🎤 ' + (s.metadata?.artist || '未知艺术家') + ' | 📅 ' + (s.metadata?.year || '未知年份') + ' | 📚 ' + s.course.replace('.mp3', '') + '</div>' +
+                    '</div>' +
+                    '<div style="display: flex; gap: 10px;">' +
+                        '<button class="btn btn-primary" onclick="playAudio(\\'/songs/' + s.playlist_name + '\\', ' + JSON.stringify(s).replace(/"/g, '&quot;') + ')">▶️ 播放</button>' +
+                        '<button class="btn btn-danger" onclick="deleteSongByOriginalName(\\'' + s.original_name + '\\')">🗑️ 删除</button>' +
+                    '</div>' +
+                '</div>'
+            ).join('');
         }
         function searchSongs() {
             const q = document.getElementById('song-search').value.toLowerCase();
@@ -2484,7 +2468,7 @@ function generateHTML() {
                 if (res.ok) {
                     showAlert(result.message, 'success');
                     document.getElementById('delete-song-name').value = '';
-                    DataManager.updateCacheAfterOperation('delete');
+                    DataManager.afterOperation('delete');
                     loadSongs(); loadCourses();
                 } else showAlert('删除失败: ' + result.error, 'error');
             } catch (e) { showAlert('删除失败: ' + e.message, 'error'); }
@@ -2497,7 +2481,7 @@ function generateHTML() {
                 const result = await res.json();
                 if (res.ok) {
                     showAlert(result.message, 'success');
-                    DataManager.updateCacheAfterOperation('delete');
+                    DataManager.afterOperation('delete');
                     loadSongs(); loadCourses();
                 } else showAlert('删除失败: ' + result.error, 'error');
             } catch (e) { showAlert('删除失败: ' + e.message, 'error'); }
@@ -2517,7 +2501,7 @@ function generateHTML() {
                 const res = await fetch('/api/batch-rename', {method: 'POST', headers: {'Content-Type': 'application/json'}});
                 const result = await res.json();
                 showAlert(result.message + '，重命名了 ' + result.renamed.length + ' 个文件', 'success');
-                DataManager.updateCacheAfterOperation('rename');
+                DataManager.afterOperation('rename');
                 loadCourses();
             } catch (e) { showAlert('失败: ' + e.message, 'error'); }
         }
@@ -2699,7 +2683,7 @@ function generateHTML() {
                         '</div>';
                     
                     showAlert(result.message, 'success');
-                    DataManager.updateCacheAfterOperation('delete');
+                    DataManager.afterOperation('delete');
                     loadSongs();
                     loadCourses();
                 } else {
@@ -2831,7 +2815,7 @@ function generateHTML() {
                     }
                     
                     showAlert(result.message, 'success');
-                    DataManager.updateCacheAfterOperation('delete');
+                    DataManager.afterOperation('delete');
                     loadSongs();
                     loadCourses();
                 } else {
