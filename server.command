@@ -37,35 +37,35 @@ function validateFilename(filename) {
 // Simple rate limiting implementation
 const rateLimiter = {
     requests: new Map(),
-    
+
     isAllowed(ip, endpoint, maxRequests = 100, windowMs = 60000) {
         const key = `${ip}:${endpoint}`;
         const now = Date.now();
         const windowStart = now - windowMs;
-        
+
         if (!this.requests.has(key)) {
             this.requests.set(key, []);
         }
-        
+
         const requests = this.requests.get(key);
         // Clean old requests
         const validRequests = requests.filter(time => time > windowStart);
-        
+
         if (validRequests.length >= maxRequests) {
             return false;
         }
-        
+
         validRequests.push(now);
         this.requests.set(key, validRequests);
-        
+
         // Cleanup old entries periodically
         if (Math.random() < 0.01) { // 1% chance
             this.cleanup();
         }
-        
+
         return true;
     },
-    
+
     cleanup() {
         const now = Date.now();
         for (const [key, requests] of this.requests.entries()) {
@@ -83,14 +83,14 @@ const rateLimiter = {
 function rateLimit(endpoint, maxRequests = 100, windowMs = 60000) {
     return (req, res, next) => {
         const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
-        
+
         if (!rateLimiter.isAllowed(clientIP, endpoint, maxRequests, windowMs)) {
             return res.status(429).json({
                 error: 'Too many requests. Please try again later.',
                 retryAfter: Math.ceil(windowMs / 1000)
             });
         }
-        
+
         next();
     };
 }
@@ -100,6 +100,11 @@ const PORT = 3000;
 
 // 调试开关
 const DEBUG = process.env.DEBUG || false ; // 设置为 true 启用详细日志
+
+// 设置console.debug的行为
+if (!DEBUG) {
+    console.debug = function() {}; // DEBUG模式关闭时，console.debug不输出任何内容
+}
 
 const DATA_FILE = path.join(__dirname, 'music-map.json');
 const SONG_DIR = __dirname;
@@ -141,21 +146,21 @@ const upload = multer({
         if (file.mimetype !== 'audio/mpeg' && file.mimetype !== 'audio/mp3') {
             return cb(new Error('Only MP3 files are allowed'), false);
         }
-        
+
         // Security: Validate file extension
         if (!file.originalname.toLowerCase().endsWith('.mp3')) {
             return cb(new Error('Only .mp3 files are allowed'), false);
         }
-        
+
         // Security: Sanitize filename - remove path separators and dangerous characters
         const sanitizedName = file.originalname.replace(/[\/\\:*?"<>|]/g, '_');
         file.originalname = Buffer.from(sanitizedName, 'latin1').toString('utf8');
-        
+
         // Security: Check filename length
         if (file.originalname.length > 255) {
             return cb(new Error('Filename too long'), false);
         }
-        
+
         cb(null, true);
     }
 });
@@ -170,21 +175,21 @@ const uploadMultiple = multer({
         if (file.mimetype !== 'audio/mpeg' && file.mimetype !== 'audio/mp3') {
             return cb(new Error('Only MP3 files are allowed'), false);
         }
-        
+
         // Security: Validate file extension
         if (!file.originalname.toLowerCase().endsWith('.mp3')) {
             return cb(new Error('Only .mp3 files are allowed'), false);
         }
-        
+
         // Security: Sanitize filename - remove path separators and dangerous characters
         const sanitizedName = file.originalname.replace(/[\/\\:*?"<>|]/g, '_');
         file.originalname = Buffer.from(sanitizedName, 'latin1').toString('utf8');
-        
+
         // Security: Check filename length
         if (file.originalname.length > 255) {
             return cb(new Error('Filename too long'), false);
         }
-        
+
         cb(null, true);
     }
 }).array('songs', 20); // Support max 20 files for batch processing
@@ -199,12 +204,12 @@ function initData() {
     try {
         const fileContent = fs.readFileSync(DATA_FILE, 'utf-8');
         data = JSON.parse(fileContent);
-        
+
         // 验证数据文件结构的完整性
         if (!data || typeof data !== 'object') {
             throw new Error('数据文件结构无效');
         }
-        
+
         console.log(`数据文件加载成功，包含 ${Object.keys(data).length} 个课程`);
     } catch (e) {
         console.error('数据文件格式错误，重新初始化:', e.message);
@@ -273,7 +278,7 @@ function initData() {
     } else {
         console.log('数据文件无变化，跳过保存');
     }
-    
+
     return data;
 }
 
@@ -283,32 +288,15 @@ function loadData() {
 
 function saveData(data) {
     try {
-        // 创建一个深拷贝，避免修改原始数据
+        // 创建一个深拷贝，避免修改原始数据，同时移除albumArt数据以减小文件大小
         const dataToSave = JSON.parse(JSON.stringify(data, (key, value) => {
-            // 处理封面数据，确保格式正确
-            if (key === 'albumArt' && value && typeof value === 'object' && value.data) {
-                if (typeof value.data === 'string') {
-                    // 已经是字符串，直接使用
-                    return value;
-                } else if (Array.isArray(value.data)) {
-                    // 是数组，转换为 base64 字符串
-                    try {
-                        const buffer = Buffer.from(value.data);
-                        return {
-                            format: value.format,
-                            data: buffer.toString('base64')
-                        };
-                    } catch (e) {
-                        return null; // 转换失败，不保存封面
-                    }
-                } else {
-                    // 其他格式，不保存
-                    return null;
-                }
+            // 不再保存albumArt数据到JSON文件中，图片通过API动态加载
+            if (key === 'albumArt') {
+                return undefined; // 完全移除albumArt字段
             }
             return value;
         }));
-        
+
         fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
     } catch (error) {
         console.error('保存数据失败:', error);
@@ -320,112 +308,52 @@ function saveData(data) {
 
 // 获取音乐元数据（包括封面图片）
 async function getMusicMetadata(filePath) {
-    if (DEBUG) {
-        console.log(`\n=== 开始解析文件: ${filePath} ===`);
-    }
-    
+    console.debug(`\n=== 开始解析文件: ${filePath} ===`);
+
     try {
         const metadata = await mm.parseFile(filePath, {
             skipCovers: false,
             skipPostHeaders: false,
             includeChapters: false
         });
-        
-        if (DEBUG) {
-            console.log('原始元数据结构:');
-            console.log('- metadata.common:', metadata.common ? Object.keys(metadata.common) : 'undefined');
-            console.log('- metadata.format:', metadata.format ? Object.keys(metadata.format) : 'undefined');
-            
-            if (metadata.common) {
-                console.log('Common 字段详情:');
-                console.log('  - title:', metadata.common.title);
-                console.log('  - artist:', metadata.common.artist);
-                console.log('  - album:', metadata.common.album);
-                console.log('  - year:', metadata.common.year);
-                console.log('  - genre:', metadata.common.genre);
-                console.log('  - picture:', metadata.common.picture ? `${metadata.common.picture.length} 个图片` : 'none');
-                
-                if (metadata.common.picture && metadata.common.picture.length > 0) {
-                    console.log('封面图片详情:');
-                    metadata.common.picture.forEach((pic, index) => {
-                        console.log(`  图片 ${index + 1}:`, {
-                            format: pic.format,
-                            type: pic.type,
-                            description: pic.description,
-                            dataType: typeof pic.data,
-                            dataSize: pic.data ? (Array.isArray(pic.data) ? pic.data.length : pic.data.length) : 0
-                        });
-                    });
-                }
-            }
-            
-            if (metadata.format) {
-                console.log('Format 字段详情:');
-                console.log('  - duration:', metadata.format.duration);
-                console.log('  - bitrate:', metadata.format.bitrate);
-                console.log('  - sampleRate:', metadata.format.sampleRate);
-            }
-        }
-        
-        let albumArt = null;
 
-        // 提取封面图片
+        console.debug('原始元数据结构:', {
+            hasCommon: !!metadata.common,
+            hasFormat: !!metadata.format,
+            commonKeys: metadata.common ? Object.keys(metadata.common) : [],
+            formatKeys: metadata.format ? Object.keys(metadata.format) : []
+        });
+
+        if (metadata.common) {
+            console.debug('Common字段详情:', {
+                title: metadata.common.title,
+                artist: metadata.common.artist,
+                album: metadata.common.album,
+                year: metadata.common.year,
+                genre: metadata.common.genre,
+                pictureCount: metadata.common.picture ? metadata.common.picture.length : 0
+            });
+        }
+
+        let hasAlbumArt = false;
+
+        // 检查是否有封面图片（不存储数据，只记录是否存在）
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             try {
                 const picture = metadata.common.picture[0];
                 if (picture.data && picture.format) {
-                    // 确保 data 是 Buffer，然后转换为 base64 字符串
-                    let dataBuffer = picture.data;
-                    if (Array.isArray(dataBuffer)) {
-                        // 如果是数组，转换为 Buffer
-                        dataBuffer = Buffer.from(dataBuffer);
-                        if (DEBUG) console.log('封面数据从数组转换为Buffer');
-                    } else if (dataBuffer instanceof Buffer) {
-                        // 已经是 Buffer，直接使用
-                        if (DEBUG) console.log('封面数据已经是Buffer格式');
-                    } else if (typeof dataBuffer === 'object' && dataBuffer.type === 'Buffer' && Array.isArray(dataBuffer.data)) {
-                        // Node.js Buffer 对象被序列化后的格式：{type: 'Buffer', data: [数字数组]}
-                        dataBuffer = Buffer.from(dataBuffer.data);
-                        if (DEBUG) console.log('从序列化Buffer对象转换为Buffer');
-                    } else if (dataBuffer instanceof Uint8Array) {
-                        // Uint8Array 类型，转换为 Buffer
-                        dataBuffer = Buffer.from(dataBuffer);
-                        if (DEBUG) console.log('从Uint8Array转换为Buffer');
-                    } else if (typeof dataBuffer === 'object' && dataBuffer.constructor && dataBuffer.constructor.name === 'Uint8Array') {
-                        // 确保是 Uint8Array 类型
-                        dataBuffer = Buffer.from(dataBuffer);
-                        if (DEBUG) console.log('从Uint8Array对象转换为Buffer');
-                    } else {
-                        // 其他未知格式
-                        if (DEBUG) {
-                            console.log(`封面数据格式未知 ${filePath}:`);
-                            console.log('  - 类型:', typeof dataBuffer);
-                            console.log('  - 构造函数:', dataBuffer.constructor?.name);
-                            console.log('  - 是否有data属性:', 'data' in dataBuffer);
-                            console.log('  - 是否有type属性:', 'type' in dataBuffer);
-                            console.log('  - 是否是Uint8Array:', dataBuffer instanceof Uint8Array);
-                        }
-                        return; // 跳过封面，不抛出错误
-                    }
-                    
-                    albumArt = {
+                    hasAlbumArt = true;
+                    console.debug('检测到封面图片:', {
                         format: picture.format,
-                        data: dataBuffer.toString('base64')
-                    };
-                    
-                    if (DEBUG) {
-                        console.log('封面提取成功:', {
-                            format: picture.format,
-                            base64Length: albumArt.data.length
-                        });
-                    }
+                        hasData: !!picture.data
+                    });
                 }
             } catch (pictureError) {
-                if (DEBUG) console.log(`封面提取失败 ${filePath}:`, pictureError.message);
-                console.warn(`封面提取失败 ${filePath}:`, pictureError.message);
+                console.debug(`封面检测失败 ${filePath}:`, pictureError.message);
+                console.warn(`封面检测失败 ${filePath}:`, pictureError.message);
             }
         } else {
-            if (DEBUG) console.log('文件中没有找到封面图片');
+            console.debug('文件中没有找到封面图片');
         }
 
         const result = {
@@ -435,27 +363,23 @@ async function getMusicMetadata(filePath) {
             year: metadata.common?.year || '未知年份',
             genre: metadata.common?.genre ? metadata.common.genre.join(', ') : '未知流派',
             duration: metadata.format?.duration ? Math.round(metadata.format.duration) : 0,
-            albumArt: albumArt
+            hasAlbumArt: hasAlbumArt
         };
-        
-        if (DEBUG) {
-            console.log('最终提取结果:');
-            console.log('  - title:', result.title);
-            console.log('  - artist:', result.artist);
-            console.log('  - album:', result.album);
-            console.log('  - year:', result.year);
-            console.log('  - genre:', result.genre);
-            console.log('  - duration:', result.duration);
-            console.log('  - albumArt:', result.albumArt ? 'Yes' : 'No');
-            console.log(`=== 完成解析: ${path.basename(filePath)} ===\n`);
-        }
-        
+
+        console.debug('最终提取结果:', {
+            title: result.title,
+            artist: result.artist,
+            album: result.album,
+            year: result.year,
+            genre: result.genre,
+            duration: result.duration,
+            hasAlbumArt: result.hasAlbumArt,
+            file: path.basename(filePath)
+        });
+
         return result;
     } catch (error) {
-        if (DEBUG) {
-            console.log(`元数据提取完全失败 ${filePath}:`, error.message);
-            console.log('错误详情:', error);
-        }
+        console.debug(`元数据提取完全失败 ${filePath}:`, error.message, error);
         console.warn(`元数据提取失败 ${filePath}:`, error.message);
         return {
             title: path.basename(filePath, '.mp3'),
@@ -464,7 +388,7 @@ async function getMusicMetadata(filePath) {
             year: '未知年份',
             genre: '未知流派',
             duration: 0,
-            albumArt: null
+            hasAlbumArt: false
         };
     }
 }
@@ -602,71 +526,71 @@ app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
             }
             return res.status(400).json({error: err.message});
         }
-        
+
         const {course: targetCourse} = req.body;
         const file = req.file;
         if (!file) return res.status(400).json({error: '没有上传文件'});
 
-    const data = loadData();
+        const data = loadData();
 
-    // 确定目标课程和位置
-    let assignedCourse = targetCourse;
-    let index;
+        // 确定目标课程和位置
+        let assignedCourse = targetCourse;
+        let index;
 
-    if (!assignedCourse) {
-        // 自动分配到有空位的课程
-        const available = findAvailableCourse(data);
-        if (!available) {
-            fs.unlinkSync(file.path);
-            return res.status(400).json({error: '没有可用的空位'});
+        if (!assignedCourse) {
+            // 自动分配到有空位的课程
+            const available = findAvailableCourse(data);
+            if (!available) {
+                fs.unlinkSync(file.path);
+                return res.status(400).json({error: '没有可用的空位'});
+            }
+            assignedCourse = available.course;
+            index = available.slot;
+        } else {
+            // 检查指定课程
+            if (!data[assignedCourse]) {
+                fs.unlinkSync(file.path);
+                return res.status(400).json({error: '课程不存在'});
+            }
+
+            const songs = data[assignedCourse].songs || [];
+            index = songs.indexOf(null);
+            if (index === -1) {
+                // 指定课程满了，不自动分配，直接返回错误
+                fs.unlinkSync(file.path);
+                return res.status(400).json({error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`});
+            }
         }
-        assignedCourse = available.course;
-        index = available.slot;
-    } else {
-        // 检查指定课程
-        if (!data[assignedCourse]) {
-            fs.unlinkSync(file.path);
-            return res.status(400).json({error: '课程不存在'});
+
+        // 检查文件名是否重复
+        const originalName = file.originalname;
+        for (const [course, info] of Object.entries(data)) {
+            const renamedFiles = info.renamed_files || [];
+            if (renamedFiles.find(f => f.original_name === originalName)) {
+                fs.unlinkSync(file.path);
+                return res.status(400).json({error: `文件名重复: ${originalName} 已存在，请重命名后再上传`});
+            }
         }
 
-        const songs = data[assignedCourse].songs || [];
-        index = songs.indexOf(null);
-        if (index === -1) {
-            // 指定课程满了，不自动分配，直接返回错误
-            fs.unlinkSync(file.path);
-            return res.status(400).json({error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`});
-        }
-    }
+        // 解析歌曲信息
+        const metadata = await getMusicMetadata(file.path);
 
-    // 检查文件名是否重复
-    const originalName = file.originalname;
-    for (const [course, info] of Object.entries(data)) {
-        const renamedFiles = info.renamed_files || [];
-        if (renamedFiles.find(f => f.original_name === originalName)) {
-            fs.unlinkSync(file.path);
-            return res.status(400).json({error: `文件名重复: ${originalName} 已存在，请重命名后再上传`});
-        }
-    }
+        // 生成播放器友好的文件名
+        const newName = generatePlaylistName(assignedCourse, index);
+        const newPath = path.join(SONG_DIR, newName);
+        fs.renameSync(file.path, newPath);
 
-    // 解析歌曲信息
-    const metadata = await getMusicMetadata(file.path);
-
-    // 生成播放器友好的文件名
-    const newName = generatePlaylistName(assignedCourse, index);
-    const newPath = path.join(SONG_DIR, newName);
-    fs.renameSync(file.path, newPath);
-
-    // 保存映射
-    data[assignedCourse].songs[index] = newName;
-    data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
-            data[assignedCourse].renamed_files.push({
+        // 保存映射
+        data[assignedCourse].songs[index] = newName;
+        data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
+        data[assignedCourse].renamed_files.push({
             original_name: originalName,
             playlist_name: newName,
             slot: index,
             metadata: metadata,
             added_time: new Date().toISOString()
         });
-    saveData(data);
+        saveData(data);
 
         res.json({
             message: `歌曲已添加到课程 ${assignedCourse}`,
@@ -693,123 +617,123 @@ app.post('/api/add-songs-batch', rateLimit('batch-upload', 20, 300000), (req, re
             }
             return res.status(400).json({error: err.message});
         }
-        
+
         const { course: targetCourse } = req.body;
         const files = req.files;
 
-    if (!files || files.length === 0) {
-        return res.status(400).json({error: '没有上传文件'});
-    }
+        if (!files || files.length === 0) {
+            return res.status(400).json({error: '没有上传文件'});
+        }
 
-    const data = loadData();
-    const results = [];
-    const errors = [];
+        const data = loadData();
+        const results = [];
+        const errors = [];
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
 
-        try {
-            // 检查文件名是否重复
-            const originalName = file.originalname;
-            let isDuplicate = false;
-            for (const [course, info] of Object.entries(data)) {
-                const renamedFiles = info.renamed_files || [];
-                if (renamedFiles.find(f => f.original_name === originalName)) {
-                    isDuplicate = true;
-                    break;
+            try {
+                // 检查文件名是否重复
+                const originalName = file.originalname;
+                let isDuplicate = false;
+                for (const [course, info] of Object.entries(data)) {
+                    const renamedFiles = info.renamed_files || [];
+                    if (renamedFiles.find(f => f.original_name === originalName)) {
+                        isDuplicate = true;
+                        break;
+                    }
                 }
-            }
-            
-            if (isDuplicate) {
-                errors.push({
-                    file: originalName,
-                    error: `文件名重复: ${originalName} 已存在，请重命名后再上传`
+
+                if (isDuplicate) {
+                    errors.push({
+                        file: originalName,
+                        error: `文件名重复: ${originalName} 已存在，请重命名后再上传`
+                    });
+                    fs.unlinkSync(file.path);
+                    continue;
+                }
+
+                // 确定目标课程
+                let assignedCourse = targetCourse;
+                let assignedSlot;
+
+                if (!assignedCourse) {
+                    // 自动分配到有空位的课程
+                    const available = findAvailableCourse(data);
+                    if (!available) {
+                        errors.push({
+                            file: file.originalname,
+                            error: '没有可用的空位'
+                        });
+                        fs.unlinkSync(file.path); // 删除临时文件
+                        continue;
+                    }
+                    assignedCourse = available.course;
+                    assignedSlot = available.slot;
+                } else {
+                    // 检查指定课程是否有空位
+                    if (!data[assignedCourse]) {
+                        errors.push({
+                            file: file.originalname,
+                            error: '指定课程不存在'
+                        });
+                        fs.unlinkSync(file.path);
+                        continue;
+                    }
+
+                    const songs = data[assignedCourse].songs || [];
+                    assignedSlot = songs.indexOf(null);
+                    if (assignedSlot === -1) {
+                        // 指定课程满了，不自动分配，直接报错
+                        errors.push({
+                            file: file.originalname,
+                            error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`
+                        });
+                        fs.unlinkSync(file.path);
+                        continue;
+                    }
+                }
+
+                // 解析歌曲信息
+                const metadata = await getMusicMetadata(file.path);
+
+                // 生成播放器友好的文件名
+                const newName = generatePlaylistName(assignedCourse, assignedSlot);
+                const newPath = path.join(SONG_DIR, newName);
+                fs.renameSync(file.path, newPath);
+
+                // 保存映射
+                data[assignedCourse].songs[assignedSlot] = newName;
+                data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
+                data[assignedCourse].renamed_files.push({
+                    original_name: originalName,
+                    playlist_name: newName,
+                    slot: assignedSlot,
+                    metadata: metadata,
+                    added_time: new Date().toISOString()
                 });
-                fs.unlinkSync(file.path);
-                continue;
-            }
 
-            // 确定目标课程
-            let assignedCourse = targetCourse;
-            let assignedSlot;
+                results.push({
+                    original: file.originalname,
+                    display_name: originalName.replace('.mp3', ''),
+                    course: assignedCourse,
+                    slot: assignedSlot,
+                    playlist_name: newName,
+                    metadata: metadata
+                });
 
-            if (!assignedCourse) {
-                // 自动分配到有空位的课程
-                const available = findAvailableCourse(data);
-                if (!available) {
-                    errors.push({
-                        file: file.originalname,
-                        error: '没有可用的空位'
-                    });
-                    fs.unlinkSync(file.path); // 删除临时文件
-                    continue;
-                }
-                assignedCourse = available.course;
-                assignedSlot = available.slot;
-            } else {
-                // 检查指定课程是否有空位
-                if (!data[assignedCourse]) {
-                    errors.push({
-                        file: file.originalname,
-                        error: '指定课程不存在'
-                    });
+            } catch (error) {
+                errors.push({
+                    file: file.originalname,
+                    error: error.message
+                });
+                if (fs.existsSync(file.path)) {
                     fs.unlinkSync(file.path);
-                    continue;
                 }
-
-                const songs = data[assignedCourse].songs || [];
-                assignedSlot = songs.indexOf(null);
-                if (assignedSlot === -1) {
-                    // 指定课程满了，不自动分配，直接报错
-                    errors.push({
-                        file: file.originalname,
-                        error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`
-                    });
-                    fs.unlinkSync(file.path);
-                    continue;
-                }
-            }
-
-            // 解析歌曲信息
-            const metadata = await getMusicMetadata(file.path);
-
-            // 生成播放器友好的文件名
-            const newName = generatePlaylistName(assignedCourse, assignedSlot);
-            const newPath = path.join(SONG_DIR, newName);
-            fs.renameSync(file.path, newPath);
-
-            // 保存映射
-            data[assignedCourse].songs[assignedSlot] = newName;
-            data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
-            data[assignedCourse].renamed_files.push({
-                original_name: originalName,
-                playlist_name: newName,
-                slot: assignedSlot,
-                metadata: metadata,
-                added_time: new Date().toISOString()
-            });
-
-            results.push({
-                original: file.originalname,
-                display_name: originalName.replace('.mp3', ''),
-                course: assignedCourse,
-                slot: assignedSlot,
-                playlist_name: newName,
-                metadata: metadata
-            });
-
-        } catch (error) {
-            errors.push({
-                file: file.originalname,
-                error: error.message
-            });
-            if (fs.existsSync(file.path)) {
-                fs.unlinkSync(file.path);
             }
         }
-    }
 
-    saveData(data);
+        saveData(data);
 
         res.json({
             message: `批量上传完成：成功 ${results.length} 个，失败 ${errors.length} 个`,
@@ -833,64 +757,64 @@ app.post('/api/add-song-to-slot', rateLimit('upload', 10, 60000), (req, res) => 
             }
             return res.status(400).json({error: err.message});
         }
-        
+
         const {course, slot} = req.body;
         const file = req.file;
 
-    if (!file) return res.status(400).json({error: '没有上传文件'});
-    if (!course || slot === undefined) {
-        fs.unlinkSync(file.path);
-        return res.status(400).json({error: '缺少课程或位置参数'});
-    }
-
-    const data = loadData();
-    if (!data[course]) {
-        fs.unlinkSync(file.path);
-        return res.status(400).json({error: '课程不存在'});
-    }
-
-    const slotIndex = parseInt(slot);
-    if (slotIndex < 0 || slotIndex >= 2) {
-        fs.unlinkSync(file.path);
-        return res.status(400).json({error: '位置参数无效'});
-    }
-
-    const songs = data[course].songs || [];
-    if (songs[slotIndex] !== null) {
-        fs.unlinkSync(file.path);
-        return res.status(400).json({error: '该位置已有歌曲'});
-    }
-
-    // 检查文件名是否重复
-    const originalName = file.originalname;
-    for (const [courseName, info] of Object.entries(data)) {
-        const renamedFiles = info.renamed_files || [];
-        if (renamedFiles.find(f => f.original_name === originalName)) {
+        if (!file) return res.status(400).json({error: '没有上传文件'});
+        if (!course || slot === undefined) {
             fs.unlinkSync(file.path);
-            return res.status(400).json({error: `文件名重复: ${originalName} 已存在，请重命名后再上传`});
+            return res.status(400).json({error: '缺少课程或位置参数'});
         }
-    }
 
-    try {
-        // 解析歌曲信息
-        const metadata = await getMusicMetadata(file.path);
+        const data = loadData();
+        if (!data[course]) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: '课程不存在'});
+        }
 
-        // 生成播放器友好的文件名
-        const newName = generatePlaylistName(course, slotIndex);
-        const newPath = path.join(SONG_DIR, newName);
-        fs.renameSync(file.path, newPath);
+        const slotIndex = parseInt(slot);
+        if (slotIndex < 0 || slotIndex >= 2) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: '位置参数无效'});
+        }
 
-        // 保存映射
-        data[course].songs[slotIndex] = newName;
-        data[course].renamed_files = data[course].renamed_files || [];
-        data[course].renamed_files.push({
-            original_name: originalName,
-            playlist_name: newName,
-            slot: slotIndex,
-            metadata: metadata,
-            added_time: new Date().toISOString()
-        });
-        saveData(data);
+        const songs = data[course].songs || [];
+        if (songs[slotIndex] !== null) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({error: '该位置已有歌曲'});
+        }
+
+        // 检查文件名是否重复
+        const originalName = file.originalname;
+        for (const [courseName, info] of Object.entries(data)) {
+            const renamedFiles = info.renamed_files || [];
+            if (renamedFiles.find(f => f.original_name === originalName)) {
+                fs.unlinkSync(file.path);
+                return res.status(400).json({error: `文件名重复: ${originalName} 已存在，请重命名后再上传`});
+            }
+        }
+
+        try {
+            // 解析歌曲信息
+            const metadata = await getMusicMetadata(file.path);
+
+            // 生成播放器友好的文件名
+            const newName = generatePlaylistName(course, slotIndex);
+            const newPath = path.join(SONG_DIR, newName);
+            fs.renameSync(file.path, newPath);
+
+            // 保存映射
+            data[course].songs[slotIndex] = newName;
+            data[course].renamed_files = data[course].renamed_files || [];
+            data[course].renamed_files.push({
+                original_name: originalName,
+                playlist_name: newName,
+                slot: slotIndex,
+                metadata: metadata,
+                added_time: new Date().toISOString()
+            });
+            saveData(data);
 
             res.json({
                 message: `歌曲已添加到课程 ${course} 的位置 ${slotIndex + 1}`,
@@ -912,7 +836,7 @@ app.post('/api/remove-song-by-name', (req, res) => {
 
     for (const [course, info] of Object.entries(data)) {
         const renamedFiles = info.renamed_files || [];
-        const fileInfo = renamedFiles.find(f => 
+        const fileInfo = renamedFiles.find(f =>
             f.original_name === original_name
         );
         if (fileInfo) {
@@ -973,7 +897,7 @@ app.post('/api/remove-song', (req, res) => {
     data[course].songs[slot] = null;
     data[course].renamed_files = (data[course].renamed_files || []).filter(f => f.slot !== slot);
     saveData(data);
-    
+
     const message = fileDeleted ? `已删除 ${songName}` : `已从数据库删除 ${songName}（物理文件可能不存在）`;
     res.json({message: message});
 });
@@ -1021,11 +945,11 @@ app.get('/api/songs', (req, res) => {
                         year: '未知年份',
                         genre: '未知流派',
                         duration: 0,
-                        albumArt: null
+                        hasAlbumArt: false
                     };
                 }
             }
-            
+
             songs.push({
                 ...file,
                 display_name: file.original_name.replace('.mp3', ''),
@@ -1063,14 +987,14 @@ app.post('/api/batch-rename', (req, res) => {
         renamedFilesList.forEach(fileRecord => {
             const currentName = fileRecord.playlist_name;
             const expectedName = generatePlaylistName(course, fileRecord.slot);
-            
+
             // 只有当当前文件名格式不正确时才重命名
             if (expectedName && expectedName !== currentName) {
                 const oldPath = path.join(SONG_DIR, currentName);
                 const newPath = path.join(SONG_DIR, expectedName);
                 if (fs.existsSync(oldPath)) {
                     fs.renameSync(oldPath, newPath);
-                    
+
                     // 更新记录
                     fileRecord.playlist_name = expectedName;
                     data[course].songs[fileRecord.slot] = expectedName;
@@ -1091,9 +1015,9 @@ function generateDefaultMusicIcon(type = 'song') {
         course: { icon: '📚', bg: '#2196f3' },
         artist: { icon: '🎓', bg: '#ff6b6b' }
     };
-    
+
     const config = icons[type] || icons.song;
-    
+
     return `<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1109,19 +1033,19 @@ function generateDefaultMusicIcon(type = 'song') {
 // 获取歌曲封面图片
 app.get('/api/album-art/:filename', async (req, res) => {
     const filename = req.params.filename;
-    
+
     // Security: Validate filename to prevent path traversal attacks
     if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
         return res.status(400).json({error: 'Invalid filename'});
     }
-    
+
     // Security: Only allow .mp3 files
     if (!filename.endsWith('.mp3')) {
         return res.status(400).json({error: 'Only MP3 files are allowed'});
     }
-    
+
     const filePath = path.join(SONG_DIR, filename);
-    
+
     // Security: Ensure the resolved path is within SONG_DIR
     const resolvedPath = path.resolve(filePath);
     const resolvedSongDir = path.resolve(SONG_DIR);
@@ -1129,15 +1053,14 @@ app.get('/api/album-art/:filename', async (req, res) => {
         return res.status(403).json({error: 'Access denied'});
     }
 
-    if (DEBUG) {
-        console.log(`\n=== 封面API请求: ${filename} ===`);
-        console.log('文件路径:', filePath);
-        console.log('文件存在:', fs.existsSync(filePath));
-    }
+    console.debug(`封面API请求: ${filename}`, {
+        filePath: filePath,
+        exists: fs.existsSync(filePath)
+    });
 
     if (!fs.existsSync(filePath)) {
         // 文件不存在，返回默认图标
-        if (DEBUG) console.log('文件不存在，返回默认图标');
+        console.debug('文件不存在，返回默认图标');
         const defaultSvg = generateDefaultMusicIcon('song');
         res.set('Content-Type', 'image/svg+xml');
         res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
@@ -1145,18 +1068,21 @@ app.get('/api/album-art/:filename', async (req, res) => {
     }
 
     try {
+        // 检查是否要求无缓存
+        const noCache = req.query.nocache === 'true';
+
         const metadata = await mm.parseFile(filePath, {
             skipCovers: false,
             skipPostHeaders: true,
             includeChapters: false
         });
 
-        if (DEBUG) {
-            console.log('封面API - 元数据解析结果:');
-            console.log('- 有common:', !!metadata.common);
-            console.log('- 有picture:', !!(metadata.common && metadata.common.picture));
-            console.log('- picture数量:', metadata.common?.picture?.length || 0);
-        }
+        console.debug('封面API - 元数据解析结果:', {
+            hasCommon: !!metadata.common,
+            hasPicture: !!(metadata.common && metadata.common.picture),
+            pictureCount: metadata.common?.picture?.length || 0,
+            noCache: noCache
+        });
 
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             const picture = metadata.common.picture[0];
@@ -1165,38 +1091,48 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 let dataBuffer = picture.data;
                 if (Array.isArray(dataBuffer)) {
                     dataBuffer = Buffer.from(dataBuffer);
-                    if (DEBUG) console.log('封面API - 数组转Buffer成功');
+                    console.debug('封面API - 数组转Buffer成功');
                 } else if (dataBuffer instanceof Buffer) {
                     // 已经是 Buffer，直接使用
-                    if (DEBUG) console.log('封面API - 数据已经是Buffer');
+                    console.debug('封面API - 数据已经是Buffer');
                 } else if (typeof dataBuffer === 'object' && dataBuffer.type === 'Buffer' && Array.isArray(dataBuffer.data)) {
                     // Node.js Buffer 对象被序列化后的格式
                     dataBuffer = Buffer.from(dataBuffer.data);
-                    if (DEBUG) console.log('封面API - 从序列化Buffer对象转换成功');
+                    console.debug('封面API - 从序列化Buffer对象转换成功');
                 } else if (dataBuffer instanceof Uint8Array) {
                     // Uint8Array 类型，转换为 Buffer
                     dataBuffer = Buffer.from(dataBuffer);
-                    if (DEBUG) console.log('封面API - 从Uint8Array转换为Buffer');
+                    console.debug('封面API - 从Uint8Array转换为Buffer');
                 } else if (typeof dataBuffer === 'object' && dataBuffer.constructor && dataBuffer.constructor.name === 'Uint8Array') {
                     // 确保是 Uint8Array 类型
                     dataBuffer = Buffer.from(dataBuffer);
-                    if (DEBUG) console.log('封面API - 从Uint8Array对象转换为Buffer');
+                    console.debug('封面API - 从Uint8Array对象转换为Buffer');
                 } else {
                     // 数据格式错误，返回默认图标
-                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer, '构造函数:', dataBuffer.constructor?.name);
+                    console.debug('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer, '构造函数:', dataBuffer.constructor?.name);
                     const defaultSvg = generateDefaultMusicIcon('song');
                     res.set('Content-Type', 'image/svg+xml');
                     res.set('Cache-Control', 'public, max-age=3600');
                     return res.send(defaultSvg);
                 }
-                
-                if (DEBUG) console.log('封面API - 返回实际封面图片');
+
+                console.debug('封面API - 返回实际封面图片');
                 res.set('Content-Type', picture.format);
-                res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
+
+                // 简化缓存策略：直接使用nocache参数控制
+                if (noCache) {
+                    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+                    res.set('Pragma', 'no-cache');
+                    res.set('Expires', '0');
+                    console.debug('封面API - 使用无缓存模式');
+                } else {
+                    res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
+                }
+
                 res.send(dataBuffer);
             } else {
                 // 封面数据损坏，返回默认图标
-                if (DEBUG) console.log('封面API - 封面数据损坏，返回默认图标');
+                console.debug('封面API - 封面数据损坏，返回默认图标');
                 const defaultSvg = generateDefaultMusicIcon('song');
                 res.set('Content-Type', 'image/svg+xml');
                 res.set('Cache-Control', 'public, max-age=3600');
@@ -1208,17 +1144,15 @@ app.get('/api/album-art/:filename', async (req, res) => {
             if (filename.match(/^\d{8}(-\d+)?\.mp3$/)) {
                 iconType = 'course';
             }
-            
-            if (DEBUG) console.log(`封面API - 没有封面，返回${iconType}类型默认图标`);
+
+            console.debug(`封面API - 没有封面，返回${iconType}类型默认图标`);
             const defaultSvg = generateDefaultMusicIcon(iconType);
             res.set('Content-Type', 'image/svg+xml');
             res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
             res.send(defaultSvg);
         }
     } catch (error) {
-        if (DEBUG) {
-            console.log(`封面API - 解析失败 ${filePath}:`, error.message);
-        }
+        console.debug(`封面API - 解析失败 ${filePath}:`, error.message);
         console.warn(`读取封面失败 ${filePath}:`, error.message);
         // 读取失败，返回默认图标而不是错误
         const defaultSvg = generateDefaultMusicIcon('song');
@@ -1231,19 +1165,19 @@ app.get('/api/album-art/:filename', async (req, res) => {
 // 调试API：分析特定文件的元数据
 app.get('/api/debug-metadata/:filename', async (req, res) => {
     const filename = req.params.filename;
-    
+
     // Security: Validate filename to prevent path traversal attacks
     if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
         return res.status(400).json({error: 'Invalid filename'});
     }
-    
+
     // Security: Only allow .mp3 files
     if (!filename.endsWith('.mp3')) {
         return res.status(400).json({error: 'Only MP3 files are allowed'});
     }
-    
+
     const filePath = path.join(SONG_DIR, filename);
-    
+
     // Security: Ensure the resolved path is within SONG_DIR
     const resolvedPath = path.resolve(filePath);
     const resolvedSongDir = path.resolve(SONG_DIR);
@@ -1258,15 +1192,15 @@ app.get('/api/debug-metadata/:filename', async (req, res) => {
     try {
         // 临时启用调试模式
         const originalDebug = DEBUG;
-        
+
         console.log(`\n=== 调试模式分析文件: ${filename} ===`);
-        
+
         const metadata = await mm.parseFile(filePath, {
             skipCovers: false,
             skipPostHeaders: false,
             includeChapters: false
         });
-        
+
         // 详细分析结果
         const analysis = {
             file: filename,
@@ -1297,7 +1231,7 @@ app.get('/api/debug-metadata/:filename', async (req, res) => {
                 native: metadata.native ? Object.keys(metadata.native) : []
             }
         };
-        
+
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             analysis.pictures = metadata.common.picture.map((pic, index) => ({
                 index: index,
@@ -1310,10 +1244,10 @@ app.get('/api/debug-metadata/:filename', async (req, res) => {
                 isArray: Array.isArray(pic.data)
             }));
         }
-        
+
         console.log('调试分析结果:', JSON.stringify(analysis, null, 2));
         console.log(`=== 调试完成: ${filename} ===\n`);
-        
+
         res.json(analysis);
     } catch (error) {
         console.log(`调试分析失败 ${filePath}:`, error.message);
@@ -1334,7 +1268,7 @@ app.post('/api/delete-all-songs', rateLimit('delete-all', 2, 300000), (req, res)
 
     for (const [course, info] of Object.entries(data)) {
         const renamedFiles = info.renamed_files || [];
-        
+
         // 删除所有歌曲文件
         renamedFiles.forEach(fileInfo => {
             const filePath = path.join(SONG_DIR, fileInfo.playlist_name);
@@ -1370,7 +1304,7 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
     const data = loadData();
     let cleanedCount = 0;
     let refreshedCount = 0;
-    let fixedCoverCount = 0;
+
     let addedMetadataCount = 0;
     const cleanedFiles = [];
 
@@ -1385,20 +1319,15 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
                 // 文件存在，重新获取元数据和图标
                 try {
                     const metadata = await getMusicMetadata(filePath);
-                    
+
                     // 检查是否需要添加metadata字段
                     if (!fileInfo.metadata) {
                         console.log(`添加缺失的metadata: ${fileInfo.original_name}`);
                         addedMetadataCount++;
                     }
-                    
-                    // 修复现有的数字数组格式封面数据
-                    if (fileInfo.metadata && fileInfo.metadata.albumArt && 
-                        Array.isArray(fileInfo.metadata.albumArt.data)) {
-                        console.log(`修复封面数据格式: ${fileInfo.original_name}`);
-                        fixedCoverCount++;
-                    }
-                    
+
+                    // 不再需要修复封面数据，因为我们不存储图片数据到JSON中
+
                     fileInfo.metadata = metadata; // 更新元数据
                     validFiles.push(fileInfo);
                     refreshedCount++;
@@ -1413,7 +1342,7 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
                             year: '未知年份',
                             genre: '未知流派',
                             duration: 0,
-                            albumArt: null
+                            hasAlbumArt: false
                         };
                         addedMetadataCount++;
                     }
@@ -1433,7 +1362,7 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
 
         // 更新文件列表和歌曲位置
         data[course].renamed_files = validFiles;
-        
+
         // 重新设置歌曲位置
         const newSongs = [null, null];
         validFiles.forEach(fileInfo => {
@@ -1447,10 +1376,10 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
     saveData(data);
 
     res.json({
-        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，修复了 ${fixedCoverCount} 个封面格式，添加了 ${addedMetadataCount} 个缺失的metadata`,
+        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，添加了 ${addedMetadataCount} 个缺失的metadata`,
         cleaned_count: cleanedCount,
         refreshed_count: refreshedCount,
-        fixed_cover_count: fixedCoverCount,
+
         added_metadata_count: addedMetadataCount,
         cleaned_files: cleanedFiles
     });
@@ -1791,8 +1720,7 @@ function generateHTML() {
                 <div></div>
                 <div>
                     📦 数据缓存: <span id="cache-indicator">未加载</span>
-                    <button onclick="DataManager.refreshJsonData()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新JSON</button>
-                    <button onclick="DataManager.refreshAll()" style="margin-left: 5px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #007bff; background: none; border-radius: 4px; cursor: pointer; color: #007bff;">🔄 全面刷新</button>
+                    <button onclick="universalRefresh()" style="margin-left: 10px; padding: 5px 12px; font-size: 0.85em; border: 1px solid #007bff; background: #007bff; color: white; border-radius: 6px; cursor: pointer; font-weight: 500;">🔄 刷新</button>
                 </div>
             </div>
         </div>
@@ -2023,7 +1951,6 @@ function generateHTML() {
             cache: {
                 jsonData: null,        // JSON文件数据（课程绑定关系）
                 stats: null,           // 统计数据
-                covers: new Map(),     // 封面图片缓存
                 lastJsonUpdate: null,
                 lastStatsUpdate: null
             },
@@ -2130,9 +2057,15 @@ function generateHTML() {
             },
             
             // 封面图片缓存管理
-            getCoverUrl(fileName) {
-                // 总是实时获取，但浏览器会缓存
-                return '/api/album-art/' + encodeURIComponent(fileName);
+            getCoverUrl(fileName, options = {}) {
+                let url = '/api/album-art/' + encodeURIComponent(fileName);
+                
+                // 使用nocache参数直接清理缓存
+                if (options.noCache) {
+                    url += '?nocache=true&t=' + Date.now();
+                }
+                
+                return url;
             },
             
             // 更新缓存状态指示器
@@ -2168,52 +2101,14 @@ function generateHTML() {
                 }
             },
             
-            // 全面刷新（包括浏览器缓存）
-            async refreshAll() {
-                const indicator = document.getElementById('cache-indicator');
-                if (indicator) {
-                    indicator.innerHTML = '<span style="color: #007bff;">全面刷新...</span>';
-                }
-                
-                try {
-                    // 清空所有内存缓存
-                    this.cache.jsonData = null;
-                    this.cache.stats = null;
-                    this.cache.covers.clear();
-                    this.cache.lastJsonUpdate = null;
-                    this.cache.lastStatsUpdate = null;
-                    
-                    // 强制重新加载数据
-                    await Promise.all([
-                        this.getJsonData(true),
-                        this.getStats(true)
-                    ]);
-                    
-                    // 刷新当前页面显示
-                    const currentTab = document.querySelector('.tab.active');
-                    if (currentTab) {
-                        const tabName = currentTab.textContent.includes('概览') ? 'overview' :
-                                      currentTab.textContent.includes('课程') ? 'courses' :
-                                      currentTab.textContent.includes('歌曲') ? 'songs' : null;
-                        if (tabName) {
-                            if (tabName === 'overview') loadOverview();
-                            if (tabName === 'courses') loadCourses();
-                            if (tabName === 'songs') loadSongs();
-                        }
-                    }
-                    
-                    showAlert('所有数据已刷新', 'success');
-                } catch (error) {
-                    showAlert('刷新失败: ' + error.message, 'error');
-                }
-            }
+
         };
         
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            event?.target.classList.add('active');
             if (tabName === 'overview') loadOverview();
             if (tabName === 'courses') loadCourses();
             if (tabName === 'songs') loadSongs();
@@ -2637,7 +2532,7 @@ function generateHTML() {
             const artist = songData?.metadata?.artist || '未知艺术家';
             const album = songData?.metadata?.album || '未知专辑';
             const year = songData?.metadata?.year || '未知年份';
-            const albumArt = songData?.metadata?.albumArt;
+            const hasAlbumArt = songData?.metadata?.hasAlbumArt;
             
             // 生成封面图片HTML
             const fileName = src.split('/').pop();
@@ -2659,7 +2554,8 @@ function generateHTML() {
             }
             
             // 总是使用实时API获取封面，浏览器会自动缓存
-            albumArtHtml = '<img src="' + DataManager.getCoverUrl(fileName) + '" ' +
+            albumArtHtml = '<img id="cover-image-' + fileName.replace(/[^a-zA-Z0-9]/g, '') + '" ' +
+                         'src="' + DataManager.getCoverUrl(fileName, { noCache: true }) + '" ' +
                          'style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" ' +
                          'alt="封面">';
             
@@ -2689,6 +2585,51 @@ function generateHTML() {
                 '</audio>'
             
             document.body.appendChild(player);
+        }
+        
+        
+        // 万能刷新功能：使用nocache参数直接清理缓存
+        async function universalRefresh() {
+            const indicator = document.getElementById('cache-indicator');
+            if (indicator) {
+                indicator.innerHTML = '<span style="color: #007bff;">刷新中...</span>';
+            }
+            
+            try {
+                // 1. 刷新JSON数据
+                await DataManager.refreshJsonData();
+                
+                // 2. 使用nocache参数刷新所有封面图片
+                const images = document.querySelectorAll('img[id^="cover-image-"]');
+                let refreshedCoverCount = 0;
+                
+                images.forEach(img => {
+                    const currentSrc = img.src;
+                    const urlMatch = currentSrc.match(/\\/api\\/album-art\\/([^?]+)/);
+                    if (urlMatch) {
+                        const fileName = decodeURIComponent(urlMatch[1]);
+                        // 直接使用nocache参数，简单有效
+                        img.src = DataManager.getCoverUrl(fileName, { noCache: true });
+                        refreshedCoverCount++;
+                    }
+                });
+                
+                // 3. 重新加载当前页面内容
+                const currentTab = document.querySelector('.tab.active');
+                if (currentTab) {
+                    const tabName = currentTab.textContent.includes('概览') ? 'overview' : 
+                                   currentTab.textContent.includes('课程') ? 'courses' : 'songs';
+                    showTab(tabName);
+                }
+                
+                showAlert('刷新完成：JSON数据和 ' + refreshedCoverCount + ' 个封面已更新', 'success');
+                
+            } catch (error) {
+                showAlert('刷新失败: ' + error.message, 'error');
+                if (indicator) {
+                    indicator.innerHTML = '<span style="color: #dc3545;">刷新失败</span>';
+                }
+            }
         }
         
         // 拖拽到空位的处理函数
