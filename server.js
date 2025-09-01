@@ -708,11 +708,43 @@ function generateHTML() {
         .empty-slot-upload .upload-icon { font-size: 1.5rem; margin-bottom: 8px; }
         .empty-slot-upload .upload-text { font-size: 0.9rem; }
         .course-info { 
-            background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px;
-            border-left: 4px solid #2196f3;
+            background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 15px;
+            border-left: 4px solid #2196f3; display: flex; align-items: center;
+            justify-content: space-between;
         }
-        .course-title-info { font-weight: 600; color: #1976d2; margin-bottom: 5px; }
-        .course-meta-info { font-size: 0.9rem; color: #666; }
+        .course-title-info { font-weight: 600; color: #1976d2; flex: 1; }
+        .course-meta-info { font-size: 0.9rem; color: #666; margin-left: 15px; }
+        .course-play-btn { margin-left: 10px; }
+        .collapsible-section {
+            border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .collapsible-section summary {
+            background: #f8f9fa; padding: 15px 20px; cursor: pointer;
+            font-weight: 600; color: #495057; list-style: none;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .collapsible-section summary:hover {
+            background: #e9ecef;
+        }
+        .collapsible-section summary::after {
+            content: '▼'; transition: transform 0.3s ease;
+        }
+        .collapsible-section[open] summary::after {
+            transform: rotate(180deg);
+        }
+        .collapsible-content {
+            padding: 20px;
+        }
+        .empty-slots-row {
+            display: flex; gap: 15px; margin-top: 10px;
+        }
+        .empty-slot-upload {
+            border: 2px dashed #ced4da; border-radius: 8px; padding: 15px;
+            text-align: center; cursor: pointer; transition: all 0.3s ease;
+            background: #f8f9fa; flex: 1; min-height: 80px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
         .btn {
             padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer;
             font-size: 0.85rem; transition: all 0.2s ease; text-decoration: none;
@@ -822,64 +854,101 @@ function generateHTML() {
                     <span class="search-icon">🔍</span>
                     <input type="text" class="form-control" id="course-search" placeholder="搜索课程标题、文件名、年份..." oninput="searchCourses()">
                 </div>
-                <div id="courses-grid" class="course-grid">
-                    <div class="loading">正在加载课程...</div>
-                </div>
+
+                <details class="collapsible-section" open>
+                    <summary>🎵 有两首歌曲的课程</summary>
+                    <div class="collapsible-content">
+                        <div id="courses-full" class="course-grid">
+                            <div class="loading">正在加载...</div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section" open>
+                    <summary>🎶 有一首歌曲的课程</summary>
+                    <div class="collapsible-content">
+                        <div id="courses-partial" class="course-grid">
+                            <div class="loading">正在加载...</div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section" open>
+                    <summary>📚 没有歌曲的课程</summary>
+                    <div class="collapsible-content">
+                        <div id="courses-empty" class="course-grid">
+                            <div class="loading">正在加载...</div>
+                        </div>
+                    </div>
+                </details>
             </div>
 
             <div id="songs" class="tab-content">
-                <div class="form-group">
-                    <label class="form-label">🎵 添加歌曲</label>
-                    <select class="form-control" id="course-select" style="margin-bottom: 10px;">
-                        <option value="">自动分配到有空位的课程</option>
-                    </select>
-                    
-                    <!-- 拖拽上传区域 -->
-                    <div id="drop-zone" class="drop-zone">
-                        <div class="drop-content">
-                            <div class="drop-icon">📁</div>
-                            <div class="drop-text">
-                                <strong>拖拽 MP3 文件到这里</strong><br>
-                                或点击选择文件
+                <details class="collapsible-section" open>
+                    <summary>🎵 添加歌曲</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <select class="form-control" id="course-select" style="margin-bottom: 10px;">
+                                <option value="">自动分配到有空位的课程</option>
+                            </select>
+                            
+                            <!-- 拖拽上传区域 -->
+                            <div id="drop-zone" class="drop-zone">
+                                <div class="drop-content">
+                                    <div class="drop-icon">📁</div>
+                                    <div class="drop-text">
+                                        <strong>拖拽 MP3 文件到这里</strong><br>
+                                        或点击选择文件
+                                    </div>
+                                    <input type="file" id="song-files" multiple accept=".mp3" style="display: none;">
+                                    <button class="btn btn-primary" onclick="document.getElementById('song-files').click()">选择文件</button>
+                                </div>
                             </div>
-                            <input type="file" id="song-files" multiple accept=".mp3" style="display: none;">
-                            <button class="btn btn-primary" onclick="document.getElementById('song-files').click()">选择文件</button>
+                            
+                            <!-- 文件列表 -->
+                            <div id="file-list" style="margin-top: 15px; display: none;">
+                                <h4>准备上传的文件：</h4>
+                                <div id="files-preview"></div>
+                                <div style="margin-top: 15px;">
+                                    <input type="text" class="form-control" id="batch-friendly-names" placeholder="友好名称（用逗号分隔，可选）" style="margin-bottom: 10px;">
+                                    <button class="btn btn-primary" onclick="uploadBatchFiles()">批量上传</button>
+                                    <button class="btn btn-secondary" onclick="clearFileList()">清空列表</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 上传进度 -->
+                            <div id="upload-progress" style="margin-top: 15px; display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div id="progress-text">上传中...</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- 文件列表 -->
-                    <div id="file-list" style="margin-top: 15px; display: none;">
-                        <h4>准备上传的文件：</h4>
-                        <div id="files-preview"></div>
-                        <div style="margin-top: 15px;">
-                            <input type="text" class="form-control" id="batch-friendly-names" placeholder="友好名称（用逗号分隔，可选）" style="margin-bottom: 10px;">
-                            <button class="btn btn-primary" onclick="uploadBatchFiles()">批量上传</button>
-                            <button class="btn btn-secondary" onclick="clearFileList()">清空列表</button>
+                </details>
+
+                <details class="collapsible-section">
+                    <summary>🗑️ 删除歌曲</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="delete-song-name" placeholder="输入歌曲名称..." style="margin-bottom: 10px;">
+                            <button class="btn btn-danger" onclick="deleteSongByName()">删除歌曲</button>
                         </div>
                     </div>
-                    
-                    <!-- 上传进度 -->
-                    <div id="upload-progress" style="margin-top: 15px; display: none;">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill"></div>
+                </details>
+
+                <details class="collapsible-section" open>
+                    <summary>🎵 歌曲列表</summary>
+                    <div class="collapsible-content">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="form-control" id="song-search" placeholder="搜索歌曲..." oninput="searchSongs()">
                         </div>
-                        <div id="progress-text">上传中...</div>
+                        <div id="songs-list" class="song-list">
+                            <div class="loading">正在加载歌曲...</div>
+                        </div>
                     </div>
-                </div>
-                <hr style="margin: 30px 0;">
-                <div class="form-group">
-                    <label class="form-label">🗑️ 删除歌曲</label>
-                    <input type="text" class="form-control" id="delete-song-name" placeholder="输入歌曲名称..." style="margin-bottom: 10px;">
-                    <button class="btn btn-danger" onclick="deleteSongByName()">删除歌曲</button>
-                </div>
-                <hr style="margin: 30px 0;">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" class="form-control" id="song-search" placeholder="搜索歌曲..." onkeyup="searchSongs()">
-                </div>
-                <div id="songs-list" class="song-list">
-                    <div class="loading">正在加载歌曲...</div>
-                </div>
+                </details>
             </div>
 
             <div id="tools" class="tab-content">
@@ -1080,42 +1149,114 @@ function generateHTML() {
             } catch (e) { console.error('加载失败:', e); }
         }
         function displayCourses(data) {
-            const grid = document.getElementById('courses-grid');
             const courses = Object.entries(data).sort(([a],[b]) => a.localeCompare(b));
-            grid.innerHTML = courses.length ? courses.map(([course, info]) => {
+            
+            // 分类课程
+            const fullCourses = [];
+            const partialCourses = [];
+            const emptyCourses = [];
+            
+            courses.forEach(([course, info]) => {
+                const songs = info.songs || [];
+                const songCount = songs.filter(s => s !== null).length;
+                
+                if (songCount === 2) {
+                    fullCourses.push([course, info]);
+                } else if (songCount === 1) {
+                    partialCourses.push([course, info]);
+                } else {
+                    emptyCourses.push([course, info]);
+                }
+            });
+            
+            // 渲染各类课程
+            renderCourseCategory('courses-full', fullCourses);
+            renderCourseCategory('courses-partial', partialCourses);
+            renderCourseCategory('courses-empty', emptyCourses);
+        }
+        
+        function renderCourseCategory(containerId, courses) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            if (courses.length === 0) {
+                container.innerHTML = '<div class="empty-slot">暂无课程</div>';
+                return;
+            }
+            
+            container.innerHTML = courses.map(([course, info]) => {
                 const dateMatch = course.match(/(\\d{4})(\\d{2})(\\d{2})/);
                 const dateStr = dateMatch ? \`\${dateMatch[1]}-\${dateMatch[2]}-\${dateMatch[3]}\` : course;
                 
-                // 课程信息
+                // 课程信息 - 一行显示
                 const courseMeta = info.course_metadata;
                 const courseInfoHtml = courseMeta ? \`
                     <div class="course-info">
                         <div class="course-title-info">📚 \${courseMeta.title}</div>
-                        <div class="course-meta-info">📅 \${courseMeta.year} | 🎤 \${courseMeta.artist} | ⏱️ \${courseMeta.duration ? Math.floor(courseMeta.duration / 60) + ':' + (courseMeta.duration % 60).toString().padStart(2, '0') : '未知'}</div>
+                        <div class="course-meta-info">🎤 \${courseMeta.artist} | ⏱️ \${courseMeta.duration ? Math.floor(courseMeta.duration / 60) + ':' + (courseMeta.duration % 60).toString().padStart(2, '0') : '未知'}</div>
+                        <button class="btn btn-primary course-play-btn" onclick="playAudio('/songs/\${course}')">▶️ 播放</button>
                     </div>
-                \` : '';
+                \` : \`
+                    <div class="course-info">
+                        <div class="course-title-info">📁 \${course}</div>
+                        <div class="course-meta-info">📅 \${dateStr}</div>
+                        <button class="btn btn-primary course-play-btn" onclick="playAudio('/songs/\${course}')">▶️ 播放</button>
+                    </div>
+                \`;
                 
+                // 歌曲信息
                 const songsHtml = info.songs.map((song, i) => {
                     if (song) {
                         const fileInfo = info.renamed_files.find(f => f.slot === i);
                         const meta = info.songs_metadata[i];
-                        return \`<div class="song-slot"><div class="song-info"><div class="song-title">\${fileInfo ? fileInfo.friendly_name : song}</div><div class="song-meta">🎤 \${meta?.artist || '未知'} | 📅 \${meta?.year || '未知'}</div></div><div><a href="/songs/\${song}" target="_blank" class="btn btn-primary">播放</a><button class="btn btn-danger" onclick="removeSong('\${course}',\${i})">删除</button></div></div>\`;
-                    } else {
                         return \`
                             <div class="song-slot">
-                                <div class="empty-slot-upload" ondrop="dropToSlot(event, '\${course}', \${i})" ondragover="allowDrop(event)" ondragleave="removeDragover(event)" onclick="uploadToSlot('\${course}', \${i})">
-                                    <div class="upload-icon">📁</div>
-                                    <div class="upload-text">
-                                        <strong>空位 \${i + 1}</strong><br>
-                                        点击或拖拽上传歌曲
-                                    </div>
+                                <div class="song-info">
+                                    <div class="song-title">\${fileInfo ? fileInfo.friendly_name : song}</div>
+                                    <div class="song-meta">🎤 \${meta?.artist || '未知'} | 📅 \${meta?.year || '未知'}</div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary" onclick="playAudio('/songs/\${song}')">▶️ 播放</button>
+                                    <button class="btn btn-danger" onclick="removeSong('\${course}',\${i})">删除</button>
                                 </div>
                             </div>
                         \`;
                     }
+                    return '';
                 }).join('');
-                return \`<div class="course-card"><div class="course-header"><div class="course-title">\${course}</div><div class="course-date">📅 \${dateStr}</div></div><div class="course-body">\${courseInfoHtml}\${songsHtml}</div></div>\`;
-            }).join('') : '<div class="empty-slot">暂无课程</div>';
+                
+                // 空位 - 放在一行
+                const emptySlots = [];
+                info.songs.forEach((song, i) => {
+                    if (!song) {
+                        emptySlots.push(\`
+                            <div class="empty-slot-upload" ondrop="dropToSlot(event, '\${course}', \${i})" ondragover="allowDrop(event)" ondragleave="removeDragover(event)" onclick="uploadToSlot('\${course}', \${i})">
+                                <div class="upload-icon">📁</div>
+                                <div class="upload-text">
+                                    <strong>空位 \${i + 1}</strong><br>
+                                    点击或拖拽上传
+                                </div>
+                            </div>
+                        \`);
+                    }
+                });
+                
+                const emptySlotsHtml = emptySlots.length > 0 ? \`
+                    <div class="empty-slots-row">
+                        \${emptySlots.join('')}
+                    </div>
+                \` : '';
+                
+                return \`
+                    <div class="course-card">
+                        <div class="course-body">
+                            \${courseInfoHtml}
+                            \${songsHtml}
+                            \${emptySlotsHtml}
+                        </div>
+                    </div>
+                \`;
+            }).join('');
         }
         
         function searchCourses() {
@@ -1145,6 +1286,36 @@ function generateHTML() {
                 }
             }
             displayCourses(filtered);
+        }
+        
+        // 内嵌播放器功能
+        function playAudio(src) {
+            // 移除现有的播放器
+            const existingPlayer = document.getElementById('audio-player');
+            if (existingPlayer) {
+                existingPlayer.remove();
+            }
+            
+            // 创建新的播放器
+            const player = document.createElement('div');
+            player.id = 'audio-player';
+            player.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 10000; min-width: 300px;';
+            
+            player.innerHTML = \`
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <strong style="color: #495057;">🎵 正在播放</strong>
+                    <button onclick="document.getElementById('audio-player').remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+                </div>
+                <audio controls autoplay style="width: 100%;">
+                    <source src="\${src}" type="audio/mpeg">
+                    您的浏览器不支持音频播放
+                </audio>
+                <div style="font-size: 0.85rem; color: #6c757d; margin-top: 5px;">
+                    \${src.split('/').pop()}
+                </div>
+            \`;
+            
+            document.body.appendChild(player);
         }
         
         // 拖拽到空位的处理函数
