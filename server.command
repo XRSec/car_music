@@ -15,6 +15,9 @@ const multer = require('multer');
 const app = express();
 const PORT = 3000;
 
+// 调试开关
+const DEBUG = false; // 设置为 true 启用详细日志
+
 const DATA_FILE = 'music-map.json';
 const SONG_DIR = __dirname;
 
@@ -126,12 +129,53 @@ function saveData(data) {
 
 // 获取音乐元数据（包括封面图片）
 async function getMusicMetadata(filePath) {
+    if (DEBUG) {
+        console.log(`\n=== 开始解析文件: ${filePath} ===`);
+    }
+    
     try {
         const metadata = await mm.parseFile(filePath, {
             skipCovers: false,
             skipPostHeaders: false,
             includeChapters: false
         });
+        
+        if (DEBUG) {
+            console.log('原始元数据结构:');
+            console.log('- metadata.common:', metadata.common ? Object.keys(metadata.common) : 'undefined');
+            console.log('- metadata.format:', metadata.format ? Object.keys(metadata.format) : 'undefined');
+            
+            if (metadata.common) {
+                console.log('Common 字段详情:');
+                console.log('  - title:', metadata.common.title);
+                console.log('  - artist:', metadata.common.artist);
+                console.log('  - album:', metadata.common.album);
+                console.log('  - year:', metadata.common.year);
+                console.log('  - genre:', metadata.common.genre);
+                console.log('  - picture:', metadata.common.picture ? `${metadata.common.picture.length} 个图片` : 'none');
+                
+                if (metadata.common.picture && metadata.common.picture.length > 0) {
+                    console.log('封面图片详情:');
+                    metadata.common.picture.forEach((pic, index) => {
+                        console.log(`  图片 ${index + 1}:`, {
+                            format: pic.format,
+                            type: pic.type,
+                            description: pic.description,
+                            dataType: typeof pic.data,
+                            dataSize: pic.data ? (Array.isArray(pic.data) ? pic.data.length : pic.data.length) : 0
+                        });
+                    });
+                }
+            }
+            
+            if (metadata.format) {
+                console.log('Format 字段详情:');
+                console.log('  - duration:', metadata.format.duration);
+                console.log('  - bitrate:', metadata.format.bitrate);
+                console.log('  - sampleRate:', metadata.format.sampleRate);
+            }
+        }
+        
         let albumArt = null;
 
         // 提取封面图片
@@ -144,9 +188,10 @@ async function getMusicMetadata(filePath) {
                     if (Array.isArray(dataBuffer)) {
                         // 如果是数组，转换为 Buffer
                         dataBuffer = Buffer.from(dataBuffer);
+                        if (DEBUG) console.log('封面数据从数组转换为Buffer');
                     } else if (!(dataBuffer instanceof Buffer)) {
                         // 如果不是 Buffer 也不是数组，尝试其他处理方式
-                        console.warn(`封面数据格式未知 ${filePath}, 类型:`, typeof dataBuffer);
+                        if (DEBUG) console.log(`封面数据格式未知 ${filePath}, 类型:`, typeof dataBuffer);
                         return; // 跳过封面，不抛出错误
                     }
                     
@@ -154,13 +199,23 @@ async function getMusicMetadata(filePath) {
                         format: picture.format,
                         data: dataBuffer.toString('base64')
                     };
+                    
+                    if (DEBUG) {
+                        console.log('封面提取成功:', {
+                            format: picture.format,
+                            base64Length: albumArt.data.length
+                        });
+                    }
                 }
             } catch (pictureError) {
+                if (DEBUG) console.log(`封面提取失败 ${filePath}:`, pictureError.message);
                 console.warn(`封面提取失败 ${filePath}:`, pictureError.message);
             }
+        } else {
+            if (DEBUG) console.log('文件中没有找到封面图片');
         }
 
-        return {
+        const result = {
             title: metadata.common?.title || path.basename(filePath, '.mp3'),
             artist: metadata.common?.artist || '未知艺术家',
             album: metadata.common?.album || '未知专辑',
@@ -169,7 +224,25 @@ async function getMusicMetadata(filePath) {
             duration: metadata.format?.duration ? Math.round(metadata.format.duration) : 0,
             albumArt: albumArt
         };
+        
+        if (DEBUG) {
+            console.log('最终提取结果:');
+            console.log('  - title:', result.title);
+            console.log('  - artist:', result.artist);
+            console.log('  - album:', result.album);
+            console.log('  - year:', result.year);
+            console.log('  - genre:', result.genre);
+            console.log('  - duration:', result.duration);
+            console.log('  - albumArt:', result.albumArt ? 'Yes' : 'No');
+            console.log(`=== 完成解析: ${path.basename(filePath)} ===\n`);
+        }
+        
+        return result;
     } catch (error) {
+        if (DEBUG) {
+            console.log(`元数据提取完全失败 ${filePath}:`, error.message);
+            console.log('错误详情:', error);
+        }
         console.warn(`元数据提取失败 ${filePath}:`, error.message);
         return {
             title: path.basename(filePath, '.mp3'),
@@ -768,8 +841,15 @@ app.get('/api/album-art/:filename', async (req, res) => {
     const filename = req.params.filename;
     const filePath = path.join(SONG_DIR, filename);
 
+    if (DEBUG) {
+        console.log(`\n=== 封面API请求: ${filename} ===`);
+        console.log('文件路径:', filePath);
+        console.log('文件存在:', fs.existsSync(filePath));
+    }
+
     if (!fs.existsSync(filePath)) {
         // 文件不存在，返回默认图标
+        if (DEBUG) console.log('文件不存在，返回默认图标');
         const defaultSvg = generateDefaultMusicIcon('song');
         res.set('Content-Type', 'image/svg+xml');
         res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
@@ -783,6 +863,13 @@ app.get('/api/album-art/:filename', async (req, res) => {
             includeChapters: false
         });
 
+        if (DEBUG) {
+            console.log('封面API - 元数据解析结果:');
+            console.log('- 有common:', !!metadata.common);
+            console.log('- 有picture:', !!(metadata.common && metadata.common.picture));
+            console.log('- picture数量:', metadata.common?.picture?.length || 0);
+        }
+
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             const picture = metadata.common.picture[0];
             if (picture.data && picture.format) {
@@ -790,19 +877,23 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 let dataBuffer = picture.data;
                 if (Array.isArray(dataBuffer)) {
                     dataBuffer = Buffer.from(dataBuffer);
+                    if (DEBUG) console.log('封面API - 数组转Buffer成功');
                 } else if (!(dataBuffer instanceof Buffer)) {
                     // 数据格式错误，返回默认图标
+                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标');
                     const defaultSvg = generateDefaultMusicIcon('song');
                     res.set('Content-Type', 'image/svg+xml');
                     res.set('Cache-Control', 'public, max-age=3600');
                     return res.send(defaultSvg);
                 }
                 
+                if (DEBUG) console.log('封面API - 返回实际封面图片');
                 res.set('Content-Type', picture.format);
                 res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
                 res.send(dataBuffer);
             } else {
                 // 封面数据损坏，返回默认图标
+                if (DEBUG) console.log('封面API - 封面数据损坏，返回默认图标');
                 const defaultSvg = generateDefaultMusicIcon('song');
                 res.set('Content-Type', 'image/svg+xml');
                 res.set('Cache-Control', 'public, max-age=3600');
@@ -815,18 +906,101 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 iconType = 'course';
             }
             
+            if (DEBUG) console.log(`封面API - 没有封面，返回${iconType}类型默认图标`);
             const defaultSvg = generateDefaultMusicIcon(iconType);
             res.set('Content-Type', 'image/svg+xml');
             res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
             res.send(defaultSvg);
         }
     } catch (error) {
+        if (DEBUG) {
+            console.log(`封面API - 解析失败 ${filePath}:`, error.message);
+        }
         console.warn(`读取封面失败 ${filePath}:`, error.message);
         // 读取失败，返回默认图标而不是错误
         const defaultSvg = generateDefaultMusicIcon('song');
         res.set('Content-Type', 'image/svg+xml');
         res.set('Cache-Control', 'public, max-age=3600');
         res.send(defaultSvg);
+    }
+});
+
+// 调试API：分析特定文件的元数据
+app.get('/api/debug-metadata/:filename', async (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(SONG_DIR, filename);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({error: '文件不存在'});
+    }
+
+    try {
+        // 临时启用调试模式
+        const originalDebug = DEBUG;
+        
+        console.log(`\n=== 调试模式分析文件: ${filename} ===`);
+        
+        const metadata = await mm.parseFile(filePath, {
+            skipCovers: false,
+            skipPostHeaders: false,
+            includeChapters: false
+        });
+        
+        // 详细分析结果
+        const analysis = {
+            file: filename,
+            path: filePath,
+            fileSize: fs.statSync(filePath).size,
+            metadata: {
+                common: metadata.common ? {
+                    title: metadata.common.title,
+                    artist: metadata.common.artist,
+                    album: metadata.common.album,
+                    year: metadata.common.year,
+                    genre: metadata.common.genre,
+                    albumartist: metadata.common.albumartist,
+                    track: metadata.common.track,
+                    disk: metadata.common.disk,
+                    picture_count: metadata.common.picture ? metadata.common.picture.length : 0,
+                    all_fields: Object.keys(metadata.common)
+                } : null,
+                format: metadata.format ? {
+                    duration: metadata.format.duration,
+                    bitrate: metadata.format.bitrate,
+                    sampleRate: metadata.format.sampleRate,
+                    numberOfChannels: metadata.format.numberOfChannels,
+                    container: metadata.format.container,
+                    codec: metadata.format.codec,
+                    all_fields: Object.keys(metadata.format)
+                } : null,
+                native: metadata.native ? Object.keys(metadata.native) : []
+            }
+        };
+        
+        if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
+            analysis.pictures = metadata.common.picture.map((pic, index) => ({
+                index: index,
+                format: pic.format,
+                type: pic.type,
+                description: pic.description,
+                dataType: typeof pic.data,
+                dataSize: pic.data ? (Array.isArray(pic.data) ? pic.data.length : pic.data.length) : 0,
+                isBuffer: pic.data instanceof Buffer,
+                isArray: Array.isArray(pic.data)
+            }));
+        }
+        
+        console.log('调试分析结果:', JSON.stringify(analysis, null, 2));
+        console.log(`=== 调试完成: ${filename} ===\n`);
+        
+        res.json(analysis);
+    } catch (error) {
+        console.log(`调试分析失败 ${filePath}:`, error.message);
+        res.status(500).json({
+            error: error.message,
+            file: filename,
+            path: filePath
+        });
     }
 });
 
@@ -1453,13 +1627,25 @@ function generateHTML() {
                     </div>
                 </details>
 
-                <details class="collapsible-section" open>
+                <details class="collapsible-section">
                     <summary>🔍 查询歌曲</summary>
                     <div class="collapsible-content">
                         <div class="form-group">
                             <input type="text" class="form-control" id="query-song" placeholder="输入歌曲名称..." style="margin-bottom: 10px;">
                             <button class="btn btn-primary" onclick="querySong()">查询</button>
                             <div id="query-result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section">
+                    <summary>🔍 调试元数据</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <p style="color: #6c757d; margin-bottom: 15px;">分析MP3文件的详细元数据信息，帮助诊断识别问题</p>
+                            <input type="text" class="form-control" id="debug-filename" placeholder="输入文件名（如：20170221-2-A.mp3）..." style="margin-bottom: 10px;">
+                            <button class="btn btn-warning" onclick="debugMetadata()">🔍 分析元数据</button>
+                            <div id="debug-result" style="margin-top: 15px;"></div>
                         </div>
                     </div>
                 </details>
@@ -2288,6 +2474,148 @@ function generateHTML() {
                     document.getElementById('query-result').innerHTML = '<div class="alert alert-error">未找到匹配的歌曲</div>';
                 }
             } catch (e) { document.getElementById('query-result').innerHTML = '<div class="alert alert-error">查询失败</div>'; }
+        }
+
+        async function debugMetadata() {
+            const filename = document.getElementById('debug-filename').value;
+            if (!filename) {
+                alert('请输入文件名');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('debug-result');
+            resultDiv.innerHTML = '<div class="alert alert-info">正在分析元数据...</div>';
+            
+            try {
+                const response = await fetch('/api/debug-metadata/' + encodeURIComponent(filename));
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let html = '<div class="alert alert-success"><strong>元数据分析完成</strong></div>';
+                    html += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.9em; max-height: 500px; overflow-y: auto;">';
+                    
+                    html += '<h5>📁 文件信息</h5>';
+                    html += '<div>文件名: ' + result.file + '</div>';
+                    html += '<div>文件大小: ' + (result.fileSize / 1024 / 1024).toFixed(2) + ' MB</div><br>';
+                    
+                    if (result.metadata.common) {
+                        html += '<h5>🎵 基本信息</h5>';
+                        html += '<div>标题: ' + (result.metadata.common.title || '未设置') + '</div>';
+                        html += '<div>艺术家: ' + (result.metadata.common.artist || '未设置') + '</div>';
+                        html += '<div>专辑: ' + (result.metadata.common.album || '未设置') + '</div>';
+                        html += '<div>年份: ' + (result.metadata.common.year || '未设置') + '</div>';
+                        html += '<div>流派: ' + (result.metadata.common.genre ? result.metadata.common.genre.join(', ') : '未设置') + '</div>';
+                        html += '<div>专辑艺术家: ' + (result.metadata.common.albumartist || '未设置') + '</div>';
+                        html += '<div>曲目: ' + (result.metadata.common.track ? JSON.stringify(result.metadata.common.track) : '未设置') + '</div><br>';
+                        
+                        html += '<h5>📋 所有Common字段</h5>';
+                        html += '<div>' + result.metadata.common.all_fields.join(', ') + '</div><br>';
+                    } else {
+                        html += '<div class="alert alert-warning">⚠️ 没有找到 common 元数据</div>';
+                    }
+                    
+                    if (result.metadata.format) {
+                        html += '<h5>🔧 格式信息</h5>';
+                        html += '<div>时长: ' + (result.metadata.format.duration ? result.metadata.format.duration.toFixed(2) + 's' : '未知') + '</div>';
+                        html += '<div>比特率: ' + (result.metadata.format.bitrate || '未知') + '</div>';
+                        html += '<div>采样率: ' + (result.metadata.format.sampleRate || '未知') + '</div>';
+                        html += '<div>声道数: ' + (result.metadata.format.numberOfChannels || '未知') + '</div>';
+                        html += '<div>容器格式: ' + (result.metadata.format.container || '未知') + '</div>';
+                        html += '<div>编解码器: ' + (result.metadata.format.codec || '未知') + '</div><br>';
+                        
+                        html += '<h5>📋 所有Format字段</h5>';
+                        html += '<div>' + result.metadata.format.all_fields.join(', ') + '</div><br>';
+                    }
+                    
+                    if (result.pictures && result.pictures.length > 0) {
+                        html += '<h5>🖼️ 封面图片信息</h5>';
+                        result.pictures.forEach(pic => {
+                            html += '<div>图片 ' + (pic.index + 1) + ':</div>';
+                            html += '<div>  - 格式: ' + (pic.format || '未知') + '</div>';
+                            html += '<div>  - 类型: ' + (pic.type || '未知') + '</div>';
+                            html += '<div>  - 描述: ' + (pic.description || '无') + '</div>';
+                            html += '<div>  - 数据类型: ' + pic.dataType + '</div>';
+                            html += '<div>  - 数据大小: ' + (pic.dataSize / 1024).toFixed(2) + ' KB</div>';
+                            html += '<div>  - 是Buffer: ' + pic.isBuffer + '</div>';
+                            html += '<div>  - 是数组: ' + pic.isArray + '</div><br>';
+                        });
+                    } else {
+                        html += '<div class="alert alert-warning">⚠️ 没有找到封面图片</div>';
+                    }
+                    
+                    if (result.metadata.native && result.metadata.native.length > 0) {
+                        html += '<h5>🔖 原生标签格式</h5>';
+                        html += '<div>' + result.metadata.native.join(', ') + '</div>';
+                    }
+                    
+                    html += '</div>';
+                    html += '<div style="margin-top: 15px;"><button class="btn btn-secondary" onclick="copyDebugInfo(\'' + filename + '\')">📋 复制调试信息</button></div>';
+                    
+                    resultDiv.innerHTML = html;
+                    
+                    // 保存调试数据用于复制
+                    window.lastDebugResult = result;
+                    
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-error">分析失败: ' + result.error + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="alert alert-error">分析失败: ' + error.message + '</div>';
+            }
+        }
+
+        function copyDebugInfo(filename) {
+            if (!window.lastDebugResult) {
+                alert('没有调试数据可复制');
+                return;
+            }
+            
+            const result = window.lastDebugResult;
+            let text = '=== MP3元数据调试报告 ===\\n';
+            text += '文件名: ' + result.file + '\\n';
+            text += '文件大小: ' + (result.fileSize / 1024 / 1024).toFixed(2) + ' MB\\n\\n';
+            
+            if (result.metadata.common) {
+                text += '【基本信息】\\n';
+                text += '标题: ' + (result.metadata.common.title || '未设置') + '\\n';
+                text += '艺术家: ' + (result.metadata.common.artist || '未设置') + '\\n';
+                text += '专辑: ' + (result.metadata.common.album || '未设置') + '\\n';
+                text += '年份: ' + (result.metadata.common.year || '未设置') + '\\n';
+                text += '流派: ' + (result.metadata.common.genre ? result.metadata.common.genre.join(', ') : '未设置') + '\\n';
+                text += '专辑艺术家: ' + (result.metadata.common.albumartist || '未设置') + '\\n\\n';
+                
+                text += '【所有Common字段】\\n' + result.metadata.common.all_fields.join(', ') + '\\n\\n';
+            }
+            
+            if (result.metadata.format) {
+                text += '【格式信息】\\n';
+                text += '时长: ' + (result.metadata.format.duration ? result.metadata.format.duration.toFixed(2) + 's' : '未知') + '\\n';
+                text += '比特率: ' + (result.metadata.format.bitrate || '未知') + '\\n';
+                text += '采样率: ' + (result.metadata.format.sampleRate || '未知') + '\\n';
+                text += '声道数: ' + (result.metadata.format.numberOfChannels || '未知') + '\\n';
+                text += '容器格式: ' + (result.metadata.format.container || '未知') + '\\n';
+                text += '编解码器: ' + (result.metadata.format.codec || '未知') + '\\n\\n';
+            }
+            
+            if (result.pictures && result.pictures.length > 0) {
+                text += '【封面图片】\\n';
+                result.pictures.forEach(pic => {
+                    text += '图片 ' + (pic.index + 1) + ': ' + (pic.format || '未知') + ', ' + (pic.dataSize / 1024).toFixed(2) + ' KB\\n';
+                });
+                text += '\\n';
+            }
+            
+            if (result.metadata.native && result.metadata.native.length > 0) {
+                text += '【原生标签格式】\\n' + result.metadata.native.join(', ') + '\\n';
+            }
+            
+            text += '\\n=== 报告结束 ===';
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('调试信息已复制到剪贴板', 'success');
+            }).catch(() => {
+                showAlert('复制失败，请手动复制', 'error');
+            });
         }
         
         async function deleteAllSongs() {
