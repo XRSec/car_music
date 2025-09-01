@@ -1,0 +1,6098 @@
+{
+  "20170221-2.mp3": {
+    "songs": [
+      "20170221-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "11.mp3",
+        "playlist_name": "20170221-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "11",
+          "artist": "队长; 黄礼格",
+          "album": "11",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 235,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.568Z"
+      }
+    ]
+  },
+  "20170221.mp3": {
+    "songs": [
+      "20170221-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "1987我不知会遇见你.mp3",
+        "playlist_name": "20170221-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "1987我不知会遇见你",
+          "artist": "李宇春",
+          "album": "1987我不知会遇见你",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 318,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:09:29.021Z"
+      }
+    ]
+  },
+  "20170222.mp3": {
+    "songs": [
+      "20170222-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "阿衣莫.mp3",
+        "playlist_name": "20170222-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "阿衣莫",
+          "artist": "阿吉太组合",
+          "album": "阿衣莫",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 314,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.580Z"
+      }
+    ]
+  },
+  "20170223.mp3": {
+    "songs": [
+      "20170223-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱的飞行日记.mp3",
+        "playlist_name": "20170223-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱的飞行日记",
+          "artist": "周杰伦; 杨瑞代",
+          "album": "跨时代",
+          "year": 2010,
+          "genre": "Blues",
+          "duration": 256,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.584Z"
+      }
+    ]
+  },
+  "20170224.mp3": {
+    "songs": [
+      "20170224-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱都爱了.mp3",
+        "playlist_name": "20170224-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱都爱了",
+          "artist": "小洲",
+          "album": "爱都爱了",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 256,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.590Z"
+      }
+    ]
+  },
+  "20170227.mp3": {
+    "songs": [
+      "20170227-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱你.mp3",
+        "playlist_name": "20170227-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱你",
+          "artist": "王心凌",
+          "album": "爱你",
+          "year": 2004,
+          "genre": "Blues",
+          "duration": 220,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.594Z"
+      }
+    ]
+  },
+  "20170228.mp3": {
+    "songs": [
+      "20170228-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱人错过.mp3",
+        "playlist_name": "20170228-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱人错过",
+          "artist": "告五人",
+          "album": "我肯定在几百年前就说过爱你",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 292,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.604Z"
+      }
+    ]
+  },
+  "20170301.mp3": {
+    "songs": [
+      "20170301-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱如火.mp3",
+        "playlist_name": "20170301-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱如火",
+          "artist": "那艺娜",
+          "album": "爱如火",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 205,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.610Z"
+      }
+    ]
+  },
+  "20170302.mp3": {
+    "songs": [
+      "20170302-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱似水仙 (合唱版).mp3",
+        "playlist_name": "20170302-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱似水仙 (合唱版)",
+          "artist": "张茜（张惜淇）; 半吨兄弟",
+          "album": "爱似水仙",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 236,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.614Z"
+      }
+    ]
+  },
+  "20170303.mp3": {
+    "songs": [
+      "20170303-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "爱是无畏的冒险.mp3",
+        "playlist_name": "20170303-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "爱是无畏的冒险",
+          "artist": "程今",
+          "album": "爱是无畏的冒险",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 177,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.616Z"
+      }
+    ]
+  },
+  "20170306.mp3": {
+    "songs": [
+      "20170306-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "暧昧.mp3",
+        "playlist_name": "20170306-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "暧昧",
+          "artist": "薛之谦",
+          "album": "渡 The Crossing",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 312,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.620Z"
+      }
+    ]
+  },
+  "20170307.mp3": {
+    "songs": [
+      "20170307-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "安和桥.mp3",
+        "playlist_name": "20170307-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "安和桥",
+          "artist": "宋冬野",
+          "album": "安和桥北",
+          "year": 2013,
+          "genre": "未知流派",
+          "duration": 250,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.626Z"
+      }
+    ]
+  },
+  "20170308.mp3": {
+    "songs": [
+      "20170308-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "把孤独当做晚餐.mp3",
+        "playlist_name": "20170308-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "把孤独当做晚餐(翻自 群星)",
+          "artist": "井胧",
+          "album": "把孤独当做晚餐",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 176,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.631Z"
+      }
+    ]
+  },
+  "20170309.mp3": {
+    "songs": [
+      "20170309-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "把回忆拼好给你.mp3",
+        "playlist_name": "20170309-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "把回忆拼好给你",
+          "artist": "cici_",
+          "album": "把回忆拼好给你 (新版)",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 205,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.635Z"
+      }
+    ]
+  },
+  "20170310.mp3": {
+    "songs": [
+      "20170310-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "白月光与朱砂痣.mp3",
+        "playlist_name": "20170310-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "白月光与朱砂痣",
+          "artist": "大籽",
+          "album": "白月光与朱砂痣",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 204,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.652Z"
+      }
+    ]
+  },
+  "20170313.mp3": {
+    "songs": [
+      "20170313-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "必杀技.mp3",
+        "playlist_name": "20170313-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "必杀技",
+          "artist": "古巨基",
+          "album": "游戏 基",
+          "year": 2003,
+          "genre": "Blues",
+          "duration": 232,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.670Z"
+      }
+    ]
+  },
+  "20170314.mp3": {
+    "songs": [
+      "20170314-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "别让我放不下.mp3",
+        "playlist_name": "20170314-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "别让我放不下",
+          "artist": "李俊杰; 婷汐",
+          "album": "别让我放不下",
+          "year": 2015,
+          "genre": "Blues",
+          "duration": 270,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.706Z"
+      }
+    ]
+  },
+  "20170315.mp3": {
+    "songs": [
+      "20170315-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "不问ciaga (不问别离).mp3",
+        "playlist_name": "20170315-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "不问ciaga (不问别离)",
+          "artist": "指尖笑",
+          "album": "不问别离",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 163,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.710Z"
+      }
+    ]
+  },
+  "20170316.mp3": {
+    "songs": [
+      "20170316-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "柴 鱼 の c a l l i n g.mp3",
+        "playlist_name": "20170316-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "柴 鱼 の c a l l i n g",
+          "artist": "幸子小姐拜托了",
+          "album": "幸 子 さ ん は お 願 い し ま す",
+          "year": 2017,
+          "genre": "未知流派",
+          "duration": 152,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.714Z"
+      }
+    ]
+  },
+  "20170317.mp3": {
+    "songs": [
+      "20170317-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "承诺.mp3",
+        "playlist_name": "20170317-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "承诺",
+          "artist": "陈翔",
+          "album": "初告白",
+          "year": 2011,
+          "genre": "Blues",
+          "duration": 258,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:56.727Z"
+      }
+    ]
+  },
+  "20170320.mp3": {
+    "songs": [
+      "20170320-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "传说.mp3",
+        "playlist_name": "20170320-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "传说",
+          "artist": "赵偲旖",
+          "album": "传说",
+          "year": 2020,
+          "genre": "未知流派",
+          "duration": 184,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.600Z"
+      }
+    ]
+  },
+  "20170321.mp3": {
+    "songs": [
+      "20170321-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "春娇与志明.mp3",
+        "playlist_name": "20170321-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "春娇与志明",
+          "artist": "街道办GDC; 欧阳耀莹",
+          "album": "春娇与志明",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 205,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.605Z"
+      }
+    ]
+  },
+  "20170322.mp3": {
+    "songs": [
+      "20170322-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "春三月.mp3",
+        "playlist_name": "20170322-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "春三月",
+          "artist": "司南",
+          "album": "春三月",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 225,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.610Z"
+      }
+    ]
+  },
+  "20170323.mp3": {
+    "songs": [
+      "20170323-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "春天里.mp3",
+        "playlist_name": "20170323-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "春天里",
+          "artist": "汪峰",
+          "album": "信仰在空中飘扬",
+          "year": 2009,
+          "genre": "Blues",
+          "duration": 280,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.617Z"
+      }
+    ]
+  },
+  "20170324-2.mp3": {
+    "songs": [
+      "20170324-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "春庭雪.mp3",
+        "playlist_name": "20170324-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "春庭雪 (DJ姜昕妤版)",
+          "artist": "邓寓君(等什么君)",
+          "album": "春庭雪",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 241,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.636Z"
+      }
+    ]
+  },
+  "20170327.mp3": {
+    "songs": [
+      "20170327-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "此去半生.mp3",
+        "playlist_name": "20170327-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "此去半生",
+          "artist": "L（桃籽）",
+          "album": "此去半生",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 180,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.641Z"
+      }
+    ]
+  },
+  "20170328.mp3": {
+    "songs": [
+      "20170328-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "此生不换.mp3",
+        "playlist_name": "20170328-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "此生不换",
+          "artist": "青鸟飞鱼",
+          "album": "仙剑奇侠传三 电视剧原声带",
+          "year": 2009,
+          "genre": "Blues",
+          "duration": 266,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.647Z"
+      }
+    ]
+  },
+  "20170329.mp3": {
+    "songs": [
+      "20170329-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "赐伤.mp3",
+        "playlist_name": "20170329-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "赐伤 (DJAX1n版)",
+          "artist": "洋澜一",
+          "album": "赐伤 (DJAX1n版)",
+          "year": 2024,
+          "genre": "Blues",
+          "duration": 219,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.650Z"
+      }
+    ]
+  },
+  "20170330.mp3": {
+    "songs": [
+      "20170330-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "赐我.mp3",
+        "playlist_name": "20170330-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "赐我",
+          "artist": "一只白羊",
+          "album": "赐我",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 156,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.658Z"
+      }
+    ]
+  },
+  "20170331.mp3": {
+    "songs": [
+      "20170331-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "大风吹.mp3",
+        "playlist_name": "20170331-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "大风吹",
+          "artist": "王赫野",
+          "album": "大风吹",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 164,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.667Z"
+      }
+    ]
+  },
+  "20170403.mp3": {
+    "songs": [
+      "20170403-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "带我去找夜生活.mp3",
+        "playlist_name": "20170403-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "带我去找夜生活",
+          "artist": "告五人",
+          "album": "带我去找夜生活",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 300,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.680Z"
+      }
+    ]
+  },
+  "20170404.mp3": {
+    "songs": [
+      "20170404-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "盗墓笔记·十年人间.mp3",
+        "playlist_name": "20170404-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "盗墓笔记·十年人间",
+          "artist": "李常超 (Lao乾妈)",
+          "album": "盗墓笔记·十年人间",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 277,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.689Z"
+      }
+    ]
+  },
+  "20170405.mp3": {
+    "songs": [
+      "20170405-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "等不来花开.mp3",
+        "playlist_name": "20170405-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "等不来花开",
+          "artist": "pro",
+          "album": "等不来花开",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 152,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.694Z"
+      }
+    ]
+  },
+  "20170406.mp3": {
+    "songs": [
+      "20170406-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "多想留在你身边.mp3",
+        "playlist_name": "20170406-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "多想留在你身边",
+          "artist": "刘增瞳",
+          "album": "多想留在你身边",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 213,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.700Z"
+      }
+    ]
+  },
+  "20170407.mp3": {
+    "songs": [
+      "20170407-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "多一个人陪伴.mp3",
+        "playlist_name": "20170407-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "多一个人陪伴",
+          "artist": "东来东往",
+          "album": "不一样的美男子 电视剧原声带",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 230,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.709Z"
+      }
+    ]
+  },
+  "20170410.mp3": {
+    "songs": [
+      "20170410-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "风吹过八千里.mp3",
+        "playlist_name": "20170410-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "风吹过八千里",
+          "artist": "苏星婕",
+          "album": "风吹过八千里",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 229,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.737Z"
+      }
+    ]
+  },
+  "20170411.mp3": {
+    "songs": [
+      "20170411-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "风吹一夏.mp3",
+        "playlist_name": "20170411-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "风吹一夏",
+          "artist": "DP龙猪; Swei水; Rays陈袁",
+          "album": "风吹一夏",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 199,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.743Z"
+      }
+    ]
+  },
+  "20170412.mp3": {
+    "songs": [
+      "20170412-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "感谢有你陪在我身旁.mp3",
+        "playlist_name": "20170412-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "感谢有你陪在我身旁",
+          "artist": "薛朋朋; 古文豪; 左文正",
+          "album": "感谢有你陪在我身旁",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 242,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.747Z"
+      }
+    ]
+  },
+  "20170413.mp3": {
+    "songs": [
+      "20170413-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "告白气球.mp3",
+        "playlist_name": "20170413-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "告白气球",
+          "artist": "周杰伦",
+          "album": "周杰伦的床边故事",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 216,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.752Z"
+      }
+    ]
+  },
+  "20170414.mp3": {
+    "songs": [
+      "20170414-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "给你一瓶魔法药水.mp3",
+        "playlist_name": "20170414-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "给你一瓶魔法药水",
+          "artist": "告五人",
+          "album": "玫瑰凭证",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 259,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:57.757Z"
+      }
+    ]
+  },
+  "20170417.mp3": {
+    "songs": [
+      "20170417-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "给我一首歌的时间.mp3",
+        "playlist_name": "20170417-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "给我一首歌的时间",
+          "artist": "周杰伦",
+          "album": "魔杰座",
+          "year": 2008,
+          "genre": "Blues",
+          "duration": 254,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.860Z"
+      }
+    ]
+  },
+  "20170418.mp3": {
+    "songs": [
+      "20170418-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "篝火旁.mp3",
+        "playlist_name": "20170418-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "篝火旁",
+          "artist": "吕大叶; 马子林Broma; 陈觅Lynne; 王以诺",
+          "album": "313正式版",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 210,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.866Z"
+      }
+    ]
+  },
+  "20170419.mp3": {
+    "songs": [
+      "20170419-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "姑娘在远方.mp3",
+        "playlist_name": "20170419-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "姑娘在远方",
+          "artist": "柯柯柯啊",
+          "album": "姑娘在远方",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 203,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.872Z"
+      }
+    ]
+  },
+  "20170420.mp3": {
+    "songs": [
+      "20170420-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "孤独颂歌.mp3",
+        "playlist_name": "20170420-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "孤独颂歌",
+          "artist": "陈文非",
+          "album": "孤独颂歌",
+          "year": 2022,
+          "genre": "未知流派",
+          "duration": 188,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.878Z"
+      }
+    ]
+  },
+  "20170421.mp3": {
+    "songs": [
+      "20170421-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "孤勇者.mp3",
+        "playlist_name": "20170421-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "孤勇者",
+          "artist": "陈奕迅",
+          "album": "孤勇者",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 256,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.908Z"
+      }
+    ]
+  },
+  "20170424.mp3": {
+    "songs": [
+      "20170424-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "故事还长.mp3",
+        "playlist_name": "20170424-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "故事还长",
+          "artist": "云汐",
+          "album": "故事还长",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 225,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.918Z"
+      }
+    ]
+  },
+  "20170425.mp3": {
+    "songs": [
+      "20170425-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "关山酒.mp3",
+        "playlist_name": "20170425-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "关山酒",
+          "artist": "邓寓君(等什么君)",
+          "album": "关山酒",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 235,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.923Z"
+      }
+    ]
+  },
+  "20170426.mp3": {
+    "songs": [
+      "20170426-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "光的方向.mp3",
+        "playlist_name": "20170426-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "光的方向",
+          "artist": "张碧晨",
+          "album": "长歌行 电视剧原声带",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 185,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:58.928Z"
+      }
+    ]
+  },
+  "20170427.mp3": {
+    "songs": [
+      "20170427-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "光明.mp3",
+        "playlist_name": "20170427-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "光明",
+          "artist": "谭艳",
+          "album": "舍爱",
+          "year": 2013,
+          "genre": "Blues",
+          "duration": 327,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.003Z"
+      }
+    ]
+  },
+  "20170428.mp3": {
+    "songs": [
+      "20170428-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "光年之外.mp3",
+        "playlist_name": "20170428-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "光年之外",
+          "artist": "G.E.M.邓紫棋",
+          "album": "光年之外",
+          "year": 2016,
+          "genre": "未知流派",
+          "duration": 236,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.018Z"
+      }
+    ]
+  },
+  "20170501.mp3": {
+    "songs": [
+      "20170501-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "归去来兮.mp3",
+        "playlist_name": "20170501-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "归去来兮",
+          "artist": "花粥",
+          "album": "一碗",
+          "year": 2019,
+          "genre": "未知流派",
+          "duration": 206,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.031Z"
+      }
+    ]
+  },
+  "20170502-2.mp3": {
+    "songs": [
+      "20170502-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "海市蜃楼.mp3",
+        "playlist_name": "20170502-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "海市蜃楼 (伴奏)",
+          "artist": "三叔说",
+          "album": "海市蜃楼",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 232,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.036Z"
+      }
+    ]
+  },
+  "20170502.mp3": {
+    "songs": [
+      "20170502-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "和光同尘.mp3",
+        "playlist_name": "20170502-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "和光同尘",
+          "artist": "周深",
+          "album": "大江大河2 电视剧原声带",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 249,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.040Z"
+      }
+    ]
+  },
+  "20170503.mp3": {
+    "songs": [
+      "20170503-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "红色高跟鞋.mp3",
+        "playlist_name": "20170503-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "红色高跟鞋",
+          "artist": "蔡健雅",
+          "album": "若你碰到他",
+          "year": 2008,
+          "genre": "Blues",
+          "duration": 207,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.062Z"
+      }
+    ]
+  },
+  "20170504.mp3": {
+    "songs": [
+      "20170504-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "红昭愿 (高音质版).mp3",
+        "playlist_name": "20170504-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "红昭愿 (高音质版)",
+          "artist": "音阙诗听; 王梓钰",
+          "album": "诗",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 172,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.067Z"
+      }
+    ]
+  },
+  "20170505.mp3": {
+    "songs": [
+      "20170505-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "胡广生.mp3",
+        "playlist_name": "20170505-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "胡广生",
+          "artist": "任素汐",
+          "album": "胡广生",
+          "year": 2018,
+          "genre": "未知流派",
+          "duration": 215,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.071Z"
+      }
+    ]
+  },
+  "20170508.mp3": {
+    "songs": [
+      "20170508-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "化作烟火为你坠落.mp3",
+        "playlist_name": "20170508-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "化作烟火为你坠落",
+          "artist": "蓝心羽; 阿辰（阎辰）",
+          "album": "化作烟火为你坠落",
+          "year": 2023,
+          "genre": "未知流派",
+          "duration": 168,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.082Z"
+      }
+    ]
+  },
+  "20170509.mp3": {
+    "songs": [
+      "20170509-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "画离弦.mp3",
+        "playlist_name": "20170509-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "画离弦",
+          "artist": "浅影阿",
+          "album": "画离弦",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 218,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.091Z"
+      }
+    ]
+  },
+  "20170510.mp3": {
+    "songs": [
+      "20170510-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "活着.mp3",
+        "playlist_name": "20170510-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "活着",
+          "artist": "郝云",
+          "album": "活着",
+          "year": 2013,
+          "genre": "未知流派",
+          "duration": 272,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.098Z"
+      }
+    ]
+  },
+  "20170511.mp3": {
+    "songs": [
+      "20170511-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "寂寞烟火.mp3",
+        "playlist_name": "20170511-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "寂寞烟火",
+          "artist": "朱婧汐Akini Jing",
+          "album": "以梦为马",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 273,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.102Z"
+      }
+    ]
+  },
+  "20170512.mp3": {
+    "songs": [
+      "20170512-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "剑魂.mp3",
+        "playlist_name": "20170512-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "剑魂",
+          "artist": "李炜",
+          "album": "射雕英雄传 电视剧原声带",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 225,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.979Z"
+      }
+    ]
+  },
+  "20170515.mp3": {
+    "songs": [
+      "20170515-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "江海不渡你.mp3",
+        "playlist_name": "20170515-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "江海不渡你",
+          "artist": "冰鑫",
+          "album": "江海不渡你",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 159,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.982Z"
+      }
+    ]
+  },
+  "20170516.mp3": {
+    "songs": [
+      "20170516-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "骄傲的少年.mp3",
+        "playlist_name": "20170516-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "骄傲的少年",
+          "artist": "南征北战NZBZ",
+          "album": "6415",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 262,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.988Z"
+      }
+    ]
+  },
+  "20170517.mp3": {
+    "songs": [
+      "20170517-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "金玉良缘.mp3",
+        "playlist_name": "20170517-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "金玉良缘",
+          "artist": "李琦",
+          "album": "金玉良缘 电视剧原声带",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 220,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:03:59.998Z"
+      }
+    ]
+  },
+  "20170518.mp3": {
+    "songs": [
+      "20170518-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "镜中渊.mp3",
+        "playlist_name": "20170518-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "镜中渊",
+          "artist": "周林枫",
+          "album": "镜中渊",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 181,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.001Z"
+      }
+    ]
+  },
+  "20170519.mp3": {
+    "songs": [
+      "20170519-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "就让这大雨全都落下.mp3",
+        "playlist_name": "20170519-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "就让这大雨全都落下",
+          "artist": "容祖儿",
+          "album": "联名",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 254,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.020Z"
+      }
+    ]
+  },
+  "20170521.mp3": {
+    "songs": [
+      "20170521-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "就忘了吧.mp3",
+        "playlist_name": "20170521-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "就忘了吧",
+          "artist": "1K",
+          "album": "就忘了吧",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 203,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.023Z"
+      }
+    ]
+  },
+  "20170522.mp3": {
+    "songs": [
+      "20170522-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "可不可以.mp3",
+        "playlist_name": "20170522-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "可不可以",
+          "artist": "张紫豪",
+          "album": "可不可以",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 241,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.027Z"
+      }
+    ]
+  },
+  "20170523.mp3": {
+    "songs": [
+      "20170523-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "可能.mp3",
+        "playlist_name": "20170523-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "可能",
+          "artist": "程响",
+          "album": "可能",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 218,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.040Z"
+      }
+    ]
+  },
+  "20170524.mp3": {
+    "songs": [
+      "20170524-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "空.mp3",
+        "playlist_name": "20170524-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "空",
+          "artist": "徐海俏",
+          "album": "空",
+          "year": 2019,
+          "genre": "未知流派",
+          "duration": 311,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.063Z"
+      }
+    ]
+  },
+  "20170525.mp3": {
+    "songs": [
+      "20170525-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "苦咖啡·唯一.mp3",
+        "playlist_name": "20170525-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "苦咖啡·唯一",
+          "artist": "那奇沃夫; KKECHO",
+          "album": "「想念你」音乐特别企划",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 183,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.087Z"
+      }
+    ]
+  },
+  "20170526.mp3": {
+    "songs": [
+      "20170526-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "来自天堂的魔鬼.mp3",
+        "playlist_name": "20170526-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "来自天堂的魔鬼",
+          "artist": "G.E.M. 邓紫棋",
+          "album": "新的心跳",
+          "year": 2015,
+          "genre": "Blues",
+          "duration": 246,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.112Z"
+      }
+    ]
+  },
+  "20170529.mp3": {
+    "songs": [
+      "20170529-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "浪漫骑士.mp3",
+        "playlist_name": "20170529-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "浪漫骑士",
+          "artist": "Leona Lewis",
+          "album": "英文慢摇 冰河极品",
+          "year": 2009,
+          "genre": "Blues",
+          "duration": 267,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.118Z"
+      }
+    ]
+  },
+  "20170530.mp3": {
+    "songs": [
+      "20170530-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "浪子回头.mp3",
+        "playlist_name": "20170530-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "浪子回头",
+          "artist": "茄子蛋",
+          "album": "卡通人物",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 259,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.127Z"
+      }
+    ]
+  },
+  "20170531.mp3": {
+    "songs": [
+      "20170531-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "老街.mp3",
+        "playlist_name": "20170531-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "老街",
+          "artist": "李荣浩",
+          "album": "小黄",
+          "year": 2010,
+          "genre": "Blues",
+          "duration": 319,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.149Z"
+      }
+    ]
+  },
+  "20170601.mp3": {
+    "songs": [
+      "20170601-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "老人与海.mp3",
+        "playlist_name": "20170601-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "老人与海",
+          "artist": "海鸣威; 吴琼",
+          "album": "Dance Dance Dance",
+          "year": 2007,
+          "genre": "Blues",
+          "duration": 267,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.153Z"
+      }
+    ]
+  },
+  "20170602.mp3": {
+    "songs": [
+      "20170602-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "离别开出花.mp3",
+        "playlist_name": "20170602-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "离别开出花",
+          "artist": "就是南方凯",
+          "album": "离别开出花",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 231,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.160Z"
+      }
+    ]
+  },
+  "20170605.mp3": {
+    "songs": [
+      "20170605-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "六月的雨.mp3",
+        "playlist_name": "20170605-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "六月的雨",
+          "artist": "胡歌",
+          "album": "仙剑奇侠传 电视剧原声带",
+          "year": 2005,
+          "genre": "Blues",
+          "duration": 228,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.165Z"
+      }
+    ]
+  },
+  "20170606.mp3": {
+    "songs": [
+      "20170606-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "路过人间.mp3",
+        "playlist_name": "20170606-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "路过人间",
+          "artist": "郁可唯",
+          "album": "路过人间",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 246,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.168Z"
+      }
+    ]
+  },
+  "20170607.mp3": {
+    "songs": [
+      "20170607-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "罗刹海市.mp3",
+        "playlist_name": "20170607-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "罗刹海市",
+          "artist": "刀郎",
+          "album": "山歌寥哉",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 333,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.180Z"
+      }
+    ]
+  },
+  "20170608.mp3": {
+    "songs": [
+      "20170608-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "落日与晚风.mp3",
+        "playlist_name": "20170608-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "落日与晚风",
+          "artist": "IN-K; 王忻辰; 苏星婕",
+          "album": "落日与晚风",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 175,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.959Z"
+      }
+    ]
+  },
+  "20170609.mp3": {
+    "songs": [
+      "20170609-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "落在生命里的光.mp3",
+        "playlist_name": "20170609-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "落在生命里的光",
+          "artist": "尹昔眠",
+          "album": "落在生命里的光",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 217,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.964Z"
+      }
+    ]
+  },
+  "20170612.mp3": {
+    "songs": [
+      "20170612-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "妈妈的话.mp3",
+        "playlist_name": "20170612-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "妈妈的话",
+          "artist": "Zyboy忠宇",
+          "album": "妈妈的话",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 170,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.967Z"
+      }
+    ]
+  },
+  "20170613.mp3": {
+    "songs": [
+      "20170613-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "麦浪.mp3",
+        "playlist_name": "20170613-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "麦浪",
+          "artist": "yihuik苡慧",
+          "album": "麦浪",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 186,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.971Z"
+      }
+    ]
+  },
+  "20170614.mp3": {
+    "songs": [
+      "20170614-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "满天星辰不及你.mp3",
+        "playlist_name": "20170614-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "满天星辰不及你",
+          "artist": "ycccc",
+          "album": "满天星辰不及你",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 216,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.974Z"
+      }
+    ]
+  },
+  "20170615.mp3": {
+    "songs": [
+      "20170615-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "玫瑰窃贼.mp3",
+        "playlist_name": "20170615-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "玫瑰窃贼",
+          "artist": "柳爽",
+          "album": "Rose",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 290,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.977Z"
+      }
+    ]
+  },
+  "20170616.mp3": {
+    "songs": [
+      "20170616-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "美人画卷.mp3",
+        "playlist_name": "20170616-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "美人画卷 (DJ沈念版)",
+          "artist": "闻人听書_",
+          "album": "美人画卷",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 208,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.982Z"
+      }
+    ]
+  },
+  "20170618.mp3": {
+    "songs": [
+      "20170618-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "迷人的危险.mp3",
+        "playlist_name": "20170618-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "迷人的危险",
+          "artist": "Dance Flow",
+          "album": "df 1",
+          "year": 2010,
+          "genre": "Blues",
+          "duration": 206,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.993Z"
+      }
+    ]
+  },
+  "20170619.mp3": {
+    "songs": [
+      "20170619-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "迷失幻境.mp3",
+        "playlist_name": "20170619-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "迷失幻境",
+          "artist": "IN-K; 王忻辰",
+          "album": "回忆观影券",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 157,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:00.997Z"
+      }
+    ]
+  },
+  "20170620.mp3": {
+    "songs": [
+      "20170620-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "棉花糖.mp3",
+        "playlist_name": "20170620-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "棉花糖",
+          "artist": "黑崎子",
+          "album": "棉花糖",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 229,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.001Z"
+      }
+    ]
+  },
+  "20170621.mp3": {
+    "songs": [
+      "20170621-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "莫问归期.mp3",
+        "playlist_name": "20170621-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "莫问归期",
+          "artist": "蒋雪儿Snow.J",
+          "album": "莫问归期",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 219,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.083Z"
+      }
+    ]
+  },
+  "20170622.mp3": {
+    "songs": [
+      "20170622-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "漠河舞厅.mp3",
+        "playlist_name": "20170622-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "漠河舞厅",
+          "artist": "柳爽",
+          "album": "1st.星球",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 334,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.090Z"
+      }
+    ]
+  },
+  "20170623.mp3": {
+    "songs": [
+      "20170623-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "木偶戏.mp3",
+        "playlist_name": "20170623-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "木偶戏",
+          "artist": "玥夏",
+          "album": "木偶戏",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 174,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.096Z"
+      }
+    ]
+  },
+  "20170626.mp3": {
+    "songs": [
+      "20170626-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "南半球与北海道.mp3",
+        "playlist_name": "20170626-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "南半球与北海道",
+          "artist": "范倪Liu",
+          "album": "南半球与北海道",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 210,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.101Z"
+      }
+    ]
+  },
+  "20170627.mp3": {
+    "songs": [
+      "20170627-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "难却.mp3",
+        "playlist_name": "20170627-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "难却",
+          "artist": "平生不晚",
+          "album": "难却",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 187,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.105Z"
+      }
+    ]
+  },
+  "20170628.mp3": {
+    "songs": [
+      "20170628-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "你的答案.mp3",
+        "playlist_name": "20170628-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "你的答案",
+          "artist": "阿冗",
+          "album": "你的答案",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 220,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.111Z"
+      }
+    ]
+  },
+  "20170629.mp3": {
+    "songs": [
+      "20170629-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "披星戴月的想你 (Bonus track).mp3",
+        "playlist_name": "20170629-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "披星戴月的想你 (Bonus track)",
+          "artist": "告五人",
+          "album": "我肯定在几百年前就说过爱你",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 350,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.124Z"
+      }
+    ]
+  },
+  "20170630.mp3": {
+    "songs": [
+      "20170630-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "偏爱.mp3",
+        "playlist_name": "20170630-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "偏爱",
+          "artist": "张芸京",
+          "album": "仙剑奇侠传三 电视原声带",
+          "year": 2009,
+          "genre": "Blues",
+          "duration": 213,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.133Z"
+      }
+    ]
+  },
+  "20170703.mp3": {
+    "songs": [
+      "20170703-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "偏爱和例外.mp3",
+        "playlist_name": "20170703-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "偏爱和例外",
+          "artist": "烟(许佳豪)",
+          "album": "偏爱和例外",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 171,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.138Z"
+      }
+    ]
+  },
+  "20170704.mp3": {
+    "songs": [
+      "20170704-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "篇章.mp3",
+        "playlist_name": "20170704-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "篇章",
+          "artist": "张韶涵; 王赫野",
+          "album": "篇章",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 249,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.144Z"
+      }
+    ]
+  },
+  "20170705.mp3": {
+    "songs": [
+      "20170705-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "骗子.mp3",
+        "playlist_name": "20170705-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "骗子",
+          "artist": "文夫",
+          "album": "骗子",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 232,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.956Z"
+      }
+    ]
+  },
+  "20170706.mp3": {
+    "songs": [
+      "20170706-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "平凡之路.mp3",
+        "playlist_name": "20170706-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "平凡之路",
+          "artist": "朴树",
+          "album": "猎户星座",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 301,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.961Z"
+      }
+    ]
+  },
+  "20170707.mp3": {
+    "songs": [
+      "20170707-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "凄美地.mp3",
+        "playlist_name": "20170707-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "凄美地",
+          "artist": "郭顶",
+          "album": "凄美地",
+          "year": 2016,
+          "genre": "未知流派",
+          "duration": 251,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.965Z"
+      }
+    ]
+  },
+  "20170710.mp3": {
+    "songs": [
+      "20170710-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "桥边姑娘.mp3",
+        "playlist_name": "20170710-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "桥边姑娘",
+          "artist": "海伦",
+          "album": "桥边姑娘",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 183,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.970Z"
+      }
+    ]
+  },
+  "20170711.mp3": {
+    "songs": [
+      "20170711-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "清空.mp3",
+        "playlist_name": "20170711-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "清空",
+          "artist": "王忻辰; 苏星婕",
+          "album": "清空",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 177,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.973Z"
+      }
+    ]
+  },
+  "20170712.mp3": {
+    "songs": [
+      "20170712-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "情花.mp3",
+        "playlist_name": "20170712-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "情花",
+          "artist": "本兮",
+          "album": "情花",
+          "year": 2012,
+          "genre": "Blues",
+          "duration": 240,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.976Z"
+      }
+    ]
+  },
+  "20170713.mp3": {
+    "songs": [
+      "20170713-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "缺氧.mp3",
+        "playlist_name": "20170713-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "缺氧",
+          "artist": "安苏羽",
+          "album": "缺氧",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 271,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.977Z"
+      }
+    ]
+  },
+  "20170714.mp3": {
+    "songs": [
+      "20170714-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "染.mp3",
+        "playlist_name": "20170714-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "染",
+          "artist": "张碧晨",
+          "album": "时",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 231,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.981Z"
+      }
+    ]
+  },
+  "20170717.mp3": {
+    "songs": [
+      "20170717-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "人世间.mp3",
+        "playlist_name": "20170717-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "人世间",
+          "artist": "雷佳",
+          "album": "人世间 电视剧原声带",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 253,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.986Z"
+      }
+    ]
+  },
+  "20170718.mp3": {
+    "songs": [
+      "20170718-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "若把你.mp3",
+        "playlist_name": "20170718-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "若把你",
+          "artist": "旺仔加真露",
+          "album": "若把你",
+          "year": 2022,
+          "genre": "未知流派",
+          "duration": 196,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.991Z"
+      }
+    ]
+  },
+  "20170719.mp3": {
+    "songs": [
+      "20170719-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "三生三幸.mp3",
+        "playlist_name": "20170719-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "三生三幸",
+          "artist": "海来阿木",
+          "album": "三生三幸",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 277,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:01.998Z"
+      }
+    ]
+  },
+  "20170720.mp3": {
+    "songs": [
+      "20170720-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "沙漠骆驼.mp3",
+        "playlist_name": "20170720-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "沙漠骆驼",
+          "artist": "展展与罗罗",
+          "album": "沙漠骆驼",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 338,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.003Z"
+      }
+    ]
+  },
+  "20170721.mp3": {
+    "songs": [
+      "20170721-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "山楂树の恋.mp3",
+        "playlist_name": "20170721-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "山楂树の恋（cover大能人）",
+          "artist": "程佳佳",
+          "album": "山楂树の恋",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 198,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.006Z"
+      }
+    ]
+  },
+  "20170724.mp3": {
+    "songs": [
+      "20170724-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "少年.mp3",
+        "playlist_name": "20170724-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "少年 (DJ豪大大版)",
+          "artist": "梦然",
+          "album": "少年",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 236,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.055Z"
+      }
+    ]
+  },
+  "20170725.mp3": {
+    "songs": [
+      "20170725-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "谁.mp3",
+        "playlist_name": "20170725-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "谁",
+          "artist": "曲肖冰",
+          "album": "谁",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 278,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.073Z"
+      }
+    ]
+  },
+  "20170726.mp3": {
+    "songs": [
+      "20170726-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "深海回响.mp3",
+        "playlist_name": "20170726-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "深海回响",
+          "artist": "李尧音",
+          "album": "深海回响",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 176,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.081Z"
+      }
+    ]
+  },
+  "20170727.mp3": {
+    "songs": [
+      "20170727-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "神魂颠倒.mp3",
+        "playlist_name": "20170727-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "神魂颠倒",
+          "artist": "邓典",
+          "album": "神魂颠倒",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 168,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.086Z"
+      }
+    ]
+  },
+  "20170728.mp3": {
+    "songs": [
+      "20170728-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "生而平凡.mp3",
+        "playlist_name": "20170728-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "生而平凡",
+          "artist": "王富贵",
+          "album": "生而平凡",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 191,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.091Z"
+      }
+    ]
+  },
+  "20170731.mp3": {
+    "songs": [
+      "20170731-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "生分.mp3",
+        "playlist_name": "20170731-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "生分",
+          "artist": "川青",
+          "album": "生分",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 200,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.096Z"
+      }
+    ]
+  },
+  "20170801.mp3": {
+    "songs": [
+      "20170801-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "失眠飞行.mp3",
+        "playlist_name": "20170801-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "失眠飞行",
+          "artist": "KeyKey",
+          "album": "未分类专辑",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 213,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.101Z"
+      }
+    ]
+  },
+  "20170802.mp3": {
+    "songs": [
+      "20170802-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "时光背面的我.mp3",
+        "playlist_name": "20170802-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "时光背面的我",
+          "artist": "刘至佳; 韩瞳",
+          "album": "时光背面的我",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 181,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.967Z"
+      }
+    ]
+  },
+  "20170803.mp3": {
+    "songs": [
+      "20170803-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "时间你慢些走.mp3",
+        "playlist_name": "20170803-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "时间你慢些走",
+          "artist": "范茹",
+          "album": "时间你慢些走",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 232,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.970Z"
+      }
+    ]
+  },
+  "20170804.mp3": {
+    "songs": [
+      "20170804-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "世界这么大还是遇见你.mp3",
+        "playlist_name": "20170804-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "世界这么大还是遇见你",
+          "artist": "程响",
+          "album": "清新的小女孩 (中文版)",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 237,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.974Z"
+      }
+    ]
+  },
+  "20170807.mp3": {
+    "songs": [
+      "20170807-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "水星记.mp3",
+        "playlist_name": "20170807-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "水星记",
+          "artist": "郭顶",
+          "album": "水星记",
+          "year": 2016,
+          "genre": "未知流派",
+          "duration": 325,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:02.982Z"
+      }
+    ]
+  },
+  "20170808.mp3": {
+    "songs": [
+      "20170808-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "四块五.mp3",
+        "playlist_name": "20170808-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "四块五",
+          "artist": "隔壁老樊_樊凯杰",
+          "album": "我曾",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 276,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.014Z"
+      }
+    ]
+  },
+  "20170809.mp3": {
+    "songs": [
+      "20170809-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "素颜.mp3",
+        "playlist_name": "20170809-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "素颜",
+          "artist": "许嵩; 何曼婷",
+          "album": "素颜",
+          "year": 2010,
+          "genre": "Blues",
+          "duration": 239,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.027Z"
+      }
+    ]
+  },
+  "20170810.mp3": {
+    "songs": [
+      "20170810-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "他真的对你好吗.mp3",
+        "playlist_name": "20170810-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "他真的对你好吗",
+          "artist": "付豪",
+          "album": "他真的对你好吗",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 258,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.093Z"
+      }
+    ]
+  },
+  "20170811.mp3": {
+    "songs": [
+      "20170811-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "她会魔法吧.mp3",
+        "playlist_name": "20170811-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "她会魔法吧",
+          "artist": "DJ小鱼儿",
+          "album": "她会魔法吧",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 181,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.101Z"
+      }
+    ]
+  },
+  "20170813.mp3": {
+    "songs": [
+      "20170813-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "太想念.mp3",
+        "playlist_name": "20170813-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "太想念 (伴奏)",
+          "artist": "彭筝",
+          "album": "太想念",
+          "year": 2018,
+          "genre": "未知流派",
+          "duration": 231,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.107Z"
+      }
+    ]
+  },
+  "20170814.mp3": {
+    "songs": [
+      "20170814-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "太阳要下山了 我该回家了.mp3",
+        "playlist_name": "20170814-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "太阳要下山了 我该回家了",
+          "artist": "7paste",
+          "album": "太阳要下山了 我该回家了",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 201,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.123Z"
+      }
+    ]
+  },
+  "20170815.mp3": {
+    "songs": [
+      "20170815-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "探窗.mp3",
+        "playlist_name": "20170815-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "探窗",
+          "artist": "国风新语; 浮生梦; 汐音社",
+          "album": "探窗",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 217,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.129Z"
+      }
+    ]
+  },
+  "20170816.mp3": {
+    "songs": [
+      "20170816-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "天亮以前说再见.mp3",
+        "playlist_name": "20170816-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "天亮以前说再见",
+          "artist": "何野",
+          "album": "天亮以前说再见",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 240,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.134Z"
+      }
+    ]
+  },
+  "20170817.mp3": {
+    "songs": [
+      "20170817-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "天下.mp3",
+        "playlist_name": "20170817-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "天下 (DJ苏天伦、DJ98k版)",
+          "artist": "邓寓君(等什么君)",
+          "album": "天下",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 187,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.154Z"
+      }
+    ]
+  },
+  "20170818.mp3": {
+    "songs": [
+      "20170818-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "听悲伤的情歌.mp3",
+        "playlist_name": "20170818-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "听悲伤的情歌",
+          "artist": "苏星婕",
+          "album": "听悲伤的情歌",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 198,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.158Z"
+      }
+    ]
+  },
+  "20170821.mp3": {
+    "songs": [
+      "20170821-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "听说你.mp3",
+        "playlist_name": "20170821-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "听说你",
+          "artist": "于冬然",
+          "album": "听说你",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 239,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.164Z"
+      }
+    ]
+  },
+  "20170822.mp3": {
+    "songs": [
+      "20170822-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "偷心.mp3",
+        "playlist_name": "20170822-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "偷心",
+          "artist": "张学友",
+          "album": "偷心",
+          "year": 1994,
+          "genre": "Blues",
+          "duration": 261,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.178Z"
+      }
+    ]
+  },
+  "20170823.mp3": {
+    "songs": [
+      "20170823-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "晚风心里吹.mp3",
+        "playlist_name": "20170823-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "晚风心里吹",
+          "artist": "阿梨粤",
+          "album": "晚风心里吹",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 187,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.189Z"
+      }
+    ]
+  },
+  "20170824.mp3": {
+    "songs": [
+      "20170824-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "晚风作酒.mp3",
+        "playlist_name": "20170824-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "晚风作酒",
+          "artist": "L（桃籽）; 周林枫; 三楠",
+          "album": "晚风作酒",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 167,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.201Z"
+      }
+    ]
+  },
+  "20170825.mp3": {
+    "songs": [
+      "20170825-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "忘川彼岸.mp3",
+        "playlist_name": "20170825-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "忘川彼岸",
+          "artist": "零一九零贰",
+          "album": "忘川彼岸",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 177,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.205Z"
+      }
+    ]
+  },
+  "20170828.mp3": {
+    "songs": [
+      "20170828-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "忘记时间.mp3",
+        "playlist_name": "20170828-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "忘记时间",
+          "artist": "胡歌",
+          "album": "仙剑奇侠传三 电视剧原声带",
+          "year": 2009,
+          "genre": "Blues",
+          "duration": 272,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.209Z"
+      }
+    ]
+  },
+  "20170829.mp3": {
+    "songs": [
+      "20170829-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "忘了.mp3",
+        "playlist_name": "20170829-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "忘了",
+          "artist": "周林枫",
+          "album": "忘了",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 181,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:03.998Z"
+      }
+    ]
+  },
+  "20170830.mp3": {
+    "songs": [
+      "20170830-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "微微.mp3",
+        "playlist_name": "20170830-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "微微",
+          "artist": "傅如乔",
+          "album": "微微",
+          "year": 2020,
+          "genre": "未知流派",
+          "duration": 277,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.001Z"
+      }
+    ]
+  },
+  "20170831.mp3": {
+    "songs": [
+      "20170831-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "唯一.mp3",
+        "playlist_name": "20170831-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "唯一",
+          "artist": "告五人",
+          "album": "运气来得若有似无",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 271,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.006Z"
+      }
+    ]
+  },
+  "20170901.mp3": {
+    "songs": [
+      "20170901-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "我曾遇到一束光.mp3",
+        "playlist_name": "20170901-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "我曾遇到一束光",
+          "artist": "叶斯淳",
+          "album": "我曾遇到一束光",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 260,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.011Z"
+      }
+    ]
+  },
+  "20170904.mp3": {
+    "songs": [
+      "20170904-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "我的天空.mp3",
+        "playlist_name": "20170904-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "我的天空",
+          "artist": "南征北战NZBZ",
+          "album": "青春派 电影原声带",
+          "year": 2013,
+          "genre": "Blues",
+          "duration": 234,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.015Z"
+      }
+    ]
+  },
+  "20170905.mp3": {
+    "songs": [
+      "20170905-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "我会等.mp3",
+        "playlist_name": "20170905-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "我会等",
+          "artist": "承桓",
+          "album": "我会等",
+          "year": 2023,
+          "genre": "Blues",
+          "duration": 196,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.018Z"
+      }
+    ]
+  },
+  "20170906.mp3": {
+    "songs": [
+      "20170906-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "我记得.mp3",
+        "playlist_name": "20170906-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "我记得",
+          "artist": "赵雷",
+          "album": "署前街少年",
+          "year": 2022,
+          "genre": "未知流派",
+          "duration": 330,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.021Z"
+      }
+    ]
+  },
+  "20170907.mp3": {
+    "songs": [
+      "20170907-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "我来人间一趟.mp3",
+        "playlist_name": "20170907-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "我来人间一趟",
+          "artist": "关剑",
+          "album": "我来人间一趟",
+          "year": 2022,
+          "genre": "未知流派",
+          "duration": 258,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.024Z"
+      }
+    ]
+  },
+  "20170908.mp3": {
+    "songs": [
+      "20170908-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "我们不一样.mp3",
+        "playlist_name": "20170908-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "我们不一样",
+          "artist": "大壮",
+          "album": "我们不一样",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 271,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.030Z"
+      }
+    ]
+  },
+  "20170911.mp3": {
+    "songs": [
+      "20170911-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "乌梅子酱.mp3",
+        "playlist_name": "20170911-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "乌梅子酱",
+          "artist": "李荣浩",
+          "album": "纵横四海",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 257,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.053Z"
+      }
+    ]
+  },
+  "20170912.mp3": {
+    "songs": [
+      "20170912-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "无人之岛.mp3",
+        "playlist_name": "20170912-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "无人之岛",
+          "artist": "任然",
+          "album": "没有发生的爱情",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 285,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.089Z"
+      }
+    ]
+  },
+  "20170913.mp3": {
+    "songs": [
+      "20170913-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "西安人的歌.mp3",
+        "playlist_name": "20170913-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "西安人的歌",
+          "artist": "范炜与程渤智",
+          "album": "西安人的歌",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 235,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.101Z"
+      }
+    ]
+  },
+  "20170914.mp3": {
+    "songs": [
+      "20170914-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "下个，路口，见.mp3",
+        "playlist_name": "20170914-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "下个，路口，见",
+          "artist": "李宇春",
+          "album": "Chris Lee 同名专辑",
+          "year": 2009,
+          "genre": "Blues",
+          "duration": 210,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.106Z"
+      }
+    ]
+  },
+  "20170915.mp3": {
+    "songs": [
+      "20170915-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "下潜.mp3",
+        "playlist_name": "20170915-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "下潜",
+          "artist": "川青",
+          "album": "下潜",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 218,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.121Z"
+      }
+    ]
+  },
+  "20170918.mp3": {
+    "songs": [
+      "20170918-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "夏日漱石.mp3",
+        "playlist_name": "20170918-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "夏日漱石",
+          "artist": "橘子海",
+          "album": "春潮",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 264,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.127Z"
+      }
+    ]
+  },
+  "20170919.mp3": {
+    "songs": [
+      "20170919-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "夏天.mp3",
+        "playlist_name": "20170919-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "夏天",
+          "artist": "李玖哲",
+          "album": "好玖",
+          "year": 2010,
+          "genre": "未知流派",
+          "duration": 226,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.134Z"
+      }
+    ]
+  },
+  "20170920.mp3": {
+    "songs": [
+      "20170920-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "香水有毒.mp3",
+        "playlist_name": "20170920-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "香水有毒",
+          "artist": "胡杨林",
+          "album": "香水有毒(宣传单曲)",
+          "year": 2005,
+          "genre": "未知流派",
+          "duration": 291,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.140Z"
+      }
+    ]
+  },
+  "20170921.mp3": {
+    "songs": [
+      "20170921-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "像风一样.mp3",
+        "playlist_name": "20170921-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "像风一样",
+          "artist": "薛之谦",
+          "album": "渡 The Crossing",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 255,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.146Z"
+      }
+    ]
+  },
+  "20170922.mp3": {
+    "songs": [
+      "20170922-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "像鱼.mp3",
+        "playlist_name": "20170922-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "像鱼",
+          "artist": "王贰浪",
+          "album": "像鱼",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 285,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.150Z"
+      }
+    ]
+  },
+  "20170923.mp3": {
+    "songs": [
+      "20170923-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "逍遥叹.mp3",
+        "playlist_name": "20170923-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "逍遥叹",
+          "artist": "胡歌",
+          "album": "仙剑奇侠传 电视剧原声带",
+          "year": 2005,
+          "genre": "Blues",
+          "duration": 314,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.155Z"
+      }
+    ]
+  },
+  "20170925.mp3": {
+    "songs": [
+      "20170925-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "小城夏天.mp3",
+        "playlist_name": "20170925-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "小城夏天",
+          "artist": "LBI利比",
+          "album": "小城夏天",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 173,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.933Z"
+      }
+    ]
+  },
+  "20170926.mp3": {
+    "songs": [
+      "20170926-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "笑纳.mp3",
+        "playlist_name": "20170926-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "笑纳 (DJ雪糕版)",
+          "artist": "花僮",
+          "album": "笑纳",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 273,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.953Z"
+      }
+    ]
+  },
+  "20170927.mp3": {
+    "songs": [
+      "20170927-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "星辰大海.mp3",
+        "playlist_name": "20170927-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "星辰大海",
+          "artist": "黄霄雲",
+          "album": "星辰大海",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 208,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.957Z"
+      }
+    ]
+  },
+  "20170928.mp3": {
+    "songs": [
+      "20170928-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "悬溺.mp3",
+        "playlist_name": "20170928-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "悬溺",
+          "artist": "葛东琪",
+          "album": "第二街区",
+          "year": 2019,
+          "genre": "未知流派",
+          "duration": 197,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.961Z"
+      }
+    ]
+  },
+  "20170929.mp3": {
+    "songs": [
+      "20170929-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "巡光.mp3",
+        "playlist_name": "20170929-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "巡光",
+          "artist": "就是南方凯",
+          "album": "巡光",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 209,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.966Z"
+      }
+    ]
+  },
+  "20171001.mp3": {
+    "songs": [
+      "20171001-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "烟火.mp3",
+        "playlist_name": "20171001-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "烟火",
+          "artist": "陈翔",
+          "album": "MY STAGE 我的舞台",
+          "year": 2010,
+          "genre": "Blues",
+          "duration": 232,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.971Z"
+      }
+    ]
+  },
+  "20171002.mp3": {
+    "songs": [
+      "20171002-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "演员.mp3",
+        "playlist_name": "20171002-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "演员",
+          "artist": "薛之谦",
+          "album": "绅士",
+          "year": 2015,
+          "genre": "Blues",
+          "duration": 261,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.976Z"
+      }
+    ]
+  },
+  "20171003.mp3": {
+    "songs": [
+      "20171003-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "燕无歇.mp3",
+        "playlist_name": "20171003-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "燕无歇",
+          "artist": "蒋雪儿Snow.J",
+          "album": "燕无歇",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 201,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.979Z"
+      }
+    ]
+  },
+  "20171004.mp3": {
+    "songs": [
+      "20171004-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "一点归鸿.mp3",
+        "playlist_name": "20171004-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "一点归鸿",
+          "artist": "平生青涯",
+          "album": "一点归鸿",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 175,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.982Z"
+      }
+    ]
+  },
+  "20171005.mp3": {
+    "songs": [
+      "20171005-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "一路生花.mp3",
+        "playlist_name": "20171005-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "一路生花",
+          "artist": "温奕心",
+          "album": "一路生花",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 256,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:04.993Z"
+      }
+    ]
+  },
+  "20171006.mp3": {
+    "songs": [
+      "20171006-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "一吻天荒.mp3",
+        "playlist_name": "20171006-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "一吻天荒",
+          "artist": "胡歌",
+          "album": "轩辕剑之天之痕 电视剧原声带",
+          "year": 2012,
+          "genre": "Blues",
+          "duration": 252,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.000Z"
+      }
+    ]
+  },
+  "20171009.mp3": {
+    "songs": [
+      "20171009-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "樱花树下的约定.mp3",
+        "playlist_name": "20171009-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "樱花树下的约定",
+          "artist": "旺仔小乔",
+          "album": "樱花树下的约定",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 177,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.005Z"
+      }
+    ]
+  },
+  "20171010-2.mp3": {
+    "songs": [
+      "20171010-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "游京 (伴奏).mp3",
+        "playlist_name": "20171010-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "游京 (DJ阿卓版)",
+          "artist": "海伦",
+          "album": "游京 (新版）",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 225,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.063Z"
+      }
+    ]
+  },
+  "20171010.mp3": {
+    "songs": [
+      "20171010-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "游山恋.mp3",
+        "playlist_name": "20171010-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "游山恋",
+          "artist": "海伦",
+          "album": "游山恋",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 224,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.083Z"
+      }
+    ]
+  },
+  "20171011.mp3": {
+    "songs": [
+      "20171011-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "余情未了.mp3",
+        "playlist_name": "20171011-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "余情未了",
+          "artist": "魏新雨",
+          "album": "余情未了",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 216,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.095Z"
+      }
+    ]
+  },
+  "20171012.mp3": {
+    "songs": [
+      "20171012-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "与你.mp3",
+        "playlist_name": "20171012-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "与你",
+          "artist": "CG",
+          "album": "与你",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 206,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.100Z"
+      }
+    ]
+  },
+  "20171013.mp3": {
+    "songs": [
+      "20171013-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "愿你被这个世界温柔以待.mp3",
+        "playlist_name": "20171013-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "愿你被这个世界温柔以待",
+          "artist": "何文宇",
+          "album": "愿你被这个世界温柔以待",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 190,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.104Z"
+      }
+    ]
+  },
+  "20171016.mp3": {
+    "songs": [
+      "20171016-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "月牙湾.mp3",
+        "playlist_name": "20171016-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "月牙湾",
+          "artist": "马丹妮（丫蛋蛋）; 沈虫虫",
+          "album": "月牙湾",
+          "year": 2019,
+          "genre": "未知流派",
+          "duration": 219,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.108Z"
+      }
+    ]
+  },
+  "20171017.mp3": {
+    "songs": [
+      "20171017-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "云与海.mp3",
+        "playlist_name": "20171017-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "云与海",
+          "artist": "阿YueYue",
+          "album": "云与海",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 258,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.111Z"
+      }
+    ]
+  },
+  "20171018.mp3": {
+    "songs": [
+      "20171018-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "再见.mp3",
+        "playlist_name": "20171018-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "再见（good bye）",
+          "artist": "G.E.M.邓紫棋",
+          "album": "新的心跳",
+          "year": 2015,
+          "genre": "Blues",
+          "duration": 206,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:05.116Z"
+      }
+    ]
+  },
+  "20171019.mp3": {
+    "songs": [
+      "20171019-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "在你的身边.mp3",
+        "playlist_name": "20171019-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "在你的身边",
+          "artist": "盛哲",
+          "album": "在你的身边",
+          "year": 2017,
+          "genre": "未知流派",
+          "duration": 262,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.495Z"
+      }
+    ]
+  },
+  "20171020.mp3": {
+    "songs": [
+      "20171020-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "早安隆回.mp3",
+        "playlist_name": "20171020-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "早安隆回",
+          "artist": "袁树雄",
+          "album": "早安隆回",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 262,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.537Z"
+      }
+    ]
+  },
+  "20171023.mp3": {
+    "songs": [
+      "20171023-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "怎叹.mp3",
+        "playlist_name": "20171023-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "怎叹 (DJ沈念版)",
+          "artist": "郑鱼",
+          "album": "怎叹",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 246,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.571Z"
+      }
+    ]
+  },
+  "20171024.mp3": {
+    "songs": [
+      "20171024-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "知否知否.mp3",
+        "playlist_name": "20171024-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "知否知否",
+          "artist": "胡夏; 郁可唯",
+          "album": "知否知否应是绿肥红瘦 电视剧原声带",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 276,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.589Z"
+      }
+    ]
+  },
+  "20171025.mp3": {
+    "songs": [
+      "20171025-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "执迷不悟.mp3",
+        "playlist_name": "20171025-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "执迷不悟",
+          "artist": "小乐哥（王唯乐）",
+          "album": "执迷不悟",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 235,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.595Z"
+      }
+    ]
+  },
+  "20171026.mp3": {
+    "songs": [
+      "20171026-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "追寻你.mp3",
+        "playlist_name": "20171026-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "追寻你",
+          "artist": "王天戈; 川青",
+          "album": "追寻你",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 195,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.606Z"
+      }
+    ]
+  },
+  "20171027.mp3": {
+    "songs": [
+      "20171027-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "走不出的回忆.mp3",
+        "playlist_name": "20171027-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "走不出的回忆",
+          "artist": "任然",
+          "album": "走不出的回忆",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 225,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.612Z"
+      }
+    ]
+  },
+  "20171030.mp3": {
+    "songs": [
+      "20171030-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "最后的人.mp3",
+        "playlist_name": "20171030-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "最后的人",
+          "artist": "杨小壮",
+          "album": "最后的人",
+          "year": 2021,
+          "genre": "Blues",
+          "duration": 248,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.618Z"
+      }
+    ]
+  },
+  "20171031.mp3": {
+    "songs": [
+      "20171031-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "最美的瞬间.mp3",
+        "playlist_name": "20171031-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "最美的瞬间",
+          "artist": "小阿瑞（真瑞）",
+          "album": "你很美",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 270,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.626Z"
+      }
+    ]
+  },
+  "20171101.mp3": {
+    "songs": [
+      "20171101-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "醉赤壁.mp3",
+        "playlist_name": "20171101-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "醉赤壁",
+          "artist": "林俊杰",
+          "album": "JJ陆",
+          "year": 2008,
+          "genre": "Blues",
+          "duration": 282,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.673Z"
+      }
+    ]
+  },
+  "20171102.mp3": {
+    "songs": [
+      "20171102-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "醉倾城.mp3",
+        "playlist_name": "20171102-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "醉倾城",
+          "artist": "小阿枫",
+          "album": "醉倾城",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 238,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.678Z"
+      }
+    ]
+  },
+  "20171103-2.mp3": {
+    "songs": [
+      "20171103-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Aeon.mp3",
+        "playlist_name": "20171103-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Aeon",
+          "artist": "JJD",
+          "album": "Aeon",
+          "year": 2014,
+          "genre": "未知流派",
+          "duration": 238,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.690Z"
+      }
+    ]
+  },
+  "20171103.mp3": {
+    "songs": [
+      "20171103-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Always Online.mp3",
+        "playlist_name": "20171103-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Always Online",
+          "artist": "林俊杰",
+          "album": "JJ陆",
+          "year": 2008,
+          "genre": "Blues",
+          "duration": 225,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.704Z"
+      }
+    ]
+  },
+  "20171106.mp3": {
+    "songs": [
+      "20171106-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Aspiration.mp3",
+        "playlist_name": "20171106-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Aspiration",
+          "artist": "Teminite",
+          "album": "Inception",
+          "year": 2018,
+          "genre": "未知流派",
+          "duration": 266,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.714Z"
+      }
+    ]
+  },
+  "20171107-2.mp3": {
+    "songs": [
+      "20171107-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Aspire.mp3",
+        "playlist_name": "20171107-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Aspire",
+          "artist": "CelDro",
+          "album": "Aspire",
+          "year": 2015,
+          "genre": "未知流派",
+          "duration": 212,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.726Z"
+      }
+    ]
+  },
+  "20171107.mp3": {
+    "songs": [
+      "20171107-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Bleeding Love.mp3",
+        "playlist_name": "20171107-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Bleeding Love",
+          "artist": "Leona Lewis",
+          "album": "Bleeding Love",
+          "year": 2008,
+          "genre": "Blues",
+          "duration": 264,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.732Z"
+      }
+    ]
+  },
+  "20171108.mp3": {
+    "songs": [
+      "20171108-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "By Your Side.mp3",
+        "playlist_name": "20171108-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "By Your Side",
+          "artist": "Jonas Blue; RAYE",
+          "album": "By Your Side",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 201,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.739Z"
+      }
+    ]
+  },
+  "20171109.mp3": {
+    "songs": [
+      "20171109-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Call Me Maybe.mp3",
+        "playlist_name": "20171109-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Call Me Maybe (10 Kings vs Ollie Green Remix)",
+          "artist": "Carly Rae Jepsen",
+          "album": "Call Me Maybe (Remixes)",
+          "year": 2011,
+          "genre": "Blues",
+          "duration": 194,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.743Z"
+      }
+    ]
+  },
+  "20171110.mp3": {
+    "songs": [
+      "20171110-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Centuries.mp3",
+        "playlist_name": "20171110-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Centuries",
+          "artist": "Fall Out Boy",
+          "album": "Centuries",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 229,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.749Z"
+      }
+    ]
+  },
+  "20171113.mp3": {
+    "songs": [
+      "20171113-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Cheap Thrills.mp3",
+        "playlist_name": "20171113-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Cheap Thrills",
+          "artist": "Sia",
+          "album": "This Is Acting",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 212,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:06.755Z"
+      }
+    ]
+  },
+  "20171114.mp3": {
+    "songs": [
+      "20171114-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "China-2.mp3",
+        "playlist_name": "20171114-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "CHINA-2",
+          "artist": "Sand",
+          "album": "【EDM】CHINA（中国风电音）",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 202,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.812Z"
+      }
+    ]
+  },
+  "20171115-2.mp3": {
+    "songs": [
+      "20171115-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Closer.mp3",
+        "playlist_name": "20171115-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Closer",
+          "artist": "The Chainsmokers; Halsey",
+          "album": "Closer",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 245,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.817Z"
+      }
+    ]
+  },
+  "20171115.mp3": {
+    "songs": [
+      "20171115-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Creep.mp3",
+        "playlist_name": "20171115-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Creep",
+          "artist": "Gamper & Dadoni",
+          "album": "Creep",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 175,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.825Z"
+      }
+    ]
+  },
+  "20171116.mp3": {
+    "songs": [
+      "20171116-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Fade Again.mp3",
+        "playlist_name": "20171116-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Fade Again",
+          "artist": "Jiaye",
+          "album": "Fade Again",
+          "year": 2016,
+          "genre": "未知流派",
+          "duration": 247,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.829Z"
+      }
+    ]
+  },
+  "20171117.mp3": {
+    "songs": [
+      "20171117-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Ferrari.mp3",
+        "playlist_name": "20171117-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Ferrari",
+          "artist": "Bebe Rexha",
+          "album": "Ferrari",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 213,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.836Z"
+      }
+    ]
+  },
+  "20171120.mp3": {
+    "songs": [
+      "20171120-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Home (Blaze U Remix).mp3",
+        "playlist_name": "20171120-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Home (Blaze U Remix)",
+          "artist": "ThimLife; Blaze U; Bibiane Z",
+          "album": "Home (Blaze U Remix)",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 139,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.847Z"
+      }
+    ]
+  },
+  "20171121.mp3": {
+    "songs": [
+      "20171121-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Hope (Original Mix).mp3",
+        "playlist_name": "20171121-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Hope (Original Mix)",
+          "artist": "Tobu",
+          "album": "Hope",
+          "year": 2014,
+          "genre": "未知流派",
+          "duration": 288,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.853Z"
+      }
+    ]
+  },
+  "20171122.mp3": {
+    "songs": [
+      "20171122-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "How Long.mp3",
+        "playlist_name": "20171122-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "How Long",
+          "artist": "Charlie Puth",
+          "album": "Voicenotes",
+          "year": 2018,
+          "genre": "Blues",
+          "duration": 201,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.856Z"
+      }
+    ]
+  },
+  "20171123.mp3": {
+    "songs": [
+      "20171123-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Hymn For The Weekend (Remix).mp3",
+        "playlist_name": "20171123-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Hymn For The Weekend（Remix）",
+          "artist": "Alan Walker; Coldplay",
+          "album": "Hymn For The Weekend [Remix]",
+          "year": 2016,
+          "genre": "未知流派",
+          "duration": 230,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.872Z"
+      }
+    ]
+  },
+  "20171124.mp3": {
+    "songs": [
+      "20171124-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Immortals (From Big Hero 6Soundtrack).mp3",
+        "playlist_name": "20171124-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Immortals (From \"Big Hero 6\"/Soundtrack)",
+          "artist": "Fall Out Boy",
+          "album": "Big Hero 6 (Original Motion Picture Soundtrack)",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 195,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.876Z"
+      }
+    ]
+  },
+  "20171127.mp3": {
+    "songs": [
+      "20171127-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Let Me Down Slowly.mp3",
+        "playlist_name": "20171127-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Let Me Down Slowly",
+          "artist": "Alec Benjamin; Alessia Cara",
+          "album": "Let Me Down Slowly",
+          "year": 2019,
+          "genre": "Blues",
+          "duration": 169,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.880Z"
+      }
+    ]
+  },
+  "20171128.mp3": {
+    "songs": [
+      "20171128-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Letting Go.mp3",
+        "playlist_name": "20171128-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Letting Go",
+          "artist": "蔡健雅",
+          "album": "说到爱",
+          "year": 2011,
+          "genre": "Blues",
+          "duration": 263,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.892Z"
+      }
+    ]
+  },
+  "20171129.mp3": {
+    "songs": [
+      "20171129-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Lonely Together.mp3",
+        "playlist_name": "20171129-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Lonely Together",
+          "artist": "Avicii; Rita Ora",
+          "album": "AVĪCI (01)",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 182,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.916Z"
+      }
+    ]
+  },
+  "20171130.mp3": {
+    "songs": [
+      "20171130-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Lost & Found.mp3",
+        "playlist_name": "20171130-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Lost & Found",
+          "artist": "Embody; Ridgely",
+          "album": "Lost & Found",
+          "year": 2017,
+          "genre": "未知流派",
+          "duration": 238,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:07.992Z"
+      }
+    ]
+  },
+  "20171201.mp3": {
+    "songs": [
+      "20171201-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Ma direction.mp3",
+        "playlist_name": "20171201-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Ma direction",
+          "artist": "Sexion d'Assaut",
+          "album": "Best of",
+          "year": 2013,
+          "genre": "Blues",
+          "duration": 264,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:08.022Z"
+      }
+    ]
+  },
+  "20171204.mp3": {
+    "songs": [
+      "20171204-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Mine (Illenium Remix).mp3",
+        "playlist_name": "20171204-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Mine (Illenium Remix)",
+          "artist": "ILLENIUM; Phoebe Ryan",
+          "album": "Mine (ILLENIUM Remix)",
+          "year": 2015,
+          "genre": "未知流派",
+          "duration": 250,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:08.031Z"
+      }
+    ]
+  },
+  "20171205-2.mp3": {
+    "songs": [
+      "20171205-2-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Move Up (Lost Gravity).mp3",
+        "playlist_name": "20171205-2-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Move Up (Lost Gravity)",
+          "artist": "Mr. Polska",
+          "album": "Ibiza 2016",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 184,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:08.044Z"
+      }
+    ]
+  },
+  "20171205.mp3": {
+    "songs": [
+      "20171205-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "My Heart.mp3",
+        "playlist_name": "20171205-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "My Heart",
+          "artist": "EH!DE",
+          "album": "My Heart",
+          "year": 2013,
+          "genre": "未知流派",
+          "duration": 267,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:08.049Z"
+      }
+    ]
+  },
+  "20171206.mp3": {
+    "songs": [
+      "20171206-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Nevada (Extended Mix).mp3",
+        "playlist_name": "20171206-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Nevada",
+          "artist": "Vicetone; Cozi Zuehlsdorff",
+          "album": "Nevada",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 255,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:08.059Z"
+      }
+    ]
+  },
+  "20171207.mp3": {
+    "songs": [
+      "20171207-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Remember Our Summer.mp3",
+        "playlist_name": "20171207-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Remember Our Summer",
+          "artist": "FrogMonster",
+          "album": "Remember Our Summer",
+          "year": 2019,
+          "genre": "未知流派",
+          "duration": 163,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:08.062Z"
+      }
+    ]
+  },
+  "20171208.mp3": {
+    "songs": [
+      "20171208-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Revolution.mp3",
+        "playlist_name": "20171208-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Revolution",
+          "artist": "The Score",
+          "album": "Revolution",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 232,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.180Z"
+      }
+    ]
+  },
+  "20171211.mp3": {
+    "songs": [
+      "20171211-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Right Now(Na Na Na).mp3",
+        "playlist_name": "20171211-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Right Now (Na Na Na)",
+          "artist": "Akon",
+          "album": "Right Now (Na Na Na)",
+          "year": 2007,
+          "genre": "Blues",
+          "duration": 241,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.182Z"
+      }
+    ]
+  },
+  "20171212.mp3": {
+    "songs": [
+      "20171212-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Run Free (Original Mix).mp3",
+        "playlist_name": "20171212-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Run Free (Original Mix)",
+          "artist": "Deep Chills; IVIE",
+          "album": "Run Free",
+          "year": 2017,
+          "genre": "未知流派",
+          "duration": 171,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.186Z"
+      }
+    ]
+  },
+  "20171213.mp3": {
+    "songs": [
+      "20171213-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Salt.mp3",
+        "playlist_name": "20171213-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Salt",
+          "artist": "Ava Max",
+          "album": "Heaven & Hell",
+          "year": 2020,
+          "genre": "Blues",
+          "duration": 180,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.190Z"
+      }
+    ]
+  },
+  "20171214.mp3": {
+    "songs": [
+      "20171214-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Send It (feat. Rich Homie Quan).mp3",
+        "playlist_name": "20171214-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Send It (feat. Rich Homie Quan)",
+          "artist": "Austin Mahone; Rich Homie Quan",
+          "album": "Send It (feat. Rich Homie Quan)",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 181,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.194Z"
+      }
+    ]
+  },
+  "20171215.mp3": {
+    "songs": [
+      "20171215-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Seven (Jiaye Reboot） (Jiaye Reboot).mp3",
+        "playlist_name": "20171215-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Seven (Jiaye Reboot） (Jiaye Reboot)",
+          "artist": "Jiaye",
+          "album": "Seven (Jiaye Reboot）",
+          "year": 2016,
+          "genre": "未知流派",
+          "duration": 259,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.200Z"
+      }
+    ]
+  },
+  "20171218.mp3": {
+    "songs": [
+      "20171218-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Skin.mp3",
+        "playlist_name": "20171218-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Skin",
+          "artist": "Rag'n'Bone Man",
+          "album": "Skin",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 240,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.202Z"
+      }
+    ]
+  },
+  "20171219.mp3": {
+    "songs": [
+      "20171219-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Stronger.mp3",
+        "playlist_name": "20171219-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Stronger",
+          "artist": "Kelly Clarkson",
+          "album": "Now That's What I Call Music! 81",
+          "year": 2012,
+          "genre": "未知流派",
+          "duration": 221,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.205Z"
+      }
+    ]
+  },
+  "20171220.mp3": {
+    "songs": [
+      "20171220-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Summertrain.mp3",
+        "playlist_name": "20171220-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Summertrain",
+          "artist": "Greyson Chance",
+          "album": "Hold On ‘Til The Night",
+          "year": 2011,
+          "genre": "Blues",
+          "duration": 271,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.208Z"
+      }
+    ]
+  },
+  "20171221.mp3": {
+    "songs": [
+      "20171221-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "The Nights.mp3",
+        "playlist_name": "20171221-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "The Nights",
+          "artist": "Avicii",
+          "album": "The Days / Nights (Remixes / EP)",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 177,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.211Z"
+      }
+    ]
+  },
+  "20171222.mp3": {
+    "songs": [
+      "20171222-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "The Way I Still Love You.mp3",
+        "playlist_name": "20171222-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "The Way I Still Love You",
+          "artist": "Reynard Silva",
+          "album": "Reynard Silva",
+          "year": 2014,
+          "genre": "Blues",
+          "duration": 227,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.213Z"
+      }
+    ]
+  },
+  "20171225.mp3": {
+    "songs": [
+      "20171225-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "This Is Home.mp3",
+        "playlist_name": "20171225-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "This Is Home (Blaze U Remix)",
+          "artist": "Blaze U; INITPATCH",
+          "album": "This Is Home (Blaze U Remix)",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 233,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.222Z"
+      }
+    ]
+  },
+  "20171226.mp3": {
+    "songs": [
+      "20171226-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Unstoppable.mp3",
+        "playlist_name": "20171226-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Unstoppable",
+          "artist": "Sia",
+          "album": "This Is Acting",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 218,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.224Z"
+      }
+    ]
+  },
+  "20171227.mp3": {
+    "songs": [
+      "20171227-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Upupu.mp3",
+        "playlist_name": "20171227-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Upupu",
+          "artist": "小皮皮爱习题",
+          "album": "时光与火焰",
+          "year": 2022,
+          "genre": "Blues",
+          "duration": 264,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.227Z"
+      }
+    ]
+  },
+  "20171228.mp3": {
+    "songs": [
+      "20171228-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Waiting For Love (Live).mp3",
+        "playlist_name": "20171228-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Waiting For Love (Live)",
+          "artist": "Avicii; Martin Garrix; Simon Aldred",
+          "album": "Waiting For Love",
+          "year": 2015,
+          "genre": "Blues",
+          "duration": 274,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.229Z"
+      }
+    ]
+  },
+  "20171229.mp3": {
+    "songs": [
+      "20171229-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Waves (Radio Edit).mp3",
+        "playlist_name": "20171229-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Waves (Radio Edit)",
+          "artist": "Axero",
+          "album": "Waves",
+          "year": 2014,
+          "genre": "未知流派",
+          "duration": 266,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.234Z"
+      }
+    ]
+  },
+  "20180101.mp3": {
+    "songs": [
+      "20180101-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "We Can't Stop (Radio Edit).mp3",
+        "playlist_name": "20180101-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "We Can't Stop (Radio Edit)",
+          "artist": "Miley Cyrus",
+          "album": "We Can't Stop",
+          "year": 2013,
+          "genre": "Blues",
+          "duration": 233,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.239Z"
+      }
+    ]
+  },
+  "20180102.mp3": {
+    "songs": [
+      "20180102-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Welcome to New York (Karaoke Version Originally Performed By Taylor Swift).mp3",
+        "playlist_name": "20180102-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Welcome to New York (Karaoke Version Originally Performed By Taylor Swift)",
+          "artist": "Ellie Joy",
+          "album": "Welcome to New York",
+          "year": 2014,
+          "genre": "未知流派",
+          "duration": 213,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.247Z"
+      }
+    ]
+  },
+  "20180103.mp3": {
+    "songs": [
+      "20180103-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Wolves.mp3",
+        "playlist_name": "20180103-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Wolves",
+          "artist": "Selena Gomez; Marshmello",
+          "album": "Wolves",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 198,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.250Z"
+      }
+    ]
+  },
+  "20180104.mp3": {
+    "songs": [
+      "20180104-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Wonderful U (Demo Version).mp3",
+        "playlist_name": "20180104-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Wonderful U (Demo Version)",
+          "artist": "AGA",
+          "album": "Ginadoll",
+          "year": 2016,
+          "genre": "Blues",
+          "duration": 249,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.253Z"
+      }
+    ]
+  },
+  "20180105.mp3": {
+    "songs": [
+      "20180105-A.mp3",
+      null
+    ],
+    "metadata": null,
+    "renamed_files": [
+      {
+        "original_name": "Yeminler Ediyorum.mp3",
+        "playlist_name": "20180105-A.mp3",
+        "slot": 0,
+        "metadata": {
+          "title": "Yeminler Ediyorum",
+          "artist": "Rido; Faxo",
+          "album": "Yeminler Ediyorum",
+          "year": 2017,
+          "genre": "Blues",
+          "duration": 262,
+          "hasAlbumArt": true
+        },
+        "added_time": "2025-09-02T13:04:09.370Z"
+      }
+    ]
+  },
+  "20180108.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180109.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180110.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180111.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180112.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180115.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180116.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180117.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180118.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180119.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180123.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180124.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180125.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180126.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180129.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180130.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180131.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180201.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180202.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180205.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180206.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180207.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180208.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180209.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180211.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180212.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180213.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180214.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180215.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180216.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180219.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180220.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180222-2.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180223-2.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180301-2.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180324.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180423.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180602-2.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  },
+  "20180624.mp3": {
+    "songs": [
+      null,
+      null
+    ],
+    "metadata": null,
+    "renamed_files": []
+  }
+}
