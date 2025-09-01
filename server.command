@@ -101,6 +101,11 @@ const PORT = 3000;
 // 调试开关
 const DEBUG = process.env.DEBUG || false ; // 设置为 true 启用详细日志
 
+// 设置console.debug的行为
+if (!DEBUG) {
+    console.debug = function() {}; // DEBUG模式关闭时，console.debug不输出任何内容
+}
+
 const DATA_FILE = path.join(__dirname, 'music-map.json');
 const SONG_DIR = __dirname;
 
@@ -303,9 +308,7 @@ function saveData(data) {
 
 // 获取音乐元数据（包括封面图片）
 async function getMusicMetadata(filePath) {
-    if (DEBUG) {
-        console.log(`\n=== 开始解析文件: ${filePath} ===`);
-    }
+    console.debug(`\n=== 开始解析文件: ${filePath} ===`);
     
     try {
         const metadata = await mm.parseFile(filePath, {
@@ -314,40 +317,22 @@ async function getMusicMetadata(filePath) {
             includeChapters: false
         });
         
-        if (DEBUG) {
-            console.log('原始元数据结构:');
-            console.log('- metadata.common:', metadata.common ? Object.keys(metadata.common) : 'undefined');
-            console.log('- metadata.format:', metadata.format ? Object.keys(metadata.format) : 'undefined');
-            
-            if (metadata.common) {
-                console.log('Common 字段详情:');
-                console.log('  - title:', metadata.common.title);
-                console.log('  - artist:', metadata.common.artist);
-                console.log('  - album:', metadata.common.album);
-                console.log('  - year:', metadata.common.year);
-                console.log('  - genre:', metadata.common.genre);
-                console.log('  - picture:', metadata.common.picture ? `${metadata.common.picture.length} 个图片` : 'none');
-                
-                if (metadata.common.picture && metadata.common.picture.length > 0) {
-                    console.log('封面图片详情:');
-                    metadata.common.picture.forEach((pic, index) => {
-                        console.log(`  图片 ${index + 1}:`, {
-                            format: pic.format,
-                            type: pic.type,
-                            description: pic.description,
-                            dataType: typeof pic.data,
-                            dataSize: pic.data ? (Array.isArray(pic.data) ? pic.data.length : pic.data.length) : 0
-                        });
-                    });
-                }
-            }
-            
-            if (metadata.format) {
-                console.log('Format 字段详情:');
-                console.log('  - duration:', metadata.format.duration);
-                console.log('  - bitrate:', metadata.format.bitrate);
-                console.log('  - sampleRate:', metadata.format.sampleRate);
-            }
+        console.debug('原始元数据结构:', {
+            hasCommon: !!metadata.common,
+            hasFormat: !!metadata.format,
+            commonKeys: metadata.common ? Object.keys(metadata.common) : [],
+            formatKeys: metadata.format ? Object.keys(metadata.format) : []
+        });
+        
+        if (metadata.common) {
+            console.debug('Common字段详情:', {
+                title: metadata.common.title,
+                artist: metadata.common.artist,
+                album: metadata.common.album,
+                year: metadata.common.year,
+                genre: metadata.common.genre,
+                pictureCount: metadata.common.picture ? metadata.common.picture.length : 0
+            });
         }
         
         let hasAlbumArt = false;
@@ -358,19 +343,17 @@ async function getMusicMetadata(filePath) {
                 const picture = metadata.common.picture[0];
                 if (picture.data && picture.format) {
                     hasAlbumArt = true;
-                    if (DEBUG) {
-                        console.log('检测到封面图片:', {
-                            format: picture.format,
-                            hasData: !!picture.data
-                        });
-                    }
+                    console.debug('检测到封面图片:', {
+                        format: picture.format,
+                        hasData: !!picture.data
+                    });
                 }
             } catch (pictureError) {
-                if (DEBUG) console.log(`封面检测失败 ${filePath}:`, pictureError.message);
+                console.debug(`封面检测失败 ${filePath}:`, pictureError.message);
                 console.warn(`封面检测失败 ${filePath}:`, pictureError.message);
             }
         } else {
-            if (DEBUG) console.log('文件中没有找到封面图片');
+            console.debug('文件中没有找到封面图片');
         }
 
         const result = {
@@ -383,24 +366,20 @@ async function getMusicMetadata(filePath) {
             hasAlbumArt: hasAlbumArt
         };
         
-        if (DEBUG) {
-            console.log('最终提取结果:');
-            console.log('  - title:', result.title);
-            console.log('  - artist:', result.artist);
-            console.log('  - album:', result.album);
-            console.log('  - year:', result.year);
-            console.log('  - genre:', result.genre);
-            console.log('  - duration:', result.duration);
-            console.log('  - hasAlbumArt:', result.hasAlbumArt ? 'Yes' : 'No');
-            console.log(`=== 完成解析: ${path.basename(filePath)} ===\n`);
-        }
+        console.debug('最终提取结果:', {
+            title: result.title,
+            artist: result.artist,
+            album: result.album,
+            year: result.year,
+            genre: result.genre,
+            duration: result.duration,
+            hasAlbumArt: result.hasAlbumArt,
+            file: path.basename(filePath)
+        });
         
         return result;
     } catch (error) {
-        if (DEBUG) {
-            console.log(`元数据提取完全失败 ${filePath}:`, error.message);
-            console.log('错误详情:', error);
-        }
+        console.debug(`元数据提取完全失败 ${filePath}:`, error.message, error);
         console.warn(`元数据提取失败 ${filePath}:`, error.message);
         return {
             title: path.basename(filePath, '.mp3'),
@@ -1074,15 +1053,14 @@ app.get('/api/album-art/:filename', async (req, res) => {
         return res.status(403).json({error: 'Access denied'});
     }
 
-    if (DEBUG) {
-        console.log(`\n=== 封面API请求: ${filename} ===`);
-        console.log('文件路径:', filePath);
-        console.log('文件存在:', fs.existsSync(filePath));
-    }
+    console.debug(`封面API请求: ${filename}`, {
+        filePath: filePath,
+        exists: fs.existsSync(filePath)
+    });
 
     if (!fs.existsSync(filePath)) {
         // 文件不存在，返回默认图标
-        if (DEBUG) console.log('文件不存在，返回默认图标');
+        console.debug('文件不存在，返回默认图标');
         const defaultSvg = generateDefaultMusicIcon('song');
         res.set('Content-Type', 'image/svg+xml');
         res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
@@ -1108,13 +1086,12 @@ app.get('/api/album-art/:filename', async (req, res) => {
             includeChapters: false
         });
 
-        if (DEBUG) {
-            console.log('封面API - 元数据解析结果:');
-            console.log('- 有common:', !!metadata.common);
-            console.log('- 有picture:', !!(metadata.common && metadata.common.picture));
-            console.log('- picture数量:', metadata.common?.picture?.length || 0);
-            console.log('- noCache参数:', noCache);
-        }
+        console.debug('封面API - 元数据解析结果:', {
+            hasCommon: !!metadata.common,
+            hasPicture: !!(metadata.common && metadata.common.picture),
+            pictureCount: metadata.common?.picture?.length || 0,
+            noCache: noCache
+        });
 
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             const picture = metadata.common.picture[0];
@@ -1123,32 +1100,32 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 let dataBuffer = picture.data;
                 if (Array.isArray(dataBuffer)) {
                     dataBuffer = Buffer.from(dataBuffer);
-                    if (DEBUG) console.log('封面API - 数组转Buffer成功');
+                    console.debug('封面API - 数组转Buffer成功');
                 } else if (dataBuffer instanceof Buffer) {
                     // 已经是 Buffer，直接使用
-                    if (DEBUG) console.log('封面API - 数据已经是Buffer');
+                    console.debug('封面API - 数据已经是Buffer');
                 } else if (typeof dataBuffer === 'object' && dataBuffer.type === 'Buffer' && Array.isArray(dataBuffer.data)) {
                     // Node.js Buffer 对象被序列化后的格式
                     dataBuffer = Buffer.from(dataBuffer.data);
-                    if (DEBUG) console.log('封面API - 从序列化Buffer对象转换成功');
+                    console.debug('封面API - 从序列化Buffer对象转换成功');
                 } else if (dataBuffer instanceof Uint8Array) {
                     // Uint8Array 类型，转换为 Buffer
                     dataBuffer = Buffer.from(dataBuffer);
-                    if (DEBUG) console.log('封面API - 从Uint8Array转换为Buffer');
+                    console.debug('封面API - 从Uint8Array转换为Buffer');
                 } else if (typeof dataBuffer === 'object' && dataBuffer.constructor && dataBuffer.constructor.name === 'Uint8Array') {
                     // 确保是 Uint8Array 类型
                     dataBuffer = Buffer.from(dataBuffer);
-                    if (DEBUG) console.log('封面API - 从Uint8Array对象转换为Buffer');
+                    console.debug('封面API - 从Uint8Array对象转换为Buffer');
                 } else {
                     // 数据格式错误，返回默认图标
-                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer, '构造函数:', dataBuffer.constructor?.name);
+                    console.debug('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer, '构造函数:', dataBuffer.constructor?.name);
                     const defaultSvg = generateDefaultMusicIcon('song');
                     res.set('Content-Type', 'image/svg+xml');
                     res.set('Cache-Control', 'public, max-age=3600');
                     return res.send(defaultSvg);
                 }
                 
-                if (DEBUG) console.log('封面API - 返回实际封面图片');
+                console.debug('封面API - 返回实际封面图片');
                 res.set('Content-Type', picture.format);
                 res.set('ETag', etag);
                 
@@ -1157,7 +1134,7 @@ app.get('/api/album-art/:filename', async (req, res) => {
                     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
                     res.set('Pragma', 'no-cache');
                     res.set('Expires', '0');
-                    if (DEBUG) console.log('封面API - 使用无缓存模式');
+                    console.debug('封面API - 使用无缓存模式');
                 } else {
                     res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
                 }
@@ -1165,7 +1142,7 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 res.send(dataBuffer);
             } else {
                 // 封面数据损坏，返回默认图标
-                if (DEBUG) console.log('封面API - 封面数据损坏，返回默认图标');
+                console.debug('封面API - 封面数据损坏，返回默认图标');
                 const defaultSvg = generateDefaultMusicIcon('song');
                 res.set('Content-Type', 'image/svg+xml');
                 res.set('Cache-Control', 'public, max-age=3600');
@@ -1178,16 +1155,14 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 iconType = 'course';
             }
             
-            if (DEBUG) console.log(`封面API - 没有封面，返回${iconType}类型默认图标`);
+            console.debug(`封面API - 没有封面，返回${iconType}类型默认图标`);
             const defaultSvg = generateDefaultMusicIcon(iconType);
             res.set('Content-Type', 'image/svg+xml');
             res.set('Cache-Control', 'public, max-age=3600'); // 缓存1小时
             res.send(defaultSvg);
         }
     } catch (error) {
-        if (DEBUG) {
-            console.log(`封面API - 解析失败 ${filePath}:`, error.message);
-        }
+        console.debug(`封面API - 解析失败 ${filePath}:`, error.message);
         console.warn(`读取封面失败 ${filePath}:`, error.message);
         // 读取失败，返回默认图标而不是错误
         const defaultSvg = generateDefaultMusicIcon('song');
@@ -1339,7 +1314,7 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
     const data = loadData();
     let cleanedCount = 0;
     let refreshedCount = 0;
-    let fixedCoverCount = 0;
+
     let addedMetadataCount = 0;
     const cleanedFiles = [];
 
@@ -1411,10 +1386,10 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
     saveData(data);
 
     res.json({
-        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，修复了 ${fixedCoverCount} 个封面格式，添加了 ${addedMetadataCount} 个缺失的metadata`,
+        message: `Music-Map 更新完成：清理了 ${cleanedCount} 个无效绑定，刷新了 ${refreshedCount} 个文件的元数据，添加了 ${addedMetadataCount} 个缺失的metadata`,
         cleaned_count: cleanedCount,
         refreshed_count: refreshedCount,
-        fixed_cover_count: fixedCoverCount,
+
         added_metadata_count: addedMetadataCount,
         cleaned_files: cleanedFiles
     });
@@ -1755,9 +1730,7 @@ function generateHTML() {
                 <div></div>
                 <div>
                     📦 数据缓存: <span id="cache-indicator">未加载</span>
-                    <button onclick="DataManager.refreshJsonData()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新JSON</button>
-                    <button onclick="DataManager.refreshAll()" style="margin-left: 5px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #007bff; background: none; border-radius: 4px; cursor: pointer; color: #007bff;">🔄 全面刷新</button>
-                    <button onclick="refreshAllCovers()" style="margin-left: 5px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #28a745; background: none; border-radius: 4px; cursor: pointer; color: #28a745;">🖼️ 刷新封面</button>
+                    <button onclick="universalRefresh()" style="margin-left: 10px; padding: 5px 12px; font-size: 0.85em; border: 1px solid #007bff; background: #007bff; color: white; border-radius: 6px; cursor: pointer; font-weight: 500;">🔄 刷新</button>
                 </div>
             </div>
         </div>
@@ -2141,45 +2114,7 @@ function generateHTML() {
                 }
             },
             
-            // 全面刷新（包括浏览器缓存）
-            async refreshAll() {
-                const indicator = document.getElementById('cache-indicator');
-                if (indicator) {
-                    indicator.innerHTML = '<span style="color: #007bff;">全面刷新...</span>';
-                }
-                
-                try {
-                    // 清空所有内存缓存
-                    this.cache.jsonData = null;
-                    this.cache.stats = null;
-                    this.cache.covers.clear();
-                    this.cache.lastJsonUpdate = null;
-                    this.cache.lastStatsUpdate = null;
-                    
-                    // 强制重新加载数据
-                    await Promise.all([
-                        this.getJsonData(true),
-                        this.getStats(true)
-                    ]);
-                    
-                    // 刷新当前页面显示
-                    const currentTab = document.querySelector('.tab.active');
-                    if (currentTab) {
-                        const tabName = currentTab.textContent.includes('概览') ? 'overview' :
-                                      currentTab.textContent.includes('课程') ? 'courses' :
-                                      currentTab.textContent.includes('歌曲') ? 'songs' : null;
-                        if (tabName) {
-                            if (tabName === 'overview') loadOverview();
-                            if (tabName === 'courses') loadCourses();
-                            if (tabName === 'songs') loadSongs();
-                        }
-                    }
-                    
-                    showAlert('所有数据已刷新', 'success');
-                } catch (error) {
-                    showAlert('刷新失败: ' + error.message, 'error');
-                }
-            }
+
         };
         
         function showTab(tabName) {
@@ -2632,17 +2567,10 @@ function generateHTML() {
             }
             
             // 总是使用实时API获取封面，浏览器会自动缓存
-            albumArtHtml = '<div style="position: relative; display: inline-block;">' +
-                         '<img id="cover-image-' + fileName.replace(/[^a-zA-Z0-9]/g, '') + '" ' +
+            albumArtHtml = '<img id="cover-image-' + fileName.replace(/[^a-zA-Z0-9]/g, '') + '" ' +
                          'src="' + DataManager.getCoverUrl(fileName) + '" ' +
                          'style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" ' +
-                         'alt="封面">' +
-                         '<button onclick="refreshCover(\'' + fileName + '\')" ' +
-                         'style="position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; ' +
-                         'border-radius: 50%; border: none; background: #007bff; color: white; ' +
-                         'font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;" ' +
-                         'title="刷新封面">🔄</button>' +
-                         '</div>';
+                         'alt="封面">';
             
             
             // todo '<div style="font-size: 0.85rem; color: #6c757d;">🎤 ' + artist + ' ｜ 💿 ' + album + '</div>' + 超过长度隐藏
@@ -2672,45 +2600,59 @@ function generateHTML() {
             document.body.appendChild(player);
         }
         
-        // 刷新封面图片
-        function refreshCover(fileName) {
-            const imageId = 'cover-image-' + fileName.replace(/[^a-zA-Z0-9]/g, '');
-            const img = document.getElementById(imageId);
-            if (img) {
-                // 使用无缓存URL强制刷新
-                const newUrl = DataManager.getCoverUrl(fileName, { noCache: true });
-                img.src = newUrl;
-                console.log('刷新封面:', fileName, '新URL:', newUrl);
-            }
-        }
         
-        // 刷新所有可见的封面图片
-        function refreshAllCovers() {
-            const images = document.querySelectorAll('img[id^="cover-image-"]');
-            let refreshedCount = 0;
+        // 万能刷新功能：包括JSON数据、浏览器缓存、封面图片
+        async function universalRefresh() {
+            const indicator = document.getElementById('cache-indicator');
+            if (indicator) {
+                indicator.innerHTML = '<span style="color: #007bff;">刷新中...</span>';
+            }
             
-            images.forEach(img => {
-                // 从ID中提取文件名
-                const imageId = img.id;
-                const fileNameMatch = imageId.match(/cover-image-(.+)/);
-                if (fileNameMatch) {
-                    // 需要还原文件名（去掉非字母数字字符的处理）
-                    // 这里有个问题，我们需要从实际的src URL中获取文件名
+            try {
+                // 1. 刷新JSON数据
+                await DataManager.refreshJsonData();
+                
+                // 2. 刷新所有封面图片
+                const images = document.querySelectorAll('img[id^="cover-image-"]');
+                let refreshedCoverCount = 0;
+                
+                images.forEach(img => {
                     const currentSrc = img.src;
                     const urlMatch = currentSrc.match(/\/api\/album-art\/([^?]+)/);
                     if (urlMatch) {
                         const fileName = decodeURIComponent(urlMatch[1]);
                         const newUrl = DataManager.getCoverUrl(fileName, { noCache: true });
                         img.src = newUrl;
-                        refreshedCount++;
+                        refreshedCoverCount++;
                     }
+                });
+                
+                // 3. 强制重新加载当前页面内容
+                const currentTab = document.querySelector('.tab.active');
+                if (currentTab) {
+                    const tabName = currentTab.textContent.includes('概览') ? 'overview' : 
+                                   currentTab.textContent.includes('课程') ? 'courses' : 'songs';
+                    showTab(tabName);
                 }
-            });
-            
-            if (refreshedCount > 0) {
-                showAlert('已刷新 ' + refreshedCount + ' 个封面图片', 'success');
-            } else {
-                showAlert('没有找到需要刷新的封面图片', 'info');
+                
+                // 4. 清理浏览器缓存（通过重新加载关键资源）
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            if (name.includes('album-art')) {
+                                caches.delete(name);
+                            }
+                        });
+                    });
+                }
+                
+                showAlert('刷新完成：JSON数据已更新，' + refreshedCoverCount + ' 个封面已刷新，浏览器缓存已清理', 'success');
+                
+            } catch (error) {
+                showAlert('刷新失败: ' + error.message, 'error');
+                if (indicator) {
+                    indicator.innerHTML = '<span style="color: #dc3545;">刷新失败</span>';
+                }
             }
         }
         
