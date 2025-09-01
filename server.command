@@ -12,6 +12,89 @@ const path = require('path');
 const mm = require('music-metadata');
 const multer = require('multer');
 
+// Security: Input validation and sanitization
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return input;
+    return input.replace(/[<>\"'&]/g, function(match) {
+        const escapeMap = {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        };
+        return escapeMap[match];
+    });
+}
+
+function validateFilename(filename) {
+    if (!filename || typeof filename !== 'string') return false;
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) return false;
+    if (filename.length > 255) return false;
+    return true;
+}
+
+// Simple rate limiting implementation
+const rateLimiter = {
+    requests: new Map(),
+    
+    isAllowed(ip, endpoint, maxRequests = 100, windowMs = 60000) {
+        const key = `${ip}:${endpoint}`;
+        const now = Date.now();
+        const windowStart = now - windowMs;
+        
+        if (!this.requests.has(key)) {
+            this.requests.set(key, []);
+        }
+        
+        const requests = this.requests.get(key);
+        // Clean old requests
+        const validRequests = requests.filter(time => time > windowStart);
+        
+        if (validRequests.length >= maxRequests) {
+            return false;
+        }
+        
+        validRequests.push(now);
+        this.requests.set(key, validRequests);
+        
+        // Cleanup old entries periodically
+        if (Math.random() < 0.01) { // 1% chance
+            this.cleanup();
+        }
+        
+        return true;
+    },
+    
+    cleanup() {
+        const now = Date.now();
+        for (const [key, requests] of this.requests.entries()) {
+            const validRequests = requests.filter(time => time > now - 300000); // 5 minutes
+            if (validRequests.length === 0) {
+                this.requests.delete(key);
+            } else {
+                this.requests.set(key, validRequests);
+            }
+        }
+    }
+};
+
+// Rate limiting middleware
+function rateLimit(endpoint, maxRequests = 100, windowMs = 60000) {
+    return (req, res, next) => {
+        const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+        
+        if (!rateLimiter.isAllowed(clientIP, endpoint, maxRequests, windowMs)) {
+            return res.status(429).json({
+                error: 'Too many requests. Please try again later.',
+                retryAfter: Math.ceil(windowMs / 1000)
+            });
+        }
+        
+        next();
+    };
+}
+
 const app = express();
 const PORT = 3000;
 
@@ -23,41 +106,120 @@ const SONG_DIR = __dirname;
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+// Security: Disable X-Powered-By header
+app.disable('x-powered-by');
+
+// Security: Add security headers
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
+// Cache control for API endpoints
+app.use('/api', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+});
+
 app.use('/songs', express.static(SONG_DIR)); // 静态访问歌曲
 
 // 文件上传配置
 const upload = multer({
     dest: SONG_DIR,
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB limit
+        files: 1
+    },
     fileFilter: (req, file, cb) => {
-        // 修复中文文件名编码问题
-        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        // Security: Only allow MP3 files
+        if (file.mimetype !== 'audio/mpeg' && file.mimetype !== 'audio/mp3') {
+            return cb(new Error('Only MP3 files are allowed'), false);
+        }
+        
+        // Security: Validate file extension
+        if (!file.originalname.toLowerCase().endsWith('.mp3')) {
+            return cb(new Error('Only .mp3 files are allowed'), false);
+        }
+        
+        // Security: Sanitize filename - remove path separators and dangerous characters
+        const sanitizedName = file.originalname.replace(/[\/\\:*?"<>|]/g, '_');
+        file.originalname = Buffer.from(sanitizedName, 'latin1').toString('utf8');
+        
+        // Security: Check filename length
+        if (file.originalname.length > 255) {
+            return cb(new Error('Filename too long'), false);
+        }
+        
         cb(null, true);
     }
 });
 const uploadMultiple = multer({
     dest: SONG_DIR,
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB per file limit
+        files: 20 // Reduced from 100 to 20 for security
+    },
     fileFilter: (req, file, cb) => {
-        // 修复中文文件名编码问题
-        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        // Security: Only allow MP3 files
+        if (file.mimetype !== 'audio/mpeg' && file.mimetype !== 'audio/mp3') {
+            return cb(new Error('Only MP3 files are allowed'), false);
+        }
+        
+        // Security: Validate file extension
+        if (!file.originalname.toLowerCase().endsWith('.mp3')) {
+            return cb(new Error('Only .mp3 files are allowed'), false);
+        }
+        
+        // Security: Sanitize filename - remove path separators and dangerous characters
+        const sanitizedName = file.originalname.replace(/[\/\\:*?"<>|]/g, '_');
+        file.originalname = Buffer.from(sanitizedName, 'latin1').toString('utf8');
+        
+        // Security: Check filename length
+        if (file.originalname.length > 255) {
+            return cb(new Error('Filename too long'), false);
+        }
+        
         cb(null, true);
     }
-}).array('songs', 100); // 支持最多100个文件（分批处理）
+}).array('songs', 20); // Support max 20 files for batch processing
 
 // ------------------- 数据操作 -------------------
 function initData() {
     if (!fs.existsSync(DATA_FILE)) {
+        console.log('数据文件不存在，创建新的 music-map.json');
         fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
     }
     let data;
     try {
-        data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+        const fileContent = fs.readFileSync(DATA_FILE, 'utf-8');
+        data = JSON.parse(fileContent);
+        
+        // 验证数据文件结构的完整性
+        if (!data || typeof data !== 'object') {
+            throw new Error('数据文件结构无效');
+        }
+        
+        console.log(`数据文件加载成功，包含 ${Object.keys(data).length} 个课程`);
     } catch (e) {
-        console.error('数据文件格式错误，已初始化');
+        console.error('数据文件格式错误，重新初始化:', e.message);
+        // 备份损坏的文件
+        if (fs.existsSync(DATA_FILE)) {
+            const backupFile = DATA_FILE + '.backup.' + Date.now();
+            fs.copyFileSync(DATA_FILE, backupFile);
+            console.log(`损坏的数据文件已备份到: ${backupFile}`);
+        }
         data = {};
     }
 
     // 扫描当前目录 mp3 文件
     const files = fs.readdirSync(__dirname).filter(f => f.endsWith('.mp3'));
+    let hasChanges = false;
 
     // 课程音频文件格式: 20170221-2.mp3 20170316.mp3   20170411.mp3   20170504.mp3
     // 音乐格式：使用数字序号以确保播放器正确排序：001-课程.mp3, 002-歌曲1.mp3, 003-歌曲2.mp3
@@ -65,29 +227,58 @@ function initData() {
         // 匹配课程文件名：8位数字开头 + 可选 -数字
         if (/^\d{8}(-\d+)?\.mp3$/.test(file)) {
             if (!data[file]) {
+                console.log(`发现新课程文件: ${file}`);
                 data[file] = {
                     songs: [null, null], // 两首歌曲位置
                     metadata: null,      // 课程元数据
                     renamed_files: []    // 重命名后的文件列表
                 };
+                hasChanges = true;
             } else if (Array.isArray(data[file])) {
                 // 兼容旧数据格式：[song1, song2] -> {songs: [song1, song2], ...}
+                console.log(`升级旧数据格式: ${file}`);
                 const oldSongs = data[file];
                 data[file] = {
                     songs: oldSongs,
                     metadata: null,
                     renamed_files: []
                 };
+                hasChanges = true;
             }
         }
     });
 
-    saveData(data);
+    // 清理不存在的文件引用
+    for (const [course, info] of Object.entries(data)) {
+        if (info.renamed_files) {
+            const originalLength = info.renamed_files.length;
+            info.renamed_files = info.renamed_files.filter(file => {
+                const filePath = path.join(__dirname, file.playlist_name);
+                const exists = fs.existsSync(filePath);
+                if (!exists) {
+                    console.log(`清理不存在的文件引用: ${file.playlist_name}`);
+                }
+                return exists;
+            });
+            if (info.renamed_files.length !== originalLength) {
+                hasChanges = true;
+            }
+        }
+    }
+
+    // 只有在有变化时才保存数据
+    if (hasChanges) {
+        console.log('检测到数据变化，保存更新');
+        saveData(data);
+    } else {
+        console.log('数据文件无变化，跳过保存');
+    }
+    
+    return data;
 }
 
 function loadData() {
-    initData();
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    return initData(); // initData now returns the data directly
 }
 
 function saveData(data) {
@@ -399,10 +590,22 @@ app.post('/api/add-course', (req, res) => {
 });
 
 // 上传歌曲并分配到课程空位
-app.post('/api/add-song', upload.single('song'), async (req, res) => {
-    const {course: targetCourse, friendly_name} = req.body;
-    const file = req.file;
-    if (!file) return res.status(400).json({error: '没有上传文件'});
+app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
+    upload.single('song')(req, res, async (err) => {
+        if (err) {
+            console.error('File upload error:', err.message);
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({error: '文件太大，最大允许50MB'});
+                }
+                return res.status(400).json({error: '文件上传错误: ' + err.message});
+            }
+            return res.status(400).json({error: err.message});
+        }
+        
+        const {course: targetCourse, friendly_name} = req.body;
+        const file = req.file;
+        if (!file) return res.status(400).json({error: '没有上传文件'});
 
     const data = loadData();
 
@@ -465,19 +668,34 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
         });
     saveData(data);
 
-    res.json({
-        message: `歌曲已添加到课程 ${assignedCourse}`,
-        file: newName,
-        metadata,
-        display_name: originalName.replace('.mp3', ''),
-        auto_assigned: targetCourse !== assignedCourse
+        res.json({
+            message: `歌曲已添加到课程 ${assignedCourse}`,
+            file: newName,
+            metadata,
+            display_name: originalName.replace('.mp3', ''),
+            auto_assigned: targetCourse !== assignedCourse
+        });
     });
 });
 
 // 批量上传歌曲
-app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
-    const { course: targetCourse, friendly_names } = req.body;
-    const files = req.files;
+app.post('/api/add-songs-batch', rateLimit('batch-upload', 5, 300000), (req, res) => {
+    uploadMultiple(req, res, async (err) => {
+        if (err) {
+            console.error('Batch upload error:', err.message);
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({error: '文件太大，最大允许50MB'});
+                } else if (err.code === 'LIMIT_FILE_COUNT') {
+                    return res.status(400).json({error: '文件数量太多，最多允许20个文件'});
+                }
+                return res.status(400).json({error: '文件上传错误: ' + err.message});
+            }
+            return res.status(400).json({error: err.message});
+        }
+        
+        const { course: targetCourse, friendly_names } = req.body;
+        const files = req.files;
 
     if (!files || files.length === 0) {
         return res.status(400).json({error: '没有上传文件'});
@@ -593,18 +811,31 @@ app.post('/api/add-songs-batch', uploadMultiple, async (req, res) => {
 
     saveData(data);
 
-    res.json({
-        message: `批量上传完成：成功 ${results.length} 个，失败 ${errors.length} 个`,
-        success: results,
-        errors: errors,
-        total: files.length
+        res.json({
+            message: `批量上传完成：成功 ${results.length} 个，失败 ${errors.length} 个`,
+            success: results,
+            errors: errors,
+            total: files.length
+        });
     });
 });
 
 // 直接上传到指定课程的指定位置
-app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
-    const {course, slot, friendly_name} = req.body;
-    const file = req.file;
+app.post('/api/add-song-to-slot', rateLimit('upload', 10, 60000), (req, res) => {
+    upload.single('song')(req, res, async (err) => {
+        if (err) {
+            console.error('File upload error:', err.message);
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({error: '文件太大，最大允许50MB'});
+                }
+                return res.status(400).json({error: '文件上传错误: ' + err.message});
+            }
+            return res.status(400).json({error: err.message});
+        }
+        
+        const {course, slot, friendly_name} = req.body;
+        const file = req.file;
 
     if (!file) return res.status(400).json({error: '没有上传文件'});
     if (!course || slot === undefined) {
@@ -661,16 +892,17 @@ app.post('/api/add-song-to-slot', upload.single('song'), async (req, res) => {
         });
         saveData(data);
 
-        res.json({
-            message: `歌曲已添加到课程 ${course} 的位置 ${slotIndex + 1}`,
-            file: newName,
-            metadata,
-            display_name: originalName.replace('.mp3', '')
-        });
-    } catch (error) {
-        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-        res.status(500).json({error: '处理文件失败: ' + error.message});
-    }
+            res.json({
+                message: `歌曲已添加到课程 ${course} 的位置 ${slotIndex + 1}`,
+                file: newName,
+                metadata,
+                display_name: originalName.replace('.mp3', '')
+            });
+        } catch (error) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+            res.status(500).json({error: '处理文件失败: ' + error.message});
+        }
+    });
 });
 
 // 按原文件名删除歌曲
@@ -880,7 +1112,25 @@ function generateDefaultMusicIcon(type = 'song') {
 // 获取歌曲封面图片
 app.get('/api/album-art/:filename', async (req, res) => {
     const filename = req.params.filename;
+    
+    // Security: Validate filename to prevent path traversal attacks
+    if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+        return res.status(400).json({error: 'Invalid filename'});
+    }
+    
+    // Security: Only allow .mp3 files
+    if (!filename.endsWith('.mp3')) {
+        return res.status(400).json({error: 'Only MP3 files are allowed'});
+    }
+    
     const filePath = path.join(SONG_DIR, filename);
+    
+    // Security: Ensure the resolved path is within SONG_DIR
+    const resolvedPath = path.resolve(filePath);
+    const resolvedSongDir = path.resolve(SONG_DIR);
+    if (!resolvedPath.startsWith(resolvedSongDir)) {
+        return res.status(403).json({error: 'Access denied'});
+    }
 
     if (DEBUG) {
         console.log(`\n=== 封面API请求: ${filename} ===`);
@@ -984,7 +1234,25 @@ app.get('/api/album-art/:filename', async (req, res) => {
 // 调试API：分析特定文件的元数据
 app.get('/api/debug-metadata/:filename', async (req, res) => {
     const filename = req.params.filename;
+    
+    // Security: Validate filename to prevent path traversal attacks
+    if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+        return res.status(400).json({error: 'Invalid filename'});
+    }
+    
+    // Security: Only allow .mp3 files
+    if (!filename.endsWith('.mp3')) {
+        return res.status(400).json({error: 'Only MP3 files are allowed'});
+    }
+    
     const filePath = path.join(SONG_DIR, filename);
+    
+    // Security: Ensure the resolved path is within SONG_DIR
+    const resolvedPath = path.resolve(filePath);
+    const resolvedSongDir = path.resolve(SONG_DIR);
+    if (!resolvedPath.startsWith(resolvedSongDir)) {
+        return res.status(403).json({error: 'Access denied'});
+    }
 
     if (!fs.existsSync(filePath)) {
         return res.status(404).json({error: '文件不存在'});
@@ -1061,7 +1329,7 @@ app.get('/api/debug-metadata/:filename', async (req, res) => {
 });
 
 // 删除所有歌曲
-app.post('/api/delete-all-songs', (req, res) => {
+app.post('/api/delete-all-songs', rateLimit('delete-all', 2, 300000), (req, res) => {
     const data = loadData();
     let deletedCount = 0;
     let errorCount = 0;
@@ -1101,7 +1369,7 @@ app.post('/api/delete-all-songs', (req, res) => {
 });
 
 // 更新 music-map：清理不存在的文件绑定
-app.post('/api/update-music-map', async (req, res) => {
+app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req, res) => {
     const data = loadData();
     let cleanedCount = 0;
     let refreshedCount = 0;
@@ -1514,6 +1782,7 @@ function generateHTML() {
                 <div>
                     📦 数据缓存: <span id="cache-indicator">未加载</span>
                     <button onclick="DataManager.refreshJsonData()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新JSON</button>
+                    <button onclick="DataManager.refreshAll()" style="margin-left: 5px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #007bff; background: none; border-radius: 4px; cursor: pointer; color: #007bff;">🔄 全面刷新</button>
                 </div>
             </div>
         </div>
@@ -1884,6 +2153,46 @@ function generateHTML() {
                 try {
                     await this.getJsonData(true);
                     showAlert('JSON数据已刷新', 'success');
+                } catch (error) {
+                    showAlert('刷新失败: ' + error.message, 'error');
+                }
+            },
+            
+            // 全面刷新（包括浏览器缓存）
+            async refreshAll() {
+                const indicator = document.getElementById('cache-indicator');
+                if (indicator) {
+                    indicator.innerHTML = '<span style="color: #007bff;">全面刷新...</span>';
+                }
+                
+                try {
+                    // 清空所有内存缓存
+                    this.cache.jsonData = null;
+                    this.cache.stats = null;
+                    this.cache.covers.clear();
+                    this.cache.lastJsonUpdate = null;
+                    this.cache.lastStatsUpdate = null;
+                    
+                    // 强制重新加载数据
+                    await Promise.all([
+                        this.getJsonData(true),
+                        this.getStats(true)
+                    ]);
+                    
+                    // 刷新当前页面显示
+                    const currentTab = document.querySelector('.tab.active');
+                    if (currentTab) {
+                        const tabName = currentTab.textContent.includes('概览') ? 'overview' :
+                                      currentTab.textContent.includes('课程') ? 'courses' :
+                                      currentTab.textContent.includes('歌曲') ? 'songs' : null;
+                        if (tabName) {
+                            if (tabName === 'overview') loadOverview();
+                            if (tabName === 'courses') loadCourses();
+                            if (tabName === 'songs') loadSongs();
+                        }
+                    }
+                    
+                    showAlert('所有数据已刷新', 'success');
                 } catch (error) {
                     showAlert('刷新失败: ' + error.message, 'error');
                 }
