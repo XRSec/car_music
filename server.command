@@ -1503,6 +1503,7 @@ app.post('/api/restore-music', (req, res) => {
     const restoredFiles = [];
     const errors = [];
 
+    // 还原已管理的歌曲文件
     for (const [course, info] of Object.entries(data)) {
         const renamedFiles = info.renamed_files || [];
 
@@ -1517,7 +1518,8 @@ app.post('/api/restore-music', (req, res) => {
                     restoredFiles.push({
                         display_name: fileRecord.friendly_name || fileRecord.original_name.replace('.mp3', ''),
                         original_name: fileRecord.original_name,
-                        playlist_name: fileRecord.playlist_name
+                        playlist_name: fileRecord.playlist_name,
+                        type: 'song'
                     });
                 } else {
                     errors.push({
@@ -1532,27 +1534,38 @@ app.post('/api/restore-music', (req, res) => {
                 });
             }
         });
+    }
 
-        // 还原课程文件
-        try {
-            const coursePath = path.join(SONG_DIR, course);
-            const restoredCoursePath = path.join(musicDir, course);
+    // 还原所有课程文件（包括未在data中的）
+    const allFiles = fs.readdirSync(SONG_DIR).filter(f => f.endsWith('.mp3'));
+    allFiles.forEach(file => {
+        // 匹配课程文件名：8位数字开头 + 可选 -数字
+        if (/^\d{8}(-\d+)?\.mp3$/.test(file)) {
+            try {
+                const coursePath = path.join(SONG_DIR, file);
+                const restoredCoursePath = path.join(musicDir, file);
 
-            if (fs.existsSync(coursePath)) {
-                fs.copyFileSync(coursePath, restoredCoursePath);
-                restoredFiles.push({
-                    display_name: course.replace('.mp3', ''),
-                    original_name: course,
-                    playlist_name: course
+                if (fs.existsSync(coursePath)) {
+                    // 检查是否已经复制过了
+                    const alreadyRestored = restoredFiles.some(f => f.playlist_name === file);
+                    if (!alreadyRestored) {
+                        fs.copyFileSync(coursePath, restoredCoursePath);
+                        restoredFiles.push({
+                            display_name: file.replace('.mp3', ''),
+                            original_name: file,
+                            playlist_name: file,
+                            type: 'course'
+                        });
+                    }
+                }
+            } catch (error) {
+                errors.push({
+                    file: file,
+                    error: error.message
                 });
             }
-        } catch (error) {
-            errors.push({
-                file: course,
-                error: error.message
-            });
         }
-    }
+    });
 
     res.json({
         message: `还原完成：成功 ${restoredFiles.length} 个文件，失败 ${errors.length} 个`,
@@ -3171,11 +3184,15 @@ function generateHTML() {
                 const resultDiv = document.getElementById('restore-result');
                 
                 if (response.ok) {
+                    const courseFiles = result.restored.filter(f => f.type === 'course');
+                    const songFiles = result.restored.filter(f => f.type === 'song');
+                    
                     resultDiv.innerHTML = \`
                         <div class="alert alert-success">
                             <strong>\${result.message}</strong><br>
                             还原文件夹: \${result.music_folder}<br>
-                            成功文件: \${result.restored.length} 个<br>
+                            课程文件: \${courseFiles.length} 个<br>
+                            歌曲文件: \${songFiles.length} 个<br>
                             失败文件: \${result.errors.length} 个
                         </div>
                     \`;
