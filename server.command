@@ -196,14 +196,23 @@ async function getMusicMetadata(filePath) {
                         // Node.js Buffer 对象被序列化后的格式：{type: 'Buffer', data: [数字数组]}
                         dataBuffer = Buffer.from(dataBuffer.data);
                         if (DEBUG) console.log('从序列化Buffer对象转换为Buffer');
+                    } else if (dataBuffer instanceof Uint8Array) {
+                        // Uint8Array 类型，转换为 Buffer
+                        dataBuffer = Buffer.from(dataBuffer);
+                        if (DEBUG) console.log('从Uint8Array转换为Buffer');
+                    } else if (typeof dataBuffer === 'object' && dataBuffer.constructor && dataBuffer.constructor.name === 'Uint8Array') {
+                        // 确保是 Uint8Array 类型
+                        dataBuffer = Buffer.from(dataBuffer);
+                        if (DEBUG) console.log('从Uint8Array对象转换为Buffer');
                     } else {
                         // 其他未知格式
                         if (DEBUG) {
                             console.log(`封面数据格式未知 ${filePath}:`);
                             console.log('  - 类型:', typeof dataBuffer);
-                            console.log('  - 构造函数:', dataBuffer.constructor.name);
+                            console.log('  - 构造函数:', dataBuffer.constructor?.name);
                             console.log('  - 是否有data属性:', 'data' in dataBuffer);
                             console.log('  - 是否有type属性:', 'type' in dataBuffer);
+                            console.log('  - 是否是Uint8Array:', dataBuffer instanceof Uint8Array);
                         }
                         return; // 跳过封面，不抛出错误
                     }
@@ -917,9 +926,17 @@ app.get('/api/album-art/:filename', async (req, res) => {
                     // Node.js Buffer 对象被序列化后的格式
                     dataBuffer = Buffer.from(dataBuffer.data);
                     if (DEBUG) console.log('封面API - 从序列化Buffer对象转换成功');
+                } else if (dataBuffer instanceof Uint8Array) {
+                    // Uint8Array 类型，转换为 Buffer
+                    dataBuffer = Buffer.from(dataBuffer);
+                    if (DEBUG) console.log('封面API - 从Uint8Array转换为Buffer');
+                } else if (typeof dataBuffer === 'object' && dataBuffer.constructor && dataBuffer.constructor.name === 'Uint8Array') {
+                    // 确保是 Uint8Array 类型
+                    dataBuffer = Buffer.from(dataBuffer);
+                    if (DEBUG) console.log('封面API - 从Uint8Array对象转换为Buffer');
                 } else {
                     // 数据格式错误，返回默认图标
-                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer);
+                    if (DEBUG) console.log('封面API - 数据格式错误，返回默认图标, 类型:', typeof dataBuffer, '构造函数:', dataBuffer.constructor?.name);
                     const defaultSvg = generateDefaultMusicIcon('song');
                     res.set('Content-Type', 'image/svg+xml');
                     res.set('Cache-Control', 'public, max-age=3600');
