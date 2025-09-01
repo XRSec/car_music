@@ -283,28 +283,11 @@ function loadData() {
 
 function saveData(data) {
     try {
-        // 创建一个深拷贝，避免修改原始数据
+        // 创建一个深拷贝，避免修改原始数据，同时移除albumArt数据以减小文件大小
         const dataToSave = JSON.parse(JSON.stringify(data, (key, value) => {
-            // 处理封面数据，确保格式正确
-            if (key === 'albumArt' && value && typeof value === 'object' && value.data) {
-                if (typeof value.data === 'string') {
-                    // 已经是字符串，直接使用
-                    return value;
-                } else if (Array.isArray(value.data)) {
-                    // 是数组，转换为 base64 字符串
-                    try {
-                        const buffer = Buffer.from(value.data);
-                        return {
-                            format: value.format,
-                            data: buffer.toString('base64')
-                        };
-                    } catch (e) {
-                        return null; // 转换失败，不保存封面
-                    }
-                } else {
-                    // 其他格式，不保存
-                    return null;
-                }
+            // 不再保存albumArt数据到JSON文件中，图片通过API动态加载
+            if (key === 'albumArt') {
+                return undefined; // 完全移除albumArt字段
             }
             return value;
         }));
@@ -367,62 +350,24 @@ async function getMusicMetadata(filePath) {
             }
         }
         
-        let albumArt = null;
+        let hasAlbumArt = false;
 
-        // 提取封面图片
+        // 检查是否有封面图片（不存储数据，只记录是否存在）
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
             try {
                 const picture = metadata.common.picture[0];
                 if (picture.data && picture.format) {
-                    // 确保 data 是 Buffer，然后转换为 base64 字符串
-                    let dataBuffer = picture.data;
-                    if (Array.isArray(dataBuffer)) {
-                        // 如果是数组，转换为 Buffer
-                        dataBuffer = Buffer.from(dataBuffer);
-                        if (DEBUG) console.log('封面数据从数组转换为Buffer');
-                    } else if (dataBuffer instanceof Buffer) {
-                        // 已经是 Buffer，直接使用
-                        if (DEBUG) console.log('封面数据已经是Buffer格式');
-                    } else if (typeof dataBuffer === 'object' && dataBuffer.type === 'Buffer' && Array.isArray(dataBuffer.data)) {
-                        // Node.js Buffer 对象被序列化后的格式：{type: 'Buffer', data: [数字数组]}
-                        dataBuffer = Buffer.from(dataBuffer.data);
-                        if (DEBUG) console.log('从序列化Buffer对象转换为Buffer');
-                    } else if (dataBuffer instanceof Uint8Array) {
-                        // Uint8Array 类型，转换为 Buffer
-                        dataBuffer = Buffer.from(dataBuffer);
-                        if (DEBUG) console.log('从Uint8Array转换为Buffer');
-                    } else if (typeof dataBuffer === 'object' && dataBuffer.constructor && dataBuffer.constructor.name === 'Uint8Array') {
-                        // 确保是 Uint8Array 类型
-                        dataBuffer = Buffer.from(dataBuffer);
-                        if (DEBUG) console.log('从Uint8Array对象转换为Buffer');
-                    } else {
-                        // 其他未知格式
-                        if (DEBUG) {
-                            console.log(`封面数据格式未知 ${filePath}:`);
-                            console.log('  - 类型:', typeof dataBuffer);
-                            console.log('  - 构造函数:', dataBuffer.constructor?.name);
-                            console.log('  - 是否有data属性:', 'data' in dataBuffer);
-                            console.log('  - 是否有type属性:', 'type' in dataBuffer);
-                            console.log('  - 是否是Uint8Array:', dataBuffer instanceof Uint8Array);
-                        }
-                        return; // 跳过封面，不抛出错误
-                    }
-                    
-                    albumArt = {
-                        format: picture.format,
-                        data: dataBuffer.toString('base64')
-                    };
-                    
+                    hasAlbumArt = true;
                     if (DEBUG) {
-                        console.log('封面提取成功:', {
+                        console.log('检测到封面图片:', {
                             format: picture.format,
-                            base64Length: albumArt.data.length
+                            hasData: !!picture.data
                         });
                     }
                 }
             } catch (pictureError) {
-                if (DEBUG) console.log(`封面提取失败 ${filePath}:`, pictureError.message);
-                console.warn(`封面提取失败 ${filePath}:`, pictureError.message);
+                if (DEBUG) console.log(`封面检测失败 ${filePath}:`, pictureError.message);
+                console.warn(`封面检测失败 ${filePath}:`, pictureError.message);
             }
         } else {
             if (DEBUG) console.log('文件中没有找到封面图片');
@@ -435,7 +380,7 @@ async function getMusicMetadata(filePath) {
             year: metadata.common?.year || '未知年份',
             genre: metadata.common?.genre ? metadata.common.genre.join(', ') : '未知流派',
             duration: metadata.format?.duration ? Math.round(metadata.format.duration) : 0,
-            albumArt: albumArt
+            hasAlbumArt: hasAlbumArt
         };
         
         if (DEBUG) {
@@ -446,7 +391,7 @@ async function getMusicMetadata(filePath) {
             console.log('  - year:', result.year);
             console.log('  - genre:', result.genre);
             console.log('  - duration:', result.duration);
-            console.log('  - albumArt:', result.albumArt ? 'Yes' : 'No');
+            console.log('  - hasAlbumArt:', result.hasAlbumArt ? 'Yes' : 'No');
             console.log(`=== 完成解析: ${path.basename(filePath)} ===\n`);
         }
         
@@ -464,7 +409,7 @@ async function getMusicMetadata(filePath) {
             year: '未知年份',
             genre: '未知流派',
             duration: 0,
-            albumArt: null
+            hasAlbumArt: false
         };
     }
 }
@@ -1021,7 +966,7 @@ app.get('/api/songs', (req, res) => {
                         year: '未知年份',
                         genre: '未知流派',
                         duration: 0,
-                        albumArt: null
+                        hasAlbumArt: false
                     };
                 }
             }
@@ -1392,12 +1337,7 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
                         addedMetadataCount++;
                     }
                     
-                    // 修复现有的数字数组格式封面数据
-                    if (fileInfo.metadata && fileInfo.metadata.albumArt && 
-                        Array.isArray(fileInfo.metadata.albumArt.data)) {
-                        console.log(`修复封面数据格式: ${fileInfo.original_name}`);
-                        fixedCoverCount++;
-                    }
+                    // 不再需要修复封面数据，因为我们不存储图片数据到JSON中
                     
                     fileInfo.metadata = metadata; // 更新元数据
                     validFiles.push(fileInfo);
@@ -1413,7 +1353,7 @@ app.post('/api/update-music-map', rateLimit('update-map', 5, 300000), async (req
                             year: '未知年份',
                             genre: '未知流派',
                             duration: 0,
-                            albumArt: null
+                            hasAlbumArt: false
                         };
                         addedMetadataCount++;
                     }
@@ -2637,7 +2577,7 @@ function generateHTML() {
             const artist = songData?.metadata?.artist || '未知艺术家';
             const album = songData?.metadata?.album || '未知专辑';
             const year = songData?.metadata?.year || '未知年份';
-            const albumArt = songData?.metadata?.albumArt;
+            const hasAlbumArt = songData?.metadata?.hasAlbumArt;
             
             // 生成封面图片HTML
             const fileName = src.split('/').pop();
