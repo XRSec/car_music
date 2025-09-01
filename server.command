@@ -145,8 +145,9 @@ async function getMusicMetadata(filePath) {
                         // 如果是数组，转换为 Buffer
                         dataBuffer = Buffer.from(dataBuffer);
                     } else if (!(dataBuffer instanceof Buffer)) {
-                        // 如果不是 Buffer 也不是数组，跳过
-                        throw new Error('Invalid picture data format');
+                        // 如果不是 Buffer 也不是数组，尝试其他处理方式
+                        console.warn(`封面数据格式未知 ${filePath}, 类型:`, typeof dataBuffer);
+                        return; // 跳过封面，不抛出错误
                     }
                     
                     albumArt = {
@@ -360,14 +361,14 @@ app.post('/api/add-song', upload.single('song'), async (req, res) => {
     // 保存映射
     data[assignedCourse].songs[index] = newName;
     data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
-    data[assignedCourse].renamed_files.push({
-        original_name: originalName,
-        friendly_name: originalName.replace('.mp3', ''), // 使用原文件名作为友好名称
-        playlist_name: newName,
-        slot: index,
-        metadata: metadata,
-        added_time: new Date().toISOString()
-    });
+            data[assignedCourse].renamed_files.push({
+            original_name: originalName,
+            friendly_name: originalName.replace('.mp3', ''), // 使用原文件名作为显示名称
+            playlist_name: newName,
+            slot: index,
+            metadata: metadata,
+            added_time: new Date().toISOString()
+        });
     saveData(data);
 
     res.json({
@@ -889,6 +890,37 @@ app.post('/api/update-music-map', async (req, res) => {
     });
 });
 
+// 获取所有歌曲的完整信息列表
+app.get('/api/all-songs-info', (req, res) => {
+    const data = loadData();
+    const allSongs = [];
+
+    for (const [course, info] of Object.entries(data)) {
+        const renamedFiles = info.renamed_files || [];
+        renamedFiles.forEach(fileInfo => {
+            allSongs.push({
+                course: course,
+                original_name: fileInfo.original_name,
+                playlist_name: fileInfo.playlist_name,
+                slot: fileInfo.slot,
+                artist: fileInfo.metadata?.artist || '未知艺术家',
+                album: fileInfo.metadata?.album || '未知专辑',
+                year: fileInfo.metadata?.year || '未知年份',
+                duration: fileInfo.metadata?.duration || 0,
+                added_time: fileInfo.added_time
+            });
+        });
+    }
+
+    // 按添加时间排序
+    allSongs.sort((a, b) => new Date(b.added_time) - new Date(a.added_time));
+
+    res.json({
+        total: allSongs.length,
+        songs: allSongs
+    });
+});
+
 // 一键还原功能 - 复制所有音乐到music文件夹并还原原始名称
 app.post('/api/restore-music', (req, res) => {
     const data = loadData();
@@ -1288,7 +1320,7 @@ function generateHTML() {
                     <summary>🗑️ 删除歌曲</summary>
                     <div class="collapsible-content">
                         <div class="form-group">
-                            <input type="text" class="form-control" id="delete-song-name" placeholder="输入歌曲名称..." style="margin-bottom: 10px;">
+                            <input type="text" class="form-control" id="delete-song-name" placeholder="输入原文件名..." style="margin-bottom: 10px;">
                             <button class="btn btn-danger" onclick="deleteSongByName()">删除歌曲</button>
                         </div>
                     </div>
@@ -1337,6 +1369,18 @@ function generateHTML() {
                             <p style="color: #6c757d; margin-bottom: 15px;">检查并清理不存在的文件绑定，重新获取图标</p>
                             <button class="btn btn-warning" onclick="updateMusicMap()">更新 Music-Map</button>
                             <div id="update-map-result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="collapsible-section">
+                    <summary>📋 查询所有歌曲</summary>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <p style="color: #6c757d; margin-bottom: 15px;">查看所有歌曲的原名称和新名称对照表</p>
+                            <button class="btn btn-info" onclick="queryAllSongs()">📋 查询所有歌曲</button>
+                            <button class="btn btn-secondary" onclick="copyToClipboard()" id="copy-btn" style="margin-left: 10px; display: none;">📋 复制到剪贴板</button>
+                            <div id="all-songs-result" style="margin-top: 15px;"></div>
                         </div>
                     </div>
                 </details>
@@ -1976,7 +2020,7 @@ function generateHTML() {
 
         async function deleteSongByName() {
             const name = document.getElementById('delete-song-name').value;
-            if (!name) return alert('请输入歌曲名称');
+            if (!name) return alert('请输入原文件名');
             if (!confirm('确定删除 "' + name + '"？')) return;
             try {
                 const res = await fetch('/api/remove-song-by-name', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({friendly_name: name})});
@@ -2024,7 +2068,7 @@ function generateHTML() {
             try {
                 const res = await fetch('/api/song-exists?name=' + encodeURIComponent(name));
                 const result = await res.json();
-                document.getElementById('query-result').innerHTML = result.exists ? \`<div class="alert alert-success"><strong>找到歌曲！</strong><br>友好名称: \${result.info.friendly_name}<br>所属课程: \${result.course}<br>艺术家: \${result.info.metadata.artist}<br>年份: \${result.info.metadata.year}<br>文件名: \${result.info.playlist_name}</div>\` : '<div class="alert alert-error">未找到匹配的歌曲</div>';
+                document.getElementById('query-result').innerHTML = result.exists ? \`<div class="alert alert-success"><strong>找到歌曲！</strong><br>原文件名: \${result.info.friendly_name}<br>所属课程: \${result.course}<br>艺术家: \${result.info.metadata.artist}<br>年份: \${result.info.metadata.year}<br>新文件名: \${result.info.playlist_name}</div>\` : '<div class="alert alert-error">未找到匹配的歌曲</div>';
             } catch (e) { document.getElementById('query-result').innerHTML = '<div class="alert alert-error">查询失败</div>'; }
         }
         
@@ -2059,6 +2103,93 @@ function generateHTML() {
                 const resultDiv = document.getElementById('delete-all-result');
                 resultDiv.innerHTML = '<div class="alert alert-error">删除失败: ' + error.message + '</div>';
                 showAlert('删除失败: ' + error.message, 'error');
+            }
+        }
+
+        let allSongsData = []; // 存储查询结果用于复制
+
+        async function queryAllSongs() {
+            try {
+                const response = await fetch('/api/all-songs-info');
+                const result = await response.json();
+                const resultDiv = document.getElementById('all-songs-result');
+                const copyBtn = document.getElementById('copy-btn');
+                
+                if (response.ok) {
+                    allSongsData = result.songs; // 保存数据用于复制
+                    
+                    let html = '<div class="alert alert-success">';
+                    html += '<strong>找到 ' + result.total + ' 首歌曲</strong></div>';
+                    
+                    if (result.songs.length > 0) {
+                        html += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; background: #f8f9fa;">';
+                        
+                        result.songs.forEach((song, index) => {
+                            const duration = song.duration > 0 ? Math.floor(song.duration / 60) + ':' + String(song.duration % 60).padStart(2, '0') : '未知';
+                            html += '<div style="padding: 8px; border-bottom: 1px solid #e9ecef; ' + (index % 2 === 0 ? 'background: white;' : '') + '">';
+                            html += '<div><strong>原文件名:</strong> ' + song.original_name + '</div>';
+                            html += '<div><strong>新文件名:</strong> ' + song.playlist_name + '</div>';
+                            html += '<div style="font-size: 0.9em; color: #6c757d;">';
+                            html += '📚 ' + song.course.replace('.mp3', '') + ' | ';
+                            html += '🎤 ' + song.artist + ' | ';
+                            html += '💿 ' + song.album + ' | ';
+                            html += '📅 ' + song.year + ' | ';
+                            html += '⏱️ ' + duration;
+                            html += '</div></div>';
+                        });
+                        
+                        html += '</div>';
+                        copyBtn.style.display = 'inline-block';
+                    } else {
+                        html += '<div class="alert alert-warning">暂无歌曲</div>';
+                        copyBtn.style.display = 'none';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-error">查询失败: ' + result.error + '</div>';
+                    copyBtn.style.display = 'none';
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('all-songs-result');
+                resultDiv.innerHTML = '<div class="alert alert-error">查询失败: ' + error.message + '</div>';
+                document.getElementById('copy-btn').style.display = 'none';
+            }
+        }
+
+        async function copyToClipboard() {
+            if (allSongsData.length === 0) {
+                alert('没有数据可复制');
+                return;
+            }
+            
+            let text = '歌曲对照表\\n';
+            text += '='.repeat(50) + '\\n';
+            text += '总计: ' + allSongsData.length + ' 首歌曲\\n\\n';
+            
+            allSongsData.forEach((song, index) => {
+                const duration = song.duration > 0 ? Math.floor(song.duration / 60) + ':' + String(song.duration % 60).padStart(2, '0') : '未知';
+                text += (index + 1) + '. ' + song.original_name + '\\n';
+                text += '   → ' + song.playlist_name + '\\n';
+                text += '   📚 ' + song.course.replace('.mp3', '') + ' | 🎤 ' + song.artist + ' | 💿 ' + song.album + ' | 📅 ' + song.year + ' | ⏱️ ' + duration + '\\n\\n';
+            });
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                showAlert('歌曲列表已复制到剪贴板', 'success');
+            } catch (error) {
+                // 如果剪贴板API失败，尝试使用传统方法
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showAlert('歌曲列表已复制到剪贴板', 'success');
+                } catch (e) {
+                    showAlert('复制失败，请手动复制', 'error');
+                }
+                document.body.removeChild(textArea);
             }
         }
 
