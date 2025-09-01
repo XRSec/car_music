@@ -1090,6 +1090,18 @@ app.get('/api/album-art/:filename', async (req, res) => {
     }
 
     try {
+        // 检查是否要求无缓存
+        const noCache = req.query.nocache === 'true';
+        
+        // 获取文件修改时间作为ETag
+        const stats = fs.statSync(filePath);
+        const etag = `"${stats.mtime.getTime()}-${stats.size}"`;
+        
+        // 检查If-None-Match头（除非强制无缓存）
+        if (!noCache && req.headers['if-none-match'] === etag) {
+            return res.status(304).end();
+        }
+
         const metadata = await mm.parseFile(filePath, {
             skipCovers: false,
             skipPostHeaders: true,
@@ -1101,6 +1113,7 @@ app.get('/api/album-art/:filename', async (req, res) => {
             console.log('- 有common:', !!metadata.common);
             console.log('- 有picture:', !!(metadata.common && metadata.common.picture));
             console.log('- picture数量:', metadata.common?.picture?.length || 0);
+            console.log('- noCache参数:', noCache);
         }
 
         if (metadata.common && metadata.common.picture && metadata.common.picture.length > 0) {
@@ -1137,7 +1150,18 @@ app.get('/api/album-art/:filename', async (req, res) => {
                 
                 if (DEBUG) console.log('封面API - 返回实际封面图片');
                 res.set('Content-Type', picture.format);
-                res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
+                res.set('ETag', etag);
+                
+                // 根据是否要求无缓存设置不同的缓存策略
+                if (noCache) {
+                    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+                    res.set('Pragma', 'no-cache');
+                    res.set('Expires', '0');
+                    if (DEBUG) console.log('封面API - 使用无缓存模式');
+                } else {
+                    res.set('Cache-Control', 'public, max-age=86400'); // 缓存1天
+                }
+                
                 res.send(dataBuffer);
             } else {
                 // 封面数据损坏，返回默认图标
@@ -1733,6 +1757,7 @@ function generateHTML() {
                     📦 数据缓存: <span id="cache-indicator">未加载</span>
                     <button onclick="DataManager.refreshJsonData()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新JSON</button>
                     <button onclick="DataManager.refreshAll()" style="margin-left: 5px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #007bff; background: none; border-radius: 4px; cursor: pointer; color: #007bff;">🔄 全面刷新</button>
+                    <button onclick="refreshAllCovers()" style="margin-left: 5px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #28a745; background: none; border-radius: 4px; cursor: pointer; color: #28a745;">🖼️ 刷新封面</button>
                 </div>
             </div>
         </div>
@@ -2070,9 +2095,17 @@ function generateHTML() {
             },
             
             // 封面图片缓存管理
-            getCoverUrl(fileName) {
-                // 总是实时获取，但浏览器会缓存
-                return '/api/album-art/' + encodeURIComponent(fileName);
+            getCoverUrl(fileName, options = {}) {
+                let url = '/api/album-art/' + encodeURIComponent(fileName);
+                
+                // 添加缓存破坏参数
+                if (options.noCache) {
+                    url += '?nocache=true&t=' + Date.now();
+                } else if (options.bustCache) {
+                    url += '?t=' + Date.now();
+                }
+                
+                return url;
             },
             
             // 更新缓存状态指示器
@@ -2599,9 +2632,17 @@ function generateHTML() {
             }
             
             // 总是使用实时API获取封面，浏览器会自动缓存
-            albumArtHtml = '<img src="' + DataManager.getCoverUrl(fileName) + '" ' +
+            albumArtHtml = '<div style="position: relative; display: inline-block;">' +
+                         '<img id="cover-image-' + fileName.replace(/[^a-zA-Z0-9]/g, '') + '" ' +
+                         'src="' + DataManager.getCoverUrl(fileName) + '" ' +
                          'style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #e9ecef;" ' +
-                         'alt="封面">';
+                         'alt="封面">' +
+                         '<button onclick="refreshCover(\'' + fileName + '\')" ' +
+                         'style="position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; ' +
+                         'border-radius: 50%; border: none; background: #007bff; color: white; ' +
+                         'font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;" ' +
+                         'title="刷新封面">🔄</button>' +
+                         '</div>';
             
             
             // todo '<div style="font-size: 0.85rem; color: #6c757d;">🎤 ' + artist + ' ｜ 💿 ' + album + '</div>' + 超过长度隐藏
@@ -2629,6 +2670,48 @@ function generateHTML() {
                 '</audio>'
             
             document.body.appendChild(player);
+        }
+        
+        // 刷新封面图片
+        function refreshCover(fileName) {
+            const imageId = 'cover-image-' + fileName.replace(/[^a-zA-Z0-9]/g, '');
+            const img = document.getElementById(imageId);
+            if (img) {
+                // 使用无缓存URL强制刷新
+                const newUrl = DataManager.getCoverUrl(fileName, { noCache: true });
+                img.src = newUrl;
+                console.log('刷新封面:', fileName, '新URL:', newUrl);
+            }
+        }
+        
+        // 刷新所有可见的封面图片
+        function refreshAllCovers() {
+            const images = document.querySelectorAll('img[id^="cover-image-"]');
+            let refreshedCount = 0;
+            
+            images.forEach(img => {
+                // 从ID中提取文件名
+                const imageId = img.id;
+                const fileNameMatch = imageId.match(/cover-image-(.+)/);
+                if (fileNameMatch) {
+                    // 需要还原文件名（去掉非字母数字字符的处理）
+                    // 这里有个问题，我们需要从实际的src URL中获取文件名
+                    const currentSrc = img.src;
+                    const urlMatch = currentSrc.match(/\/api\/album-art\/([^?]+)/);
+                    if (urlMatch) {
+                        const fileName = decodeURIComponent(urlMatch[1]);
+                        const newUrl = DataManager.getCoverUrl(fileName, { noCache: true });
+                        img.src = newUrl;
+                        refreshedCount++;
+                    }
+                }
+            });
+            
+            if (refreshedCount > 0) {
+                showAlert('已刷新 ' + refreshedCount + ' 个封面图片', 'success');
+            } else {
+                showAlert('没有找到需要刷新的封面图片', 'info');
+            }
         }
         
         // 拖拽到空位的处理函数
