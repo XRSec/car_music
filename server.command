@@ -603,7 +603,7 @@ app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
             return res.status(400).json({error: err.message});
         }
         
-        const {course: targetCourse, friendly_name} = req.body;
+        const {course: targetCourse} = req.body;
         const file = req.file;
         if (!file) return res.status(400).json({error: '没有上传文件'});
 
@@ -694,7 +694,7 @@ app.post('/api/add-songs-batch', rateLimit('batch-upload', 5, 300000), (req, res
             return res.status(400).json({error: err.message});
         }
         
-        const { course: targetCourse, friendly_names } = req.body;
+        const { course: targetCourse } = req.body;
         const files = req.files;
 
     if (!files || files.length === 0) {
@@ -834,7 +834,7 @@ app.post('/api/add-song-to-slot', rateLimit('upload', 10, 60000), (req, res) => 
             return res.status(400).json({error: err.message});
         }
         
-        const {course, slot, friendly_name} = req.body;
+        const {course, slot} = req.body;
         const file = req.file;
 
     if (!file) return res.status(400).json({error: '没有上传文件'});
@@ -913,8 +913,7 @@ app.post('/api/remove-song-by-name', (req, res) => {
     for (const [course, info] of Object.entries(data)) {
         const renamedFiles = info.renamed_files || [];
         const fileInfo = renamedFiles.find(f => 
-            f.original_name === original_name || 
-            (f.friendly_name && f.friendly_name === original_name) // 向后兼容
+            f.original_name === original_name
         );
         if (fileInfo) {
             // 删除物理文件
@@ -987,8 +986,7 @@ app.get('/api/song-exists', (req, res) => {
     for (const [course, info] of Object.entries(data)) {
         const renamedFiles = info.renamed_files || [];
         const found = renamedFiles.find(f =>
-            f.original_name.toLowerCase().includes(name.toLowerCase()) ||
-            (f.friendly_name && f.friendly_name.toLowerCase().includes(name.toLowerCase())) // 向后兼容
+            f.original_name.toLowerCase().includes(name.toLowerCase())
         );
         if (found) {
             return res.json({
@@ -1030,8 +1028,7 @@ app.get('/api/songs', (req, res) => {
             
             songs.push({
                 ...file,
-                // 向后兼容：如果没有 friendly_name，从 original_name 生成显示名称
-                display_name: file.friendly_name || file.original_name.replace('.mp3', ''),
+                display_name: file.original_name.replace('.mp3', ''),
                 metadata: metadata,
                 course: course
             });
@@ -1516,7 +1513,7 @@ app.post('/api/restore-music', (req, res) => {
                 if (fs.existsSync(currentPath)) {
                     fs.copyFileSync(currentPath, restoredPath);
                     restoredFiles.push({
-                        display_name: fileRecord.friendly_name || fileRecord.original_name.replace('.mp3', ''),
+                        display_name: fileRecord.original_name.replace('.mp3', ''),
                         original_name: fileRecord.original_name,
                         playlist_name: fileRecord.playlist_name,
                         type: 'song'
@@ -2080,7 +2077,7 @@ function generateHTML() {
                     renamedFiles.forEach(file => {
                         songs.push({
                             ...file,
-                            display_name: file.friendly_name || file.original_name.replace('.mp3', ''),
+                            display_name: file.original_name.replace('.mp3', ''),
                             course: course
                         });
                     });
@@ -2524,7 +2521,7 @@ function generateHTML() {
                         const fileInfo = info.renamed_files.find(f => f.slot === i);
                         const meta = info.songs_metadata[i];
                         const songFileName = song.replace('.mp3', '');
-                        const displayName = fileInfo ? (fileInfo.friendly_name || fileInfo.original_name.replace('.mp3', '')) : songFileName;
+                        const displayName = fileInfo ? fileInfo.original_name.replace('.mp3', '') : songFileName;
                         return \`
                             <div class="song-slot">
                                 <div class="song-info">
@@ -2590,7 +2587,6 @@ function generateHTML() {
                                   (courseMeta.artist && courseMeta.artist.toLowerCase().includes(query));
                 
                 const matchSongs = info.renamed_files && info.renamed_files.some(f => 
-                    (f.friendly_name && f.friendly_name.toLowerCase().includes(query)) ||
                     (f.original_name && f.original_name.toLowerCase().includes(query)) ||
                     (f.metadata?.title && f.metadata.title.toLowerCase().includes(query)) ||
                     (f.metadata?.artist && f.metadata.artist.toLowerCase().includes(query)) ||
@@ -2637,7 +2633,7 @@ function generateHTML() {
             player.id = 'audio-player';
             player.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); z-index: 10000; min-width: 350px; max-width: 400px;';
             
-            const songTitle = songData?.display_name || songData?.friendly_name || src.split('/').pop().replace('.mp3', '');
+            const songTitle = songData?.display_name || src.split('/').pop().replace('.mp3', '');
             const artist = songData?.metadata?.artist || '未知艺术家';
             const album = songData?.metadata?.album || '未知专辑';
             const year = songData?.metadata?.year || '未知年份';
@@ -2736,14 +2732,11 @@ function generateHTML() {
         }
         
         async function uploadFileToSlot(file, course, slot) {
-            // 直接使用文件名作为友好名称，不再弹出提示框
-            const friendlyName = file.name.replace('.mp3', '');
-            
             const formData = new FormData();
             formData.append('course', course);
             formData.append('slot', slot);
             formData.append('song', file);
-            if (friendlyName) formData.append('friendly_name', friendlyName);
+
             
             try {
                 const response = await fetch('/api/add-song-to-slot', {
@@ -2854,7 +2847,7 @@ function generateHTML() {
                 const res = await fetch('/api/song-exists?name=' + encodeURIComponent(name));
                 const result = await res.json();
                 if (result.exists && result.info) {
-                    const displayName = result.info.friendly_name || result.info.original_name.replace('.mp3', '');
+                    const displayName = result.info.original_name.replace('.mp3', '');
                     document.getElementById('query-result').innerHTML = \`<div class="alert alert-success"><strong>找到歌曲！</strong><br>原文件名: \${result.info.original_name}<br>显示名称: \${displayName}<br>所属课程: \${result.course}<br>艺术家: \${result.info.metadata?.artist || '未知艺术家'}<br>年份: \${result.info.metadata?.year || '未知年份'}<br>新文件名: \${result.info.playlist_name}</div>\`;
                 } else {
                     document.getElementById('query-result').innerHTML = '<div class="alert alert-error">未找到匹配的歌曲</div>';
