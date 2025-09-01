@@ -1211,6 +1211,13 @@ function generateHTML() {
         <div class="header">
             <h1>🎵 课程音乐管理系统</h1>
             <p>智能管理您的课程与歌曲播放列表</p>
+            <div id="cache-status" style="font-size: 0.8em; color: #6c757d; text-align: right; display: flex; justify-content: space-between; align-items: center;">
+                <div></div>
+                <div>
+                    📦 数据缓存: <span id="cache-indicator">未加载</span>
+                    <button onclick="DataManager.refreshAll()" style="margin-left: 10px; padding: 2px 8px; font-size: 0.8em; border: 1px solid #6c757d; background: none; border-radius: 4px; cursor: pointer;">🔄 刷新</button>
+                </div>
+            </div>
         </div>
 
         <div class="tabs">
@@ -1417,6 +1424,157 @@ function generateHTML() {
         let allSongs = [];
         let selectedFiles = [];
         
+        // 前端数据管理系统
+        const DataManager = {
+            cache: {
+                courses: null,
+                songs: null,
+                stats: null,
+                lastUpdate: null
+            },
+            
+            // 获取课程数据
+            async getCourses(forceRefresh = false) {
+                if (!forceRefresh && this.cache.courses && this.isDataFresh()) {
+                    this.updateCacheIndicator();
+                    return this.cache.courses;
+                }
+                
+                try {
+                    const response = await fetch('/api/list');
+                    const data = await response.json();
+                    this.cache.courses = data;
+                    this.cache.lastUpdate = Date.now();
+                    allData = data; // 保持向后兼容
+                    this.updateCacheIndicator();
+                    return data;
+                } catch (error) {
+                    console.error('获取课程数据失败:', error);
+                    return this.cache.courses || {};
+                }
+            },
+            
+            // 获取歌曲数据
+            async getSongs(forceRefresh = false) {
+                if (!forceRefresh && this.cache.songs && this.isDataFresh()) {
+                    this.updateCacheIndicator();
+                    return this.cache.songs;
+                }
+                
+                try {
+                    const response = await fetch('/api/songs');
+                    const data = await response.json();
+                    this.cache.songs = data;
+                    this.cache.lastUpdate = Date.now();
+                    allSongs = data; // 保持向后兼容
+                    this.updateCacheIndicator();
+                    return data;
+                } catch (error) {
+                    console.error('获取歌曲数据失败:', error);
+                    return this.cache.songs || [];
+                }
+            },
+            
+            // 获取统计数据
+            async getStats(forceRefresh = false) {
+                if (!forceRefresh && this.cache.stats && this.isDataFresh()) {
+                    return this.cache.stats;
+                }
+                
+                try {
+                    const response = await fetch('/api/stats');
+                    const data = await response.json();
+                    this.cache.stats = data;
+                    this.cache.lastUpdate = Date.now();
+                    return data;
+                } catch (error) {
+                    console.error('获取统计数据失败:', error);
+                    return this.cache.stats || {};
+                }
+            },
+            
+            // 检查数据是否新鲜（5分钟内）
+            isDataFresh() {
+                return this.cache.lastUpdate && (Date.now() - this.cache.lastUpdate) < 300000;
+            },
+            
+            // 使缓存失效
+            invalidateCache() {
+                this.cache.courses = null;
+                this.cache.songs = null;
+                this.cache.stats = null;
+                this.cache.lastUpdate = null;
+            },
+            
+            // 部分更新缓存
+            updateCacheAfterOperation(operation, data) {
+                switch (operation) {
+                    case 'upload':
+                    case 'delete':
+                    case 'batch_upload':
+                        // 上传或删除后，使所有缓存失效
+                        this.invalidateCache();
+                        break;
+                    case 'rename':
+                        // 重命名后，只更新相关数据
+                        if (this.cache.courses && data.course) {
+                            // 可以在这里做精确更新，暂时使用失效策略
+                            this.invalidateCache();
+                        }
+                        break;
+                }
+            },
+            
+            // 获取特定歌曲信息
+            async getSongInfo(fileName) {
+                const songs = await this.getSongs();
+                return songs.find(s => s.playlist_name === fileName || s.original_name === fileName);
+            },
+            
+            // 获取特定课程信息
+            async getCourseInfo(courseName) {
+                const courses = await this.getCourses();
+                return courses[courseName];
+            },
+            
+            // 更新缓存状态指示器
+            updateCacheIndicator() {
+                const indicator = document.getElementById('cache-indicator');
+                if (!indicator) return;
+                
+                const hasData = this.cache.courses || this.cache.songs || this.cache.stats;
+                const isFresh = this.isDataFresh();
+                
+                if (hasData && isFresh) {
+                    const age = Math.floor((Date.now() - this.cache.lastUpdate) / 1000);
+                    indicator.innerHTML = \`<span style="color: #28a745;">已缓存 (\${age}s前)</span>\`;
+                } else if (hasData) {
+                    indicator.innerHTML = '<span style="color: #ffc107;">缓存过期</span>';
+                } else {
+                    indicator.innerHTML = '<span style="color: #6c757d;">未加载</span>';
+                }
+            },
+            
+            // 手动刷新所有数据
+            async refreshAll() {
+                const indicator = document.getElementById('cache-indicator');
+                if (indicator) {
+                    indicator.innerHTML = '<span style="color: #007bff;">刷新中...</span>';
+                }
+                
+                try {
+                    await Promise.all([
+                        this.getCourses(true),
+                        this.getSongs(true),
+                        this.getStats(true)
+                    ]);
+                    showAlert('数据已刷新', 'success');
+                } catch (error) {
+                    showAlert('刷新失败: ' + error.message, 'error');
+                }
+            }
+        };
+        
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1607,6 +1765,7 @@ function generateHTML() {
                     });
                 }
                 
+                DataManager.updateCacheAfterOperation('batch_upload');
                 clearFileList();
                 loadSongs();
                 loadCourses();
@@ -1622,8 +1781,11 @@ function generateHTML() {
         }
         async function loadOverview() {
             try {
-                const [statsRes, songsRes] = await Promise.all([fetch('/api/stats'), fetch('/api/songs')]);
-                const [stats, songs] = await Promise.all([statsRes.json(), songsRes.json()]);
+                const [stats, songs] = await Promise.all([
+                    DataManager.getStats(),
+                    DataManager.getSongs()
+                ]);
+                
                 document.getElementById('stats-grid').innerHTML = \`
                     <div class="stat-card" onclick="showTab('courses'); document.querySelector('button[onclick*=courses]').click();">
                         <div class="stat-number">\${stats.total_courses}</div>
@@ -1647,8 +1809,8 @@ function generateHTML() {
         }
         async function loadCourses() {
             try {
-                allData = await (await fetch('/api/list')).json();
-                displayCourses(allData);
+                const data = await DataManager.getCourses();
+                displayCourses(data);
             } catch (e) { console.error('加载失败:', e); }
         }
         function displayCourses(data) {
@@ -1804,21 +1966,19 @@ function generateHTML() {
             // 获取歌曲信息
             let songData = songInfo;
             if (!songData) {
-                // 从已加载的数据中查找歌曲信息
+                // 从缓存中查找歌曲信息
                 const fileName = src.split('/').pop();
-                for (const [course, info] of Object.entries(allData)) {
-                    const fileRecord = info.renamed_files?.find(f => f.playlist_name === fileName);
-                    if (fileRecord) {
-                        songData = fileRecord;
-                        break;
-                    }
-                    // 检查是否是课程文件
-                    if (course === fileName) {
+                songData = await DataManager.getSongInfo(fileName);
+                
+                // 如果不是歌曲，可能是课程文件
+                if (!songData) {
+                    const courses = await DataManager.getCourses();
+                    const courseInfo = courses[fileName];
+                    if (courseInfo) {
                         songData = {
-                            display_name: info.course_metadata?.title || fileName.replace('.mp3', ''),
-                            metadata: info.course_metadata || {}
+                            display_name: courseInfo.course_metadata?.title || fileName.replace('.mp3', ''),
+                            metadata: courseInfo.course_metadata || {}
                         };
-                        break;
                     }
                 }
             }
@@ -1977,7 +2137,8 @@ function generateHTML() {
                 
                 const result = await response.json();
                 if (response.ok) {
-                    showAlert(\`歌曲已添加到 \${course} 位置 \${parseInt(slot) + 1}: \${result.friendly_name}\`, 'success');
+                    showAlert(\`歌曲已添加到 \${course} 位置 \${parseInt(slot) + 1}: \${result.display_name}\`, 'success');
+                    DataManager.updateCacheAfterOperation('upload');
                     loadCourses();
                 } else {
                     showAlert('上传失败: ' + result.error, 'error');
@@ -1988,11 +2149,13 @@ function generateHTML() {
         }
         async function loadSongs() {
             try {
-                const [songsRes, dataRes] = await Promise.all([fetch('/api/songs'), fetch('/api/list')]);
-                const [songs, data] = await Promise.all([songsRes.json(), dataRes.json()]);
-                allSongs = songs;
+                const [songs, data] = await Promise.all([
+                    DataManager.getSongs(),
+                    DataManager.getCourses()
+                ]);
+                
                 document.getElementById('course-select').innerHTML = '<option value="">自动分配到有空位的课程</option>' + Object.keys(data).sort().map(c => \`<option value="\${c}">\${c}</option>\`).join('');
-                displaySongs(allSongs);
+                displaySongs(songs);
                 initDragDrop(); // 初始化拖拽功能
             } catch (e) { console.error('加载失败:', e); }
         }
@@ -2031,6 +2194,7 @@ function generateHTML() {
                 if (res.ok) {
                     showAlert(result.message, 'success');
                     document.getElementById('delete-song-name').value = '';
+                    DataManager.updateCacheAfterOperation('delete');
                     loadSongs(); loadCourses();
                 } else showAlert('删除失败: ' + result.error, 'error');
             } catch (e) { showAlert('删除失败: ' + e.message, 'error'); }
@@ -2043,6 +2207,7 @@ function generateHTML() {
                 const result = await res.json();
                 if (res.ok) {
                     showAlert(result.message, 'success');
+                    DataManager.updateCacheAfterOperation('delete');
                     loadSongs(); loadCourses();
                 } else showAlert('删除失败: ' + result.error, 'error');
             } catch (e) { showAlert('删除失败: ' + e.message, 'error'); }
@@ -2062,6 +2227,7 @@ function generateHTML() {
                 const res = await fetch('/api/batch-rename', {method: 'POST', headers: {'Content-Type': 'application/json'}});
                 const result = await res.json();
                 showAlert(result.message + '，重命名了 ' + result.renamed.length + ' 个文件', 'success');
+                DataManager.updateCacheAfterOperation('rename');
                 loadCourses();
             } catch (e) { showAlert('失败: ' + e.message, 'error'); }
         }
@@ -2097,6 +2263,7 @@ function generateHTML() {
                         '</div>';
                     
                     showAlert(result.message, 'success');
+                    DataManager.updateCacheAfterOperation('delete');
                     loadSongs();
                     loadCourses();
                 } else {
@@ -2227,6 +2394,7 @@ function generateHTML() {
                     }
                     
                     showAlert(result.message, 'success');
+                    DataManager.updateCacheAfterOperation('delete');
                     loadSongs();
                     loadCourses();
                 } else {
@@ -2283,7 +2451,15 @@ function generateHTML() {
             document.body.appendChild(alert);
             setTimeout(() => alert.remove(), 5000);
         }
-        document.addEventListener('DOMContentLoaded', loadOverview);
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOverview();
+            
+            // 定期更新缓存状态指示器
+            setInterval(() => {
+                DataManager.updateCacheIndicator();
+            }, 1000);
+        });
     </script>
 </body>
 </html>`;
