@@ -509,13 +509,80 @@ function findAvailableCourseRandom(data, courses) {
     return availableCourses[randomIndex];
 }
 
-// 批量公平分配：先为每个课程分配一首，然后填充剩余位置
-function batchFairAllocation(data, songCount, strategy = 'round_robin') {
+// 批量分配算法：根据不同策略分配歌曲
+function batchAllocation(data, songCount, strategy = 'round_robin') {
     const courses = Object.keys(data).sort();
     const allocations = [];
     
     // 创建数据副本以避免修改原始数据
     const dataCopy = JSON.parse(JSON.stringify(data));
+    
+    if (strategy === 'original') {
+        // 真正的原始算法：按课程顺序依次填满
+        return batchOriginalAllocation(dataCopy, songCount, courses);
+    } else if (strategy === 'random') {
+        // 纯随机分配：每次都随机选择
+        return batchRandomAllocation(dataCopy, songCount, courses);
+    } else {
+        // 公平分配算法：先为每个课程分配一首，然后填充
+        return batchFairAllocation(dataCopy, songCount, strategy, courses);
+    }
+}
+
+// 原始算法：按课程顺序依次填满
+function batchOriginalAllocation(dataCopy, songCount, courses) {
+    const allocations = [];
+    let songIndex = 0;
+    
+    for (const course of courses) {
+        if (songIndex >= songCount) break;
+        
+        const songs = dataCopy[course].songs || [];
+        for (let slot = 0; slot < songs.length; slot++) {
+            if (songIndex >= songCount) break;
+            if (songs[slot] === null) {
+                allocations.push({ course, slot });
+                dataCopy[course].songs[slot] = 'ALLOCATED';
+                songIndex++;
+            }
+        }
+    }
+    
+    return allocations;
+}
+
+// 纯随机分配：每次都随机选择有空位的课程
+function batchRandomAllocation(dataCopy, songCount, courses) {
+    const allocations = [];
+    let songIndex = 0;
+    
+    while (songIndex < songCount) {
+        const availableCourses = [];
+        
+        for (const course of courses) {
+            const songs = dataCopy[course].songs || [];
+            const emptyIndex = songs.indexOf(null);
+            if (emptyIndex !== -1) {
+                availableCourses.push({ course, slot: emptyIndex });
+            }
+        }
+        
+        if (availableCourses.length === 0) break;
+        
+        const randomIndex = Math.floor(Math.random() * availableCourses.length);
+        const selected = availableCourses[randomIndex];
+        
+        allocations.push(selected);
+        dataCopy[selected.course].songs[selected.slot] = 'ALLOCATED';
+        songIndex++;
+    }
+    
+    return allocations;
+}
+
+// 公平分配算法：先为每个课程分配一首，然后填充剩余位置
+function batchFairAllocation(dataCopy, songCount, strategy, courses) {
+    const allocations = [];
     
     // 第一阶段：为每个有空位的课程分配一首歌曲
     const coursesWithEmptySlots = courses.filter(course => {
@@ -531,8 +598,6 @@ function batchFairAllocation(data, songCount, strategy = 'round_robin') {
             const songsB = (dataCopy[b].songs || []).filter(song => song !== null).length;
             return songsA - songsB;
         });
-    } else if (strategy === 'random') {
-        sortedCourses = [...coursesWithEmptySlots].sort(() => Math.random() - 0.5);
     } else {
         // 默认轮询 - 按歌曲数量排序，确保公平分配
         sortedCourses = coursesWithEmptySlots.sort((a, b) => {
@@ -724,7 +789,7 @@ app.post('/api/analyze-allocation-performance', (req, res) => {
         };
         
         for (const strategy of strategies) {
-            const allocations = batchFairAllocation(data, songCount, strategy);
+            const allocations = batchAllocation(data, songCount, strategy);
             const stats = {};
             
             // 计算分配统计
@@ -833,7 +898,7 @@ app.post('/api/preview-fair-allocation', (req, res) => {
         }
 
         const data = loadData();
-        const allocations = batchFairAllocation(data, songCount, strategy);
+        const allocations = batchAllocation(data, songCount, strategy);
         
         // 统计分配结果
         const allocationStats = {};
@@ -858,8 +923,8 @@ app.post('/api/preview-fair-allocation', (req, res) => {
     }
 });
 
-// 上传歌曲并分配到课程空位
-app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
+// 统一上传接口：支持单个文件上传到指定课程或自动分配
+app.post('/api/upload-song', rateLimit('upload', 10, 60000), (req, res) => {
     upload.single('song')(req, res, async (err) => {
         if (err) {
             console.error('File upload error:', err.message);
@@ -947,8 +1012,8 @@ app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
     });
 });
 
-// 批量公平分配上传歌曲
-app.post('/api/add-songs-batch-fair', rateLimit('batch-upload', 20, 300000), (req, res) => {
+// 统一批量上传接口：支持不同分配策略
+app.post('/api/upload-songs-batch', rateLimit('batch-upload', 20, 300000), (req, res) => {
     uploadMultiple(req, res, async (err) => {
         if (err) {
             console.error('Batch fair upload error:', err.message);
@@ -1009,8 +1074,8 @@ app.post('/api/add-songs-batch-fair', rateLimit('batch-upload', 20, 300000), (re
             });
         }
 
-        // 使用公平分配算法获取分配计划
-        const allocations = batchFairAllocation(data, validFiles.length, strategy);
+        // 使用分配算法获取分配计划
+        const allocations = batchAllocation(data, validFiles.length, strategy);
 
         if (allocations.length < validFiles.length) {
             // 清理多余的文件
@@ -1091,146 +1156,34 @@ app.post('/api/add-songs-batch-fair', rateLimit('batch-upload', 20, 300000), (re
     });
 });
 
-// 批量上传歌曲
+// 兼容性接口：旧的批量上传（重定向到新接口）
 app.post('/api/add-songs-batch', rateLimit('batch-upload', 20, 300000), (req, res) => {
-    uploadMultiple(req, res, async (err) => {
-        if (err) {
-            console.error('Batch upload error:', err.message);
-            if (err instanceof multer.MulterError) {
-                if (err.code === 'LIMIT_FILE_SIZE') {
-                    return res.status(400).json({error: '文件太大，最大允许50MB'});
-                } else if (err.code === 'LIMIT_FILE_COUNT') {
-                    return res.status(400).json({error: '文件数量太多，最多允许20个文件'});
-                }
-                return res.status(400).json({error: '文件上传错误: ' + err.message});
-            }
-            return res.status(400).json({error: err.message});
-        }
+    // 重定向到新的统一接口，使用原始算法
+    req.body.strategy = 'original';
+    return app._router.handle(
+        Object.assign(req, { url: '/api/upload-songs-batch', method: 'POST' }),
+        res
+    );
+});
 
-        const { course: targetCourse } = req.body;
-        const files = req.files;
+// 兼容性接口：旧的单个上传（重定向到新接口）
+app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
+    return app._router.handle(
+        Object.assign(req, { url: '/api/upload-song', method: 'POST' }),
+        res
+    );
+});
 
-        if (!files || files.length === 0) {
-            return res.status(400).json({error: '没有上传文件'});
-        }
-
-        const data = loadData();
-        const results = [];
-        const errors = [];
-
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-
-            try {
-                // 检查文件名是否重复
-                const originalName = file.originalname;
-                let isDuplicate = false;
-                for (const [course, info] of Object.entries(data)) {
-                    const renamedFiles = info.renamed_files || [];
-                    if (renamedFiles.find(f => f.original_name === originalName)) {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-
-                if (isDuplicate) {
-                    errors.push({
-                        file: originalName,
-                        error: `文件名重复: ${originalName} 已存在，请重命名后再上传`
-                    });
-                    fs.unlinkSync(file.path);
-                    continue;
-                }
-
-                // 确定目标课程
-                let assignedCourse = targetCourse;
-                let assignedSlot;
-
-                if (!assignedCourse) {
-                    // 自动分配到有空位的课程
-                    const available = findAvailableCourse(data);
-                    if (!available) {
-                        errors.push({
-                            file: file.originalname,
-                            error: '没有可用的空位'
-                        });
-                        fs.unlinkSync(file.path); // 删除临时文件
-                        continue;
-                    }
-                    assignedCourse = available.course;
-                    assignedSlot = available.slot;
-                } else {
-                    // 检查指定课程是否有空位
-                    if (!data[assignedCourse]) {
-                        errors.push({
-                            file: file.originalname,
-                            error: '指定课程不存在'
-                        });
-                        fs.unlinkSync(file.path);
-                        continue;
-                    }
-
-                    const songs = data[assignedCourse].songs || [];
-                    assignedSlot = songs.indexOf(null);
-                    if (assignedSlot === -1) {
-                        // 指定课程满了，不自动分配，直接报错
-                        errors.push({
-                            file: file.originalname,
-                            error: `指定课程 ${assignedCourse} 已满，请选择其他课程或使用自动分配`
-                        });
-                        fs.unlinkSync(file.path);
-                        continue;
-                    }
-                }
-
-                // 解析歌曲信息
-                const metadata = await getMusicMetadata(file.path);
-
-                // 生成播放器友好的文件名
-                const newName = generatePlaylistName(assignedCourse, assignedSlot);
-                const newPath = path.join(SONG_DIR, newName);
-                fs.renameSync(file.path, newPath);
-
-                // 保存映射
-                data[assignedCourse].songs[assignedSlot] = newName;
-                data[assignedCourse].renamed_files = data[assignedCourse].renamed_files || [];
-                data[assignedCourse].renamed_files.push({
-                    original_name: originalName,
-                    playlist_name: newName,
-                    slot: assignedSlot,
-                    metadata: metadata,
-                    added_time: new Date().toISOString()
-                });
-
-                results.push({
-                    original: file.originalname,
-                    display_name: originalName.replace('.mp3', ''),
-                    course: assignedCourse,
-                    slot: assignedSlot,
-                    playlist_name: newName,
-                    metadata: metadata
-                });
-
-            } catch (error) {
-                errors.push({
-                    file: file.originalname,
-                    error: error.message
-                });
-                if (fs.existsSync(file.path)) {
-                    fs.unlinkSync(file.path);
-                }
-            }
-        }
-
-        saveData(data);
-
-        res.json({
-            message: `批量上传完成：成功 ${results.length} 个，失败 ${errors.length} 个`,
-            success: results,
-            errors: errors,
-            total: files.length
-        });
-    });
+// 兼容性接口：旧的公平批量上传（重定向到新接口）
+app.post('/api/add-songs-batch-fair', rateLimit('batch-upload', 20, 300000), (req, res) => {
+    // 如果没有指定策略，默认使用轮询分配
+    if (!req.body.strategy) {
+        req.body.strategy = 'round_robin';
+    }
+    return app._router.handle(
+        Object.assign(req, { url: '/api/upload-songs-batch', method: 'POST' }),
+        res
+    );
 });
 
 // 直接上传到指定课程的指定位置
@@ -2772,7 +2725,7 @@ function generateHTML() {
                         formData.append('songs', file);
                     });
                     
-                    const response = await fetch('/api/add-songs-batch', {
+                    const response = await fetch('/api/upload-songs-batch', {
                         method: 'POST',
                         body: formData
                     });
@@ -2911,22 +2864,22 @@ function generateHTML() {
             const strategyInfos = {
                 'round_robin': {
                     title: '🔄 轮询分配',
-                    description: '最公平的分配方式。首先为每个有空位的课程分配一首歌曲，然后再填充剩余位置。',
+                    description: '公平分配策略。首先为每个有空位的课程分配一首歌曲，然后按歌曲数量平衡填充剩余位置。',
                     color: '#007bff'
                 },
                 'least_songs_first': {
                     title: '⚖️ 最少歌曲优先',
-                    description: '总是优先选择歌曲数量最少的课程进行分配。能够最大化平衡各课程的歌曲数量。',
+                    description: '公平分配策略。优先为歌曲数量最少的课程分配，最大化平衡各课程的歌曲数量。',
                     color: '#28a745'
                 },
                 'random': {
                     title: '🎲 随机分配',
-                    description: '从所有有空位的课程中随机选择。提供完全随机的分配结果。',
+                    description: '纯随机策略。每次都从所有有空位的课程中完全随机选择，不考虑平衡性。',
                     color: '#ffc107'
                 },
                 'original': {
                     title: '📝 原始算法',
-                    description: '按课程名称顺序依次分配，直到当前课程满了再转到下一个。',
+                    description: '传统顺序分配。严格按课程名称顺序依次填满每个课程，直到该课程满了再转到下一个。',
                     color: '#6c757d'
                 }
             };
@@ -3071,7 +3024,7 @@ function generateHTML() {
                         formData.append('songs', file);
                     });
                     
-                    const response = await fetch('/api/add-songs-batch-fair', {
+                    const response = await fetch('/api/upload-songs-batch', {
                         method: 'POST',
                         body: formData
                     });
