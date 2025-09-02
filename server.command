@@ -2271,24 +2271,28 @@ function generateHTML() {
                     <summary>🎵 添加歌曲</summary>
                     <div class="collapsible-content">
                         <div class="form-group">
-                            <select class="form-control" id="course-select" style="margin-bottom: 10px;">
-                                <option value="">自动分配到有空位的课程</option>
-                            </select>
-                            
-                            <!-- 分配策略选择 -->
-                            <div style="margin-bottom: 15px;">
-                                <label for="allocation-strategy" style="display: block; margin-bottom: 5px; font-weight: 600;">🎯 分配策略：</label>
-                                <select class="form-control" id="allocation-strategy" style="margin-bottom: 10px;" onchange="showStrategyInfo()">
-                                    <option value="round_robin">🔄 轮询分配（推荐）</option>
-                                    <option value="least_songs_first">⚖️ 最少歌曲优先</option>
-                                    <option value="random">🎲 随机分配</option>
-                                    <option value="original">📝 原始算法</option>
-                                </select>
-                                
-                                <!-- 策略说明 -->
-                                <div id="strategy-info" style="background: #e3f2fd; padding: 8px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #007bff; font-size: 0.85em; line-height: 1.4;">
-                                    <strong>🔄 轮询分配：</strong> 最公平的分配方式。首先为每个有空位的课程分配一首歌曲，确保每个课程都能获得歌曲，然后再填充剩余位置。
+                            <!-- 课程和策略选择并排布局 -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em;">📁 课程选择：</label>
+                                    <select class="form-control" id="course-select" style="font-size: 0.9em;">
+                                        <option value="">自动分配到有空位的课程</option>
+                                    </select>
                                 </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em;">🎯 分配策略：</label>
+                                    <select class="form-control" id="allocation-strategy" style="font-size: 0.9em;" onchange="showStrategyInfo()">
+                                        <option value="round_robin">🔄 轮询分配（推荐）</option>
+                                        <option value="least_songs_first">⚖️ 最少歌曲优先</option>
+                                        <option value="random">🎲 随机分配</option>
+                                        <option value="original">📝 原始算法</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 策略说明 -->
+                            <div id="strategy-info" style="background: #e3f2fd; padding: 8px; border-radius: 4px; margin-bottom: 15px; border-left: 3px solid #007bff; font-size: 0.85em; line-height: 1.4;">
+                                <strong>🔄 轮询分配：</strong> 最公平的分配方式。首先为每个有空位的课程分配一首歌曲，确保每个课程都能获得歌曲，然后再填充剩余位置。
                             </div>
                             
                             <!-- 拖拽上传区域 -->
@@ -2313,23 +2317,20 @@ function generateHTML() {
                                         💡 文件将自动重命名为"课程-A.mp3"格式，原文件名将保存为显示名称
                                     </p>
                                     
-                                    <!-- 策略说明 -->
-                                    <div id="strategy-info-batch" style="background: #e3f2fd; padding: 8px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #007bff; font-size: 0.85em; line-height: 1.4;">
-                                        <strong>🔄 轮询分配：</strong> 最公平的分配方式。首先为每个有空位的课程分配一首歌曲，确保每个课程都能获得歌曲，然后再填充剩余位置。
-                                    </div>
+
                                     
                                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                        <button class="btn btn-success" onclick="uploadBatchFilesSmart()" style="flex: 1; min-width: 120px;">
-                                            🎯 智能上传
+                                        <button class="btn btn-success" onclick="uploadBatchFilesSmart()" style="flex: 0 0 auto;">
+                                            上传
                                         </button>
-                                        <button class="btn btn-info" onclick="previewAllocation()" style="flex: 1; min-width: 100px;">
-                                            👁️ 预览
+                                        <button class="btn btn-info" onclick="previewAllocation()" style="flex: 0 0 auto;">
+                                            预览
                                         </button>
-                                        <button class="btn btn-outline-info" onclick="compareStrategies()" style="flex: 1; min-width: 100px;">
-                                            📊 对比
+                                        <button class="btn btn-outline-info" onclick="compareStrategies()" style="flex: 0 0 auto;">
+                                            对比
                                         </button>
                                         <button class="btn btn-secondary" onclick="clearFileList()" style="flex: 0 0 auto;">
-                                            🗑️ 清空
+                                            清空
                                         </button>
                                     </div>
                                 </div>
@@ -2531,14 +2532,14 @@ function generateHTML() {
                 return songs;
             },
             
-            // 检查JSON数据是否新鲜（1分钟内）
+            // 检查JSON数据是否新鲜（5分钟内）
             isJsonDataFresh() {
-                return this.cache.lastJsonUpdate && (Date.now() - this.cache.lastJsonUpdate) < 60000;
+                return this.cache.lastJsonUpdate && (Date.now() - this.cache.lastJsonUpdate) < 300000;
             },
             
-            // 检查统计数据是否新鲜（5分钟内）
+            // 检查统计数据是否新鲜（10分钟内）
             isStatsDataFresh() {
-                return this.cache.lastStatsUpdate && (Date.now() - this.cache.lastStatsUpdate) < 300000;
+                return this.cache.lastStatsUpdate && (Date.now() - this.cache.lastStatsUpdate) < 600000;
             },
             
             // 使JSON缓存失效（操作后调用）
@@ -2595,11 +2596,22 @@ function generateHTML() {
                 
                 if (hasJsonData && isJsonFresh) {
                     const age = Math.floor((Date.now() - this.cache.lastJsonUpdate) / 1000);
-                    indicator.innerHTML = '<span style="color: #28a745;">JSON已缓存 (' + age + 's前)</span>';
+                    const minutes = Math.floor(age / 60);
+                    const seconds = age % 60;
+                    const timeStr = minutes > 0 ? minutes + 'm' + seconds + 's前' : seconds + 's前';
+                    indicator.innerHTML = '<span style="color: #28a745;">已缓存 (' + timeStr + ')</span>';
                 } else if (hasJsonData) {
-                    indicator.innerHTML = '<span style="color: #ffc107;">JSON缓存过期</span>';
+                    indicator.innerHTML = '<span style="color: #ffc107;">缓存过期 (5分钟)</span>';
                 } else {
                     indicator.innerHTML = '<span style="color: #6c757d;">未加载</span>';
+                }
+            },
+            
+            // 自动刷新缓存（如果过期）
+            async autoRefreshIfNeeded() {
+                if (!this.isJsonDataFresh()) {
+                    console.log('缓存过期，自动刷新数据...');
+                    await this.getJsonData(true);
                 }
             },
             
@@ -2820,6 +2832,11 @@ function generateHTML() {
                 return;
             }
 
+            // 清除之前的预览结果
+            const filesPreview = document.getElementById('files-preview');
+            const existingPreviews = filesPreview.querySelectorAll('[data-type="preview"]');
+            existingPreviews.forEach(preview => preview.remove());
+
             const strategy = document.getElementById('allocation-strategy').value;
             
             try {
@@ -2838,7 +2855,7 @@ function generateHTML() {
                 
                 if (response.ok) {
                     // 显示分配预览 - 使用浮动布局
-                    let previewHtml = '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #bbdefb;">';
+                    let previewHtml = '<div data-type="preview" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #bbdefb;">';
                     previewHtml += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">';
                     previewHtml += '<h4 style="margin: 0;">📋 分配计划预览</h4>';
                     previewHtml += '<button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666;">×</button>';
@@ -2851,10 +2868,10 @@ function generateHTML() {
                     
                     if (Object.keys(result.allocationStats).length > 0) {
                         previewHtml += '<h5 style="margin: 10px 0 5px 0;">📊 分配统计：</h5>';
-                        previewHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto;">';
+                        previewHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; max-height: 150px; overflow-y: auto;">';
                         for (const [course, count] of Object.entries(result.allocationStats)) {
-                            previewHtml += '<div style="background: white; padding: 6px 10px; border-radius: 4px; border: 1px solid #e0e0e0; font-size: 0.9em;">';
-                            previewHtml += '<strong>' + course.replace('.mp3', '') + '</strong>: ' + count + ' 首';
+                            previewHtml += '<div style="background: white; padding: 4px 8px; border-radius: 3px; border: 1px solid #e0e0e0; font-size: 0.85em; text-align: center;">';
+                            previewHtml += course.replace('.mp3', '') + '(' + count + ')';
                             previewHtml += '</div>';
                         }
                         previewHtml += '</div>';
@@ -2890,7 +2907,6 @@ function generateHTML() {
         function showStrategyInfo() {
             const strategy = document.getElementById('allocation-strategy').value;
             const infoDiv = document.getElementById('strategy-info');
-            const batchInfoDiv = document.getElementById('strategy-info-batch');
             
             const strategyInfos = {
                 'round_robin': {
@@ -2916,16 +2932,10 @@ function generateHTML() {
             };
             
             const info = strategyInfos[strategy];
-            if (info) {
+            if (info && infoDiv) {
                 const content = '<strong>' + info.title + '：</strong> ' + info.description;
-                if (infoDiv) {
-                    infoDiv.innerHTML = content;
-                    infoDiv.style.borderLeftColor = info.color;
-                }
-                if (batchInfoDiv) {
-                    batchInfoDiv.innerHTML = content;
-                    batchInfoDiv.style.borderLeftColor = info.color;
-                }
+                infoDiv.innerHTML = content;
+                infoDiv.style.borderLeftColor = info.color;
             }
         }
 
@@ -2949,6 +2959,11 @@ function generateHTML() {
                 return;
             }
 
+            // 清除之前的对比结果
+            const filesPreview = document.getElementById('files-preview');
+            const existingComparisons = filesPreview.querySelectorAll('[data-type="comparison"]');
+            existingComparisons.forEach(comparison => comparison.remove());
+
             const strategies = ['round_robin', 'least_songs_first', 'random'];
             const songCount = selectedFiles.length;
             
@@ -2965,46 +2980,36 @@ function generateHTML() {
                     })
                 );
 
-                // 显示对比结果 - 使用网格布局
-                let comparisonHtml = '<div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #ffeaa7;">';
+                // 显示对比结果 - 优化响应式布局
+                let comparisonHtml = '<div data-type="comparison" style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #ffeaa7;">';
                 comparisonHtml += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">';
-                comparisonHtml += '<h4 style="margin: 0;">📊 分配策略对比</h4>';
+                comparisonHtml += '<h4 style="margin: 0;">📊 分配策略对比 (歌曲数量: ' + songCount + ')</h4>';
                 comparisonHtml += '<button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666;">×</button>';
                 comparisonHtml += '</div>';
                 
-                comparisonHtml += '<p style="margin-bottom: 15px;"><strong>歌曲数量：</strong>' + songCount + '</p>';
-                
-                // 使用网格布局显示策略对比
-                comparisonHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">';
+                // 使用响应式网格布局显示策略对比
+                comparisonHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">';
                 
                 for (const comparison of comparisons) {
                     const { strategy, result } = comparison;
-                    comparisonHtml += '<div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0;">';
-                    comparisonHtml += '<h5 style="margin: 0 0 8px 0; color: #1976d2;">' + getStrategyDisplayName(strategy) + '</h5>';
+                    comparisonHtml += '<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e0e0e0;">';
+                    comparisonHtml += '<h5 style="margin: 0 0 6px 0; color: #1976d2; font-size: 0.95em;">' + getStrategyDisplayName(strategy) + '</h5>';
                     
                     if (result.allocationStats) {
                         const courses = Object.keys(result.allocationStats);
                         const avgSongs = songCount / courses.length;
-                        comparisonHtml += '<p style="margin: 5px 0; font-size: 0.9em;"><strong>分配到 ' + courses.length + ' 个课程</strong></p>';
-                        comparisonHtml += '<p style="margin: 5px 0; font-size: 0.9em;">平均 ' + avgSongs.toFixed(1) + ' 首/课程</p>';
+                        comparisonHtml += '<p style="margin: 3px 0; font-size: 0.85em;">分配到 <strong>' + courses.length + '</strong> 个课程</p>';
                         
-                        // 显示前几个分配详情
+                        // 使用紧凑的统计显示格式
+                        comparisonHtml += '<div style="margin-top: 6px;">';
                         const courseEntries = Object.entries(result.allocationStats);
-                        const displayLimit = 6;
-                        comparisonHtml += '<div style="max-height: 120px; overflow-y: auto; margin-top: 8px;">';
+                        const statsText = courseEntries.map(([course, count]) => 
+                            course.replace('.mp3', '') + '(' + count + ')'
+                        ).join(' ');
                         
-                        for (let i = 0; i < Math.min(displayLimit, courseEntries.length); i++) {
-                            const [course, count] = courseEntries[i];
-                            comparisonHtml += '<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 0.85em;">';
-                            comparisonHtml += '<span>' + course.replace('.mp3', '') + '</span>';
-                            comparisonHtml += '<span><strong>' + count + ' 首</strong></span>';
-                            comparisonHtml += '</div>';
-                        }
-                        
-                        if (courseEntries.length > displayLimit) {
-                            comparisonHtml += '<div style="text-align: center; margin-top: 5px; font-size: 0.8em; color: #666;">... 还有 ' + (courseEntries.length - displayLimit) + ' 个课程</div>';
-                        }
-                        
+                        comparisonHtml += '<div style="font-size: 0.8em; line-height: 1.3; word-break: break-all; max-height: 60px; overflow-y: auto;">';
+                        comparisonHtml += statsText;
+                        comparisonHtml += '</div>';
                         comparisonHtml += '</div>';
                     }
                     comparisonHtml += '</div>';
@@ -3097,20 +3102,7 @@ function generateHTML() {
                 const successMessage = '批量公平分配完成：成功 ' + allResults.length + ' 个，失败 ' + allErrors.length + ' 个';
                 showAlert(successMessage, allErrors.length === 0 ? 'success' : 'warning');
                 
-                // 显示分配统计
-                if (allResults.length > 0 && allResults[0].strategy) {
-                    const stats = {};
-                    allResults.forEach(result => {
-                        if (!stats[result.course]) stats[result.course] = 0;
-                        stats[result.course]++;
-                    });
-                    
-                    let statsMessage = '📊 分配统计：';
-                    for (const [course, count] of Object.entries(stats)) {
-                        statsMessage += ' ' + course.replace('.mp3', '') + '(' + count + ')';
-                    }
-                    showAlert(statsMessage, 'info');
-                }
+
                 
                 // 显示错误详情
                 if (allErrors.length > 0) {
@@ -3990,10 +3982,14 @@ function generateHTML() {
         document.addEventListener('DOMContentLoaded', () => {
             loadOverview();
             
-            // 定期更新缓存状态指示器
-            setInterval(() => {
+            // 定期更新缓存状态指示器和自动刷新
+            setInterval(async () => {
                 DataManager.updateCacheIndicator();
-            }, 1000);
+                // 每30秒检查一次是否需要自动刷新
+                if (Math.random() < 0.1) { // 10%概率检查，避免过于频繁
+                    await DataManager.autoRefreshIfNeeded();
+                }
+            }, 5000);
         });
     </script>
 </body>
