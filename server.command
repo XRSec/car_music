@@ -423,6 +423,238 @@ function findAvailableCourse(data) {
     return null;
 }
 
+// 优化的分配算法：公平分配策略
+function findAvailableCourseFair(data, strategy = 'round_robin') {
+    const courses = Object.keys(data).sort();
+    
+    switch (strategy) {
+        case 'round_robin':
+            return findAvailableCourseRoundRobin(data, courses);
+        case 'least_songs_first':
+            return findAvailableCourseLeastSongsFirst(data, courses);
+        case 'random':
+            return findAvailableCourseRandom(data, courses);
+        default:
+            return findAvailableCourse(data); // 回退到原始算法
+    }
+}
+
+// 轮询分配：优先给歌曲数量最少的课程分配
+function findAvailableCourseRoundRobin(data, courses) {
+    // 计算每个课程的歌曲数量
+    const courseStats = courses.map(course => {
+        const songs = data[course].songs || [];
+        const songCount = songs.filter(song => song !== null).length;
+        const emptySlots = songs.map((song, index) => song === null ? index : null).filter(slot => slot !== null);
+        
+        return {
+            course,
+            songCount,
+            emptySlots,
+            hasEmptySlot: emptySlots.length > 0
+        };
+    }).filter(stat => stat.hasEmptySlot);
+
+    if (courseStats.length === 0) return null;
+
+    // 按歌曲数量排序，优先分配给歌曲少的课程
+    courseStats.sort((a, b) => a.songCount - b.songCount);
+    
+    const selected = courseStats[0];
+    return {
+        course: selected.course,
+        slot: selected.emptySlots[0]
+    };
+}
+
+// 最少歌曲优先：总是选择歌曲数量最少的课程
+function findAvailableCourseLeastSongsFirst(data, courses) {
+    let minSongs = Infinity;
+    let selectedCourse = null;
+    let selectedSlot = null;
+
+    for (const course of courses) {
+        const songs = data[course].songs || [];
+        const songCount = songs.filter(song => song !== null).length;
+        const emptyIndex = songs.indexOf(null);
+        
+        if (emptyIndex !== -1 && songCount < minSongs) {
+            minSongs = songCount;
+            selectedCourse = course;
+            selectedSlot = emptyIndex;
+        }
+    }
+
+    return selectedCourse ? { course: selectedCourse, slot: selectedSlot } : null;
+}
+
+// 随机分配：从有空位的课程中随机选择
+function findAvailableCourseRandom(data, courses) {
+    const availableCourses = [];
+    
+    for (const course of courses) {
+        const songs = data[course].songs || [];
+        const emptyIndex = songs.indexOf(null);
+        if (emptyIndex !== -1) {
+            availableCourses.push({ course, slot: emptyIndex });
+        }
+    }
+
+    if (availableCourses.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * availableCourses.length);
+    return availableCourses[randomIndex];
+}
+
+// 批量公平分配：先为每个课程分配一首，然后填充剩余位置
+function batchFairAllocation(data, songCount, strategy = 'round_robin') {
+    const courses = Object.keys(data).sort();
+    const allocations = [];
+    
+    // 创建数据副本以避免修改原始数据
+    const dataCopy = JSON.parse(JSON.stringify(data));
+    
+    // 第一阶段：为每个有空位的课程分配一首歌曲
+    const coursesWithEmptySlots = courses.filter(course => {
+        const songs = dataCopy[course].songs || [];
+        return songs.includes(null);
+    });
+
+    // 按策略排序课程
+    let sortedCourses;
+    if (strategy === 'least_songs_first') {
+        sortedCourses = coursesWithEmptySlots.sort((a, b) => {
+            const songsA = (dataCopy[a].songs || []).filter(song => song !== null).length;
+            const songsB = (dataCopy[b].songs || []).filter(song => song !== null).length;
+            return songsA - songsB;
+        });
+    } else if (strategy === 'random') {
+        sortedCourses = [...coursesWithEmptySlots].sort(() => Math.random() - 0.5);
+    } else {
+        // 默认轮询 - 按歌曲数量排序，确保公平分配
+        sortedCourses = coursesWithEmptySlots.sort((a, b) => {
+            const songsA = (dataCopy[a].songs || []).filter(song => song !== null).length;
+            const songsB = (dataCopy[b].songs || []).filter(song => song !== null).length;
+            return songsA - songsB;
+        });
+    }
+
+    let songIndex = 0;
+    
+    // 第一轮：为每个课程分配一首歌曲（确保每个课程至少有一首）
+    for (const course of sortedCourses) {
+        if (songIndex >= songCount) break;
+        
+        const songs = dataCopy[course].songs || [];
+        const emptySlot = songs.indexOf(null);
+        if (emptySlot !== -1) {
+            allocations.push({ course, slot: emptySlot });
+            // 标记为已分配
+            dataCopy[course].songs[emptySlot] = 'ALLOCATED';
+            songIndex++;
+        }
+    }
+    
+    // 第二阶段：填充剩余位置，继续使用公平策略
+    while (songIndex < songCount) {
+        const available = findAvailableCourseFairWithCopy(dataCopy, strategy);
+        if (!available) break;
+        
+        allocations.push(available);
+        // 标记为已分配
+        dataCopy[available.course].songs[available.slot] = 'ALLOCATED';
+        songIndex++;
+    }
+    
+    return allocations;
+}
+
+// 使用数据副本的公平分配函数
+function findAvailableCourseFairWithCopy(dataCopy, strategy = 'round_robin') {
+    const courses = Object.keys(dataCopy).sort();
+    
+    switch (strategy) {
+        case 'round_robin':
+            return findAvailableCourseRoundRobinWithCopy(dataCopy, courses);
+        case 'least_songs_first':
+            return findAvailableCourseLeastSongsFirstWithCopy(dataCopy, courses);
+        case 'random':
+            return findAvailableCourseRandomWithCopy(dataCopy, courses);
+        default:
+            return findAvailableCourseLeastSongsFirstWithCopy(dataCopy, courses);
+    }
+}
+
+// 使用数据副本的轮询分配
+function findAvailableCourseRoundRobinWithCopy(dataCopy, courses) {
+    const courseStats = courses.map(course => {
+        const songs = dataCopy[course].songs || [];
+        const songCount = songs.filter(song => song !== null && song !== 'ALLOCATED').length;
+        const emptySlots = songs.map((song, index) => 
+            (song === null || song === 'ALLOCATED') ? null : index
+        ).filter(slot => slot !== null);
+        const actualEmptySlots = songs.map((song, index) => 
+            song === null ? index : null
+        ).filter(slot => slot !== null);
+        
+        return {
+            course,
+            songCount,
+            emptySlots: actualEmptySlots,
+            hasEmptySlot: actualEmptySlots.length > 0
+        };
+    }).filter(stat => stat.hasEmptySlot);
+
+    if (courseStats.length === 0) return null;
+
+    courseStats.sort((a, b) => a.songCount - b.songCount);
+    
+    const selected = courseStats[0];
+    return {
+        course: selected.course,
+        slot: selected.emptySlots[0]
+    };
+}
+
+// 使用数据副本的最少歌曲优先
+function findAvailableCourseLeastSongsFirstWithCopy(dataCopy, courses) {
+    let minSongs = Infinity;
+    let selectedCourse = null;
+    let selectedSlot = null;
+
+    for (const course of courses) {
+        const songs = dataCopy[course].songs || [];
+        const songCount = songs.filter(song => song !== null && song !== 'ALLOCATED').length;
+        const emptyIndex = songs.indexOf(null);
+        
+        if (emptyIndex !== -1 && songCount < minSongs) {
+            minSongs = songCount;
+            selectedCourse = course;
+            selectedSlot = emptyIndex;
+        }
+    }
+
+    return selectedCourse ? { course: selectedCourse, slot: selectedSlot } : null;
+}
+
+// 使用数据副本的随机分配
+function findAvailableCourseRandomWithCopy(dataCopy, courses) {
+    const availableCourses = [];
+    
+    for (const course of courses) {
+        const songs = dataCopy[course].songs || [];
+        const emptyIndex = songs.indexOf(null);
+        if (emptyIndex !== -1) {
+            availableCourses.push({ course, slot: emptyIndex });
+        }
+    }
+
+    if (availableCourses.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * availableCourses.length);
+    return availableCourses[randomIndex];
+}
+
 initData();
 
 // ------------------- API -------------------
@@ -462,6 +694,81 @@ app.get('/api/list', async (req, res) => {
     }
 
     res.json(result);
+});
+
+// 后端策略显示名称映射
+function getStrategyDisplayName(strategy) {
+    const strategyNames = {
+        'round_robin': '🔄 轮询分配',
+        'least_songs_first': '⚖️ 最少歌曲优先',
+        'random': '🎲 随机分配',
+        'original': '📝 原始算法'
+    };
+    return strategyNames[strategy] || strategy;
+}
+
+// 分配算法性能分析
+app.post('/api/analyze-allocation-performance', (req, res) => {
+    try {
+        const { songCount = 10 } = req.body;
+        const data = loadData();
+        const strategies = ['round_robin', 'least_songs_first', 'random'];
+        
+        const analysis = {
+            songCount,
+            strategies: {},
+            recommendation: null
+        };
+        
+        for (const strategy of strategies) {
+            const allocations = batchFairAllocation(data, songCount, strategy);
+            const stats = {};
+            
+            // 计算分配统计
+            for (const allocation of allocations) {
+                if (!stats[allocation.course]) stats[allocation.course] = 0;
+                stats[allocation.course]++;
+            }
+            
+            // 计算分配质量指标
+            const courseCounts = Object.values(stats);
+            const totalCourses = Object.keys(stats).length;
+            const avgSongsPerCourse = songCount / totalCourses;
+            const variance = courseCounts.reduce((sum, count) => 
+                sum + Math.pow(count - avgSongsPerCourse, 2), 0) / totalCourses;
+            const standardDeviation = Math.sqrt(variance);
+            
+            analysis.strategies[strategy] = {
+                name: getStrategyDisplayName(strategy),
+                allocatedCourses: totalCourses,
+                allocationStats: stats,
+                avgSongsPerCourse: avgSongsPerCourse.toFixed(2),
+                standardDeviation: standardDeviation.toFixed(2),
+                fairnessScore: (1 / (1 + standardDeviation)).toFixed(3) // 越接近1越公平
+            };
+        }
+        
+        // 推荐最佳策略（基于公平性得分）
+        let bestStrategy = null;
+        let bestScore = 0;
+        for (const [strategy, info] of Object.entries(analysis.strategies)) {
+            if (parseFloat(info.fairnessScore) > bestScore) {
+                bestScore = parseFloat(info.fairnessScore);
+                bestStrategy = strategy;
+            }
+        }
+        
+        analysis.recommendation = {
+            strategy: bestStrategy,
+            reason: `基于公平性得分 ${bestScore}，推荐使用 ${analysis.strategies[bestStrategy]?.name}`
+        };
+        
+        res.json(analysis);
+        
+    } catch (error) {
+        console.error('Allocation analysis error:', error);
+        res.status(500).json({error: '分配分析失败: ' + error.message});
+    }
 });
 
 // 获取课程统计信息
@@ -513,6 +820,41 @@ app.post('/api/add-course', (req, res) => {
     }
 });
 
+// 批量公平分配预览 - 不实际分配，只返回分配计划
+app.post('/api/preview-fair-allocation', (req, res) => {
+    try {
+        const { songCount, strategy = 'round_robin' } = req.body;
+        
+        if (!songCount || songCount <= 0) {
+            return res.status(400).json({error: '歌曲数量必须大于0'});
+        }
+
+        const data = loadData();
+        const allocations = batchFairAllocation(data, songCount, strategy);
+        
+        // 统计分配结果
+        const allocationStats = {};
+        for (const allocation of allocations) {
+            if (!allocationStats[allocation.course]) {
+                allocationStats[allocation.course] = 0;
+            }
+            allocationStats[allocation.course]++;
+        }
+        
+        res.json({
+            strategy,
+            songCount,
+            allocations,
+            allocationStats,
+            message: `使用${strategy}策略为${songCount}首歌曲生成分配计划`
+        });
+        
+    } catch (error) {
+        console.error('Fair allocation preview error:', error);
+        res.status(500).json({error: '分配预览失败: ' + error.message});
+    }
+});
+
 // 上传歌曲并分配到课程空位
 app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
     upload.single('song')(req, res, async (err) => {
@@ -538,8 +880,8 @@ app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
         let index;
 
         if (!assignedCourse) {
-            // 自动分配到有空位的课程
-            const available = findAvailableCourse(data);
+            // 自动分配到有空位的课程 - 使用公平分配策略
+            const available = findAvailableCourseFair(data, 'least_songs_first');
             if (!available) {
                 fs.unlinkSync(file.path);
                 return res.status(400).json({error: '没有可用的空位'});
@@ -598,6 +940,150 @@ app.post('/api/add-song', rateLimit('upload', 10, 60000), (req, res) => {
             metadata,
             display_name: originalName.replace('.mp3', ''),
             auto_assigned: targetCourse !== assignedCourse
+        });
+    });
+});
+
+// 批量公平分配上传歌曲
+app.post('/api/add-songs-batch-fair', rateLimit('batch-upload', 20, 300000), (req, res) => {
+    uploadMultiple(req, res, async (err) => {
+        if (err) {
+            console.error('Batch fair upload error:', err.message);
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({error: '文件太大，最大允许50MB'});
+                } else if (err.code === 'LIMIT_FILE_COUNT') {
+                    return res.status(400).json({error: '文件数量太多，最多允许20个文件'});
+                }
+                return res.status(400).json({error: '文件上传错误: ' + err.message});
+            }
+            return res.status(400).json({error: err.message});
+        }
+
+        const { strategy = 'round_robin' } = req.body;
+        const files = req.files;
+
+        if (!files || files.length === 0) {
+            return res.status(400).json({error: '没有上传文件'});
+        }
+
+        const data = loadData();
+        const results = [];
+        const errors = [];
+
+        // 检查文件名重复
+        for (const file of files) {
+            const originalName = file.originalname;
+            let isDuplicate = false;
+            for (const [course, info] of Object.entries(data)) {
+                const renamedFiles = info.renamed_files || [];
+                if (renamedFiles.find(f => f.original_name === originalName)) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+
+            if (isDuplicate) {
+                errors.push({
+                    file: originalName,
+                    error: `文件名重复: ${originalName} 已存在，请重命名后再上传`
+                });
+                fs.unlinkSync(file.path);
+            }
+        }
+
+        // 过滤掉重复的文件
+        const validFiles = files.filter(file => 
+            !errors.some(error => error.file === file.originalname)
+        );
+
+        if (validFiles.length === 0) {
+            return res.json({
+                message: '批量公平分配完成：所有文件都有错误',
+                success: [],
+                errors: errors,
+                total: files.length
+            });
+        }
+
+        // 使用公平分配算法获取分配计划
+        const allocations = batchFairAllocation(data, validFiles.length, strategy);
+
+        if (allocations.length < validFiles.length) {
+            // 清理多余的文件
+            for (let i = allocations.length; i < validFiles.length; i++) {
+                fs.unlinkSync(validFiles[i].path);
+                errors.push({
+                    file: validFiles[i].originalname,
+                    error: '没有足够的空位进行分配'
+                });
+            }
+        }
+
+        // 执行分配
+        for (let i = 0; i < Math.min(allocations.length, validFiles.length); i++) {
+            const file = validFiles[i];
+            const allocation = allocations[i];
+
+            try {
+                // 解析歌曲信息
+                const metadata = await getMusicMetadata(file.path);
+
+                // 生成播放器友好的文件名
+                const newName = generatePlaylistName(allocation.course, allocation.slot);
+                const newPath = path.join(SONG_DIR, newName);
+                fs.renameSync(file.path, newPath);
+
+                // 保存映射
+                data[allocation.course].songs[allocation.slot] = newName;
+                data[allocation.course].renamed_files = data[allocation.course].renamed_files || [];
+                data[allocation.course].renamed_files.push({
+                    original_name: file.originalname,
+                    playlist_name: newName,
+                    slot: allocation.slot,
+                    metadata: metadata,
+                    added_time: new Date().toISOString()
+                });
+
+                results.push({
+                    original: file.originalname,
+                    display_name: file.originalname.replace('.mp3', ''),
+                    course: allocation.course,
+                    slot: allocation.slot,
+                    playlist_name: newName,
+                    metadata: metadata,
+                    strategy: strategy
+                });
+
+            } catch (error) {
+                errors.push({
+                    file: file.originalname,
+                    error: error.message
+                });
+                if (fs.existsSync(file.path)) {
+                    fs.unlinkSync(file.path);
+                }
+            }
+        }
+
+        saveData(data);
+
+        // 统计分配结果
+        const allocationStats = {};
+        for (const result of results) {
+            if (!allocationStats[result.course]) {
+                allocationStats[result.course] = 0;
+            }
+            allocationStats[result.course]++;
+        }
+
+        res.json({
+            message: `批量公平分配完成：成功 ${results.length} 个，失败 ${errors.length} 个`,
+            success: results,
+            errors: errors,
+            total: files.length,
+            strategy: strategy,
+            allocationStats: allocationStats
         });
     });
 });
@@ -1807,9 +2293,38 @@ function generateHTML() {
                                     <p style="margin: 0 0 10px 0; color: #6c757d; font-size: 0.9em;">
                                         💡 文件将自动重命名为"课程-A.mp3"格式，原文件名将保存为显示名称
                                     </p>
+                                    
+                                    <!-- 分配策略选择 -->
+                                    <div style="margin-bottom: 15px;">
+                                        <label for="allocation-strategy" style="display: block; margin-bottom: 5px; font-weight: 600;">🎯 分配策略：</label>
+                                        <select class="form-control" id="allocation-strategy" style="margin-bottom: 10px;" onchange="showStrategyInfo()">
+                                            <option value="round_robin">🔄 轮询分配（先为每个课程分配一首，然后填充）</option>
+                                            <option value="least_songs_first">⚖️ 最少歌曲优先（总是选择歌曲最少的课程）</option>
+                                            <option value="random">🎲 随机分配（从有空位的课程中随机选择）</option>
+                                            <option value="original">📝 原始算法（按课程顺序依次分配）</option>
+                                        </select>
+                                        
+                                        <!-- 策略说明 -->
+                                        <div id="strategy-info" style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #007bff; font-size: 0.9em;">
+                                            <strong>🔄 轮询分配：</strong> 最公平的分配方式。首先为每个有空位的课程分配一首歌曲，确保每个课程都能获得歌曲，然后再填充剩余位置。适合大多数场景。
+                                        </div>
+                                        
+                                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                                            <button class="btn btn-info" onclick="previewAllocation()" style="flex: 1;">
+                                                👁️ 预览分配计划
+                                            </button>
+                                            <button class="btn btn-outline-info" onclick="compareStrategies()" style="flex: 1;">
+                                                📊 策略对比
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
                                     <div style="display: flex; gap: 10px;">
                                         <button class="btn btn-primary" onclick="uploadBatchFiles()">
-                                            📤 批量上传
+                                            📤 批量上传（原始算法）
+                                        </button>
+                                        <button class="btn btn-success" onclick="uploadBatchFilesFair()">
+                                            🎯 公平分配上传
                                         </button>
                                         <button class="btn btn-secondary" onclick="clearFileList()">
                                             🗑️ 清空
@@ -2307,6 +2822,277 @@ function generateHTML() {
             setTimeout(() => {
                 progressDiv.style.display = 'none';
             }, 5000); // 延长显示时间
+        }
+
+        // 预览分配计划
+        async function previewAllocation() {
+            if (selectedFiles.length === 0) {
+                alert('请先选择文件');
+                return;
+            }
+
+            const strategy = document.getElementById('allocation-strategy').value;
+            
+            try {
+                const response = await fetch('/api/preview-fair-allocation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        songCount: selectedFiles.length,
+                        strategy: strategy === 'original' ? 'round_robin' : strategy
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // 显示分配预览
+                    let previewHtml = '<div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px 0;">';
+                    previewHtml += '<h4>📋 分配计划预览</h4>';
+                    previewHtml += '<p><strong>策略：</strong>' + getStrategyDisplayName(strategy) + '</p>';
+                    previewHtml += '<p><strong>歌曲数量：</strong>' + selectedFiles.length + '</p>';
+                    
+                    if (Object.keys(result.allocationStats).length > 0) {
+                        previewHtml += '<h5>📊 分配统计：</h5><ul>';
+                        for (const [course, count] of Object.entries(result.allocationStats)) {
+                            previewHtml += '<li>' + course.replace('.mp3', '') + ': ' + count + ' 首歌曲</li>';
+                        }
+                        previewHtml += '</ul>';
+                    }
+                    
+                    previewHtml += '</div>';
+                    
+                    // 在文件预览区域显示
+                    const filesPreview = document.getElementById('files-preview');
+                    filesPreview.innerHTML = previewHtml + filesPreview.innerHTML;
+                    
+                    showAlert(result.message, 'info');
+                } else {
+                    showAlert('预览失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('预览失败: ' + error.message, 'error');
+            }
+        }
+
+        // 获取策略显示名称
+        function getStrategyDisplayName(strategy) {
+            const strategyNames = {
+                'round_robin': '🔄 轮询分配',
+                'least_songs_first': '⚖️ 最少歌曲优先',
+                'random': '🎲 随机分配',
+                'original': '📝 原始算法'
+            };
+            return strategyNames[strategy] || strategy;
+        }
+
+        // 显示策略信息
+        function showStrategyInfo() {
+            const strategy = document.getElementById('allocation-strategy').value;
+            const infoDiv = document.getElementById('strategy-info');
+            
+            const strategyInfos = {
+                'round_robin': {
+                    title: '🔄 轮询分配',
+                    description: '最公平的分配方式。首先为每个有空位的课程分配一首歌曲，确保每个课程都能获得歌曲，然后再填充剩余位置。适合大多数场景。',
+                    color: '#007bff'
+                },
+                'least_songs_first': {
+                    title: '⚖️ 最少歌曲优先',
+                    description: '总是优先选择歌曲数量最少的课程进行分配。能够最大化平衡各课程的歌曲数量，但可能导致某些课程完全填满而其他课程仍为空。',
+                    color: '#28a745'
+                },
+                'random': {
+                    title: '🎲 随机分配',
+                    description: '从所有有空位的课程中随机选择。提供完全随机的分配结果，适合不需要特定分配规律的场景。',
+                    color: '#ffc107'
+                },
+                'original': {
+                    title: '📝 原始算法',
+                    description: '按课程名称顺序依次分配，直到当前课程满了再转到下一个。简单直接，但可能导致分配不均匀。',
+                    color: '#6c757d'
+                }
+            };
+            
+            const info = strategyInfos[strategy];
+            if (info) {
+                infoDiv.innerHTML = '<strong>' + info.title + '：</strong> ' + info.description;
+                infoDiv.style.borderLeftColor = info.color;
+            }
+        }
+
+        // 策略对比
+        async function compareStrategies() {
+            if (selectedFiles.length === 0) {
+                alert('请先选择文件进行对比');
+                return;
+            }
+
+            const strategies = ['round_robin', 'least_songs_first', 'random'];
+            const songCount = selectedFiles.length;
+            
+            try {
+                const comparisons = await Promise.all(
+                    strategies.map(async strategy => {
+                        const response = await fetch('/api/preview-fair-allocation', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ songCount, strategy })
+                        });
+                        const result = await response.json();
+                        return { strategy, result };
+                    })
+                );
+
+                // 显示对比结果
+                let comparisonHtml = '<div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #ffeaa7;">';
+                comparisonHtml += '<h4>📊 分配策略对比</h4>';
+                comparisonHtml += '<p><strong>歌曲数量：</strong>' + songCount + '</p>';
+                
+                for (const comparison of comparisons) {
+                    const { strategy, result } = comparison;
+                    comparisonHtml += '<div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">';
+                    comparisonHtml += '<h5>' + getStrategyDisplayName(strategy) + '</h5>';
+                    
+                    if (result.allocationStats) {
+                        const courses = Object.keys(result.allocationStats);
+                        const avgSongs = songCount / courses.length;
+                        comparisonHtml += '<p><strong>分配到 ' + courses.length + ' 个课程</strong> (平均 ' + avgSongs.toFixed(1) + ' 首/课程)</p>';
+                        
+                        // 显示分配详情
+                        comparisonHtml += '<ul style="margin: 5px 0; font-size: 0.9em;">';
+                        for (const [course, count] of Object.entries(result.allocationStats)) {
+                            comparisonHtml += '<li>' + course.replace('.mp3', '') + ': ' + count + ' 首</li>';
+                        }
+                        comparisonHtml += '</ul>';
+                    }
+                    comparisonHtml += '</div>';
+                }
+                
+                comparisonHtml += '</div>';
+                
+                // 在文件预览区域显示
+                const filesPreview = document.getElementById('files-preview');
+                filesPreview.innerHTML = comparisonHtml + filesPreview.innerHTML;
+                
+                showAlert('策略对比完成，请查看详细结果', 'info');
+                
+            } catch (error) {
+                showAlert('策略对比失败: ' + error.message, 'error');
+            }
+        }
+
+        // 公平分配批量上传
+        async function uploadBatchFilesFair() {
+            if (selectedFiles.length === 0) {
+                alert('请先选择文件');
+                return;
+            }
+            
+            const strategy = document.getElementById('allocation-strategy').value;
+            
+            // 显示进度条
+            const progressDiv = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            progressDiv.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '准备公平分配上传...';
+            
+            const BATCH_SIZE = 20; // 每批20个文件
+            const totalFiles = selectedFiles.length;
+            const batches = [];
+            
+            // 分批处理文件
+            for (let i = 0; i < totalFiles; i += BATCH_SIZE) {
+                batches.push(selectedFiles.slice(i, i + BATCH_SIZE));
+            }
+            
+            const allResults = [];
+            const allErrors = [];
+            
+            try {
+                for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+                    const batch = batches[batchIndex];
+                    
+                    progressText.textContent = '公平分配第 ' + (batchIndex + 1) + '/' + batches.length + ' 批...';
+                    
+                    const formData = new FormData();
+                    formData.append('strategy', strategy === 'original' ? 'round_robin' : strategy);
+                    
+                    batch.forEach(file => {
+                        formData.append('songs', file);
+                    });
+                    
+                    const response = await fetch('/api/add-songs-batch-fair', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        allResults.push(...(result.success || []));
+                        allErrors.push(...(result.errors || []));
+                    } else {
+                        // 如果整个批次失败，将所有文件标记为失败
+                        batch.forEach(file => {
+                            allErrors.push({
+                                file: file.name,
+                                error: result.error || '上传失败'
+                            });
+                        });
+                    }
+                    
+                    // 更新进度
+                    const progress = ((batchIndex + 1) / batches.length) * 100;
+                    progressFill.style.width = progress + '%';
+                }
+                
+                // 显示最终结果
+                progressText.textContent = '公平分配完成：成功 ' + allResults.length + ' 个，失败 ' + allErrors.length + ' 个';
+                
+                const successMessage = '批量公平分配完成：成功 ' + allResults.length + ' 个，失败 ' + allErrors.length + ' 个';
+                showAlert(successMessage, allErrors.length === 0 ? 'success' : 'warning');
+                
+                // 显示分配统计
+                if (allResults.length > 0 && allResults[0].strategy) {
+                    const stats = {};
+                    allResults.forEach(result => {
+                        if (!stats[result.course]) stats[result.course] = 0;
+                        stats[result.course]++;
+                    });
+                    
+                    let statsMessage = '📊 分配统计：';
+                    for (const [course, count] of Object.entries(stats)) {
+                        statsMessage += ' ' + course.replace('.mp3', '') + '(' + count + ')';
+                    }
+                    showAlert(statsMessage, 'info');
+                }
+                
+                // 显示错误详情
+                if (allErrors.length > 0) {
+                    allErrors.forEach(err => {
+                        showAlert(err.file + ': ' + err.error, 'error');
+                    });
+                }
+                
+                DataManager.afterOperation('batch_fair_upload');
+                clearFileList();
+                loadSongs();
+                loadCourses();
+                
+            } catch (error) {
+                progressText.textContent = '公平分配失败';
+                showAlert('批量公平分配失败: ' + error.message, 'error');
+            }
+            
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+            }, 5000);
         }
         async function loadOverview() {
             try {
