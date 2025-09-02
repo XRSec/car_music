@@ -2118,6 +2118,12 @@ function generateHTML() {
         .alert-error {
             background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
         }
+        .alert-info {
+            background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;
+        }
+        .alert-warning {
+            background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;
+        }
         .drop-zone {
             border: 2px dashed #ced4da; border-radius: 10px; padding: 40px;
             text-align: center; transition: all 0.3s ease; cursor: pointer;
